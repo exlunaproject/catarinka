@@ -1,0 +1,24 @@
+unit CatDCPKey;
+
+interface
+
+const
+ // for storing passwords and preferences that need to be encrypted
+ CATKEY_PASSWORD = 1;
+ // for storing request headers in temporary cache files
+ CATKEY_REQUESTHEADERS = 2;
+
+function GetDCPKey(id:integer):string;
+
+implementation
+
+function GetDCPKey(id:integer):string;
+begin
+ case id of
+  CATKEY_REQUESTHEADERS: result:='YourKey1';
+  CATKEY_PASSWORD: result:='YourKey2';
+ end
+end;
+
+// ------------------------------------------------------------------------//
+end.
