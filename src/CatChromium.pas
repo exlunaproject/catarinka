@@ -559,11 +559,11 @@ var
 begin
   Map := TCefStringMultiMapOwn.Create;
   request.GetHeaderMap(Map);
-  s := request.getMethod + ' /' + getpathfromurl(request.GetURL) + ' HTTP/1.1';
+  s := request.getMethod + ' /' + ExtractUrlPath(request.GetURL) + ' HTTP/1.1';
   with Map as ICefStringMultiMap do
   begin
     if FindCount('Host') = 0 then
-      Add('Host', gethostfromurl(request.GetURL));
+      Add('Host', ExtractURLHost(request.GetURL));
     for i := 0 to GetSize do
     begin
       if i < GetSize then
@@ -1048,7 +1048,7 @@ begin
   end
   else
   begin
-    u := CatHTTP.gethostfromurl(u);
+    u := CatHTTP.ExtractURLHost(u);
     if beginswith(u, 'www.') then
     begin
       u := after(u, '.');
