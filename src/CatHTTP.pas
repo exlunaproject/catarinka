@@ -51,8 +51,8 @@ function StripHTML(const s: string): string;
 function StripPHPCode(const s: string): string;
 
 // HTTP functions
-function CrackHTTPHost(const host:string): THTTPHostParts;
-function CrackHTTPRequest(const r:string): THTTPRequestParts;
+function CrackHTTPHost(const Host: string): THTTPHostParts;
+function CrackHTTPRequest(const r: string): THTTPRequestParts;
 function ExtractHTTPRequestPath(const r: string): string;
 function ExtractHTTPRequestPostData(const r: string): string;
 function ExtractHTTPResponseHeader(const r: string): string;
@@ -63,12 +63,14 @@ function RemoveHeaderFromResponse(const r: string): string;
 
 // URL functions
 function CrackURL(const url: string): TURLParts;
+function ChangeURLPath(const url, newpath: string): string;
 function ExtractUrlFileExt(const url: string): string;
 function ExtractUrlFileName(const url: string): string;
 function ExtractUrlHost(const url: string): string;
 function ExtractUrlPath(const url: string;
   const includeparams: boolean = true): string;
 function ExtractUrlPort(const url: string): integer;
+function FileUrlToFilename(const url: string): string;
 function GenerateURL(const Host: string; const Port: integer): string;
 function URLDecode(const s: string): string;
 function URLEncode(const s: string; plus: boolean = false;
@@ -100,24 +102,34 @@ begin
     ((cl and $0000FF) shl 16)]);
 end;
 
+function ChangeURLPath(const url, newpath: string): string;
+var
+  oldpath, reppath: string;
+begin
+  oldpath := '/' + ExtractUrlPath(url);
+  reppath := newpath;
+  result := replacestr(url + ' ', oldpath + ' ', reppath);
+end;
+
 // Expects Host[:Port] and will return its parts
 // Example usage:
 // CrackHost('127.0.0.1').port returns 80
 // CrackHost('127.0.0.1:8080').port returns 8080
 // CrackHost('[2001:4860:0:2001::68]:8080').port returns 8080
-function CrackHTTPHost(const host:string): THTTPHostParts;
-var url:string;
+function CrackHTTPHost(const Host: string): THTTPHostParts;
+var
+  url: string;
 begin
-  url:='http://' + Host + '/';
-  result.name := ExtractUrlHost(url);
-  result.port := ExtractUrlPort(url);
+  url := 'http://' + Host + '/';
+  result.Name := ExtractUrlHost(url);
+  result.Port := ExtractUrlPort(url);
 end;
 
-function CrackHTTPRequest(const r:string): THTTPRequestParts;
+function CrackHTTPRequest(const r: string): THTTPRequestParts;
 begin
   result.Method := before(r, ' ');
   result.Path := ExtractHTTPRequestPath(r);
-  result.Data:= ExtractHTTPRequestPostData(r);
+  result.Data := ExtractHTTPRequestPostData(r);
 end;
 
 function CrackURL(const url: string): TURLParts;
@@ -206,6 +218,16 @@ begin
       else
         result := result + r[i];
   end;
+end;
+
+function FileUrlToFilename(const url: string): string;
+var
+  f: string;
+begin
+  f := url;
+  f := after(f, 'file://');
+  f := replacestr(f, '/', '\\');
+  result := f;
 end;
 
 // Generates an URL from a hostname
