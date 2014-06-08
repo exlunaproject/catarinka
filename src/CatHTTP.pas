@@ -6,9 +6,6 @@ unit CatHTTP;
   See https://github.com/felipedaragon/catarinka/ for details
 
   ColorToHTMLColor function by Ralf Mimoun
-
-  4.19.2011, FD: GetHostFromURL, GetPortFromURL,
-  GetDomainFromHost, GetPortFromHost are now IPv6 compatible
 }
 
 interface
@@ -19,36 +16,66 @@ uses
 {$ELSE}
   Classes, SysUtils, Graphics;
 {$IFEND}
+
+type
+  TURLParts = record
+    Filename: string;
+    Fileext: string;
+    Host: string;
+    Path: string;
+    Port: integer;
+    Protocol: string;
+  end;
+
+type
+  THTTPRequestParts = record
+    Method: string;
+    Path: string;
+    Data: string; // POST data
+  end;
+
+type
+  THTTPHostParts = record
+    Name: string;
+    Port: integer;
+  end;
+
+  // HTML functions
 function BoolToDisplayState(const b: boolean): string;
 function ColorToHTMLColor(const Color: TColor): string;
-function ExtractUrlFileExt(const url: string): string;
-function ExtractUrlFileName(const url: string): string;
-function GetDomainFromHost(const host: string): string;
-function GetField(const Field, ReqStr: string): ansistring;
-function GetHeaderFromResponse(const r: string): string;
-function GetHostFromURL(const url: string): string;
-function GetPathFromRequest(const r: string): string;
-function GetPathFromURL(const url: string;
-  const includeparams: boolean = true): string;
-function GetPortFromHost(const host: string): string;
-function GetPortFromURL(const url: string): string;
-function GetPostDataFromRequest(const r: string): string;
-function GetStatusCodeFromResponse(const r: string): integer;
-function HostPort2URL(const host: string; const port: integer): string;
 function HtmlColorToColor(const Color: string): TColor;
 function HtmlEntityDecode(const s: string): string;
 function HtmlEscape(const s: string): string;
 function HtmlUnescape(const s: string): string;
-function Path_TitleCase(const s: string): string;
-function PostDataToJSON(const s: string): string;
-function RemoveHeaderFromResponse(const r: string): string;
 function StripHTML(const s: string): string;
 function StripPHPCode(const s: string): string;
+
+// HTTP functions
+function CrackHTTPHost(const host:string): THTTPHostParts;
+function CrackHTTPRequest(const r:string): THTTPRequestParts;
+function ExtractHTTPRequestPath(const r: string): string;
+function ExtractHTTPRequestPostData(const r: string): string;
+function ExtractHTTPResponseHeader(const r: string): string;
+function ExtractHTTPResponseStatusCode(const r: string): integer;
+function GetField(const Field, ReqStr: string): string;
+function PostDataToJSON(const s: string): string;
+function RemoveHeaderFromResponse(const r: string): string;
+
+// URL functions
+function CrackURL(const url: string): TURLParts;
+function ExtractUrlFileExt(const url: string): string;
+function ExtractUrlFileName(const url: string): string;
+function ExtractUrlHost(const url: string): string;
+function ExtractUrlPath(const url: string;
+  const includeparams: boolean = true): string;
+function ExtractUrlPort(const url: string): integer;
+function GenerateURL(const Host: string; const Port: integer): string;
 function URLDecode(const s: string): string;
 function URLEncode(const s: string; plus: boolean = false;
   const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
   ' ']): string;
 function URLEncodeFull(const s: string): string;
+function URLPathTitleCase(const s: string): string;
 
 implementation
 
@@ -73,16 +100,34 @@ begin
     ((cl and $0000FF) shl 16)]);
 end;
 
-// TitleCase for URL paths
-function Path_TitleCase(const s: string): string;
-var
-  i: integer;
+// Expects Host[:Port] and will return its parts
+// Example usage:
+// CrackHost('127.0.0.1').port returns 80
+// CrackHost('127.0.0.1:8080').port returns 8080
+// CrackHost('[2001:4860:0:2001::68]:8080').port returns 8080
+function CrackHTTPHost(const host:string): THTTPHostParts;
+var url:string;
 begin
-  result := s;
-  for i := 1 to length(result) - 1 do
-    if (result[i] in (['~', '/'] - ['.', '-', 'A' .. 'Z', 'a' .. 'z'])) then
-      if result[i + 1] in ['a' .. 'z'] then
-        result[i + 1] := Char(ord(result[i + 1]) and not $20);
+  url:='http://' + Host + '/';
+  result.name := ExtractUrlHost(url);
+  result.port := ExtractUrlPort(url);
+end;
+
+function CrackHTTPRequest(const r:string): THTTPRequestParts;
+begin
+  result.Method := before(r, ' ');
+  result.Path := ExtractHTTPRequestPath(r);
+  result.Data:= ExtractHTTPRequestPostData(r);
+end;
+
+function CrackURL(const url: string): TURLParts;
+begin
+  result.Fileext := ExtractUrlFileExt(url);
+  result.Filename := ExtractUrlFileName(url);
+  result.Host := ExtractUrlHost(url);
+  result.Path := ExtractUrlPath(url);
+  result.Port := ExtractUrlPort(url);
+  result.Protocol := before(url, ':');
 end;
 
 function PostDataToJSON(const s: string): string;
@@ -107,7 +152,7 @@ begin
   d.free;
 end;
 
-function GetStatusCodeFromResponse(const r: string): integer;
+function ExtractHTTPResponseStatusCode(const r: string): integer;
 var
   rlines: tstringlist;
   st: string;
@@ -145,7 +190,7 @@ begin
   end;
 end;
 
-function GetHeaderFromResponse(const r: string): string;
+function ExtractHTTPResponseHeader(const r: string): string;
 var
   i: integer;
   collected: boolean;
@@ -163,17 +208,18 @@ begin
   end;
 end;
 
-function HostPort2URL(const host: string; const port: integer): string;
+// Generates an URL from a hostname
+function GenerateURL(const Host: string; const Port: integer): string;
 var
   proto, sport: string;
 begin
-  if port = 443 then
+  if Port = 443 then
     proto := 'https://'
   else
     proto := 'http://';
-  if (port <> 80) and (port <> 443) then
-    sport := ':' + inttostr(port);
-  result := proto + host + sport;
+  if (Port <> 80) and (Port <> 443) then
+    sport := ':' + inttostr(Port);
+  result := proto + Host + sport;
 end;
 
 function StripHTML(const s: string): string;
@@ -243,8 +289,7 @@ begin
 end;
 
 // Returns the value of field from a request/response header
-function GetField(const Field, ReqStr:
-{$IFDEF UNICODE}string{$ELSE}ansistring{$ENDIF}): ansistring;
+function GetField(const Field, ReqStr: string): string;
 var
   slp: TStringLoop;
   afield: string;
@@ -295,7 +340,7 @@ begin
   result := extractfileext(result);
 end;
 
-function GetHostFromURL(const url: string): string;
+function ExtractUrlHost(const url: string): string;
 begin
   result := after(url, '://');
   result := before(result, '/');
@@ -312,31 +357,27 @@ begin
   end;
 end;
 
-function GetPortFromURL(const url: string): string;
+function ExtractUrlPort(const url: string): integer;
 var
   temp: string;
 begin
-  result := '80'; // default
+  result := 80; // default
   if beginswith(lowercase(url), 'https://') then
-    result := '443';
+    result := 443;
   temp := after(url, '://');
   temp := before(temp, '/');
   if pos(':', temp) <> 0 then
   begin // port provided via format [proto]://[host]:[port]/
-    if beginswith(temp, '[') then
-    begin // ipv6 format
-      temp := after(temp, ']:');
-    end
-    else
-    begin // ipv4 format
+    if beginswith(temp, '[') then // ipv6 format
+      temp := after(temp, ']:')
+    else // ipv4 format
       temp := after(temp, ':');
-    end;
     if isinteger(temp) then
-      result := temp;
+      result := StrToInt(temp);
   end;
 end;
 
-function GetPathFromURL(const url: string;
+function ExtractUrlPath(const url: string;
   const includeparams: boolean = true): string;
 begin
   result := after(url, '://');
@@ -348,7 +389,7 @@ begin
   end;
 end;
 
-function GetPostDataFromRequest(const r: string): string;
+function ExtractHTTPRequestPostData(const r: string): string;
 var
   slp: TStringLoop;
   foundempty, postbegin: boolean;
@@ -380,16 +421,6 @@ begin
   slp.free;
 end;
 
-function GetDomainFromHost(const host: string): string;
-begin
-  result := GetHostFromURL('http://' + host + '/');
-end;
-
-function GetPortFromHost(const host: string): string;
-begin
-  result := GetPortFromURL('http://' + host + '/');
-end;
-
 function HtmlEntityDecode(const s: string): string;
 begin
   result := replacestr(s, '&lt;', '<');
@@ -398,7 +429,7 @@ begin
   result := replacestr(result, '&amp;', '&');
 end;
 
-function GetPathFromRequest(const r: string): string;
+function ExtractHTTPRequestPath(const r: string): string;
 var
   sl: tstringlist;
 begin
@@ -470,6 +501,18 @@ end;
 function URLEncodeFull(const s: string): string;
 begin
   result := URLEncode(s, false, []);
+end;
+
+// TitleCase function adapted to work with URL paths
+function URLPathTitleCase(const s: string): string;
+var
+  i: integer;
+begin
+  result := s;
+  for i := 1 to length(result) - 1 do
+    if (result[i] in (['~', '/'] - ['.', '-', 'A' .. 'Z', 'a' .. 'z'])) then
+      if result[i + 1] in ['a' .. 'z'] then
+        result[i + 1] := Char(ord(result[i + 1]) and not $20);
 end;
 
 // ------------------------------------------------------------------------//
