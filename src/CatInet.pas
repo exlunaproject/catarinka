@@ -133,7 +133,7 @@ begin
   if HostEnt = nil then
     Exit;
 
-  Result := HostEnt^.h_name;
+  Result := string(HostEnt^.h_name);
   WSACleanup;
 end;
 
@@ -154,7 +154,7 @@ begin
   if PHostEntry <> nil then
   begin
     InAddr := Pointer(PHostEntry^.h_addr_list^);
-    NameToIPAddr := inet_ntoa(InAddr^);
+    NameToIPAddr := string(inet_ntoa(InAddr^));
   end
   else
     NameToIPAddr := emptystr;

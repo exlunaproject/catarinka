@@ -200,7 +200,7 @@ begin
           if EnumProcessModules(PH, @hMod, sizeof(hMod), dwsz) then
           begin
             GetModuleFileNameExA(PH, hMod, PIDName, sizeof(PIDName));
-            ProcList.Add(ExtractFileName(PIDName) + cProcSep +
+            ProcList.Add(ExtractFileName(string(PIDName)) + cProcSep +
               IntToStr(PIDList[i]));
             CloseHandle(PH);
           end;
