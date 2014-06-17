@@ -128,7 +128,7 @@ begin
   Result := EmptyStr;
   if WSAStartup(MakeWord(1, 1), WSAData) <> 0 then
     Exit;
-  Addr := inet_addr({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(IP));
+  Addr := inet_addr({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(IP)));
   HostEnt := gethostbyaddr(@Addr, 4, PF_INET);
   if HostEnt = nil then
     Exit;
@@ -140,24 +140,24 @@ end;
 function IsValidIP(const IP: string): Boolean;
 begin
   Result := ((IP <> emptystr) and
-    (inet_addr({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(IP)) <>
-    INADDR_NONE));
+    (inet_addr({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(IP))) <>
+    integer(INADDR_NONE)));
 end;
 
 function NameToIPAddr(const name: string): string;
 var
-  PHostEntry: PHostEnt;
-  InAddr: PInAddr;
+  p: PHostEnt;
+  a: TInAddr;
+  WSAData: TWSAData;
 begin
-  PHostEntry := gethostbyname
-    ({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(name));
-  if PHostEntry <> nil then
+  Result := '0.0.0.0';
+  WSAStartup($101, WSAData);
+  p := GetHostByName({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(AnsiString(name)));
+  if Assigned(p) then
   begin
-    InAddr := Pointer(PHostEntry^.h_addr_list^);
-    NameToIPAddr := string(inet_ntoa(InAddr^));
-  end
-  else
-    NameToIPAddr := emptystr;
+    A := PInAddr(p^.h_Addr_List^)^;
+    Result := string(inet_ntoa(A));
+  end;
 end;
 
 // By Rodrigo Ruz (MIT license)

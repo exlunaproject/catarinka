@@ -55,7 +55,6 @@ type
     property Text: string read GetText write SetText;
     property TextUnquoted:string read GetTextUnquoted; // JSON with UnquotedKeys
     property Val[const Name: string]: Variant read GetVal write SetVal; default;
-  published
   end;
 
 function CatVariant(Text, ValName: string): Variant;
