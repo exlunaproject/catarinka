@@ -63,7 +63,6 @@ type
       write SetValue; default;
     property Version: string read GetVersion;
     property sObject: ISuperObject read fObject;
-  published
   end;
 
 implementation

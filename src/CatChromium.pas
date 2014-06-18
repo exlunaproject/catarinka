@@ -183,7 +183,7 @@ type
     procedure StopLoadBlank;
     procedure WMCopyData(var message: TMessage);
   public
-    constructor Create(AOwner: TComponent);
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function EvalJavaScript(const Script: string): variant;
     function GetURL: string;
@@ -268,7 +268,6 @@ type
     fr: ISuperObject;
     fCriticalSection: TCriticalSection;
     fLogged: Boolean;
-    fResponseText: string;
     fResponseStream: TMemoryStream;
     function CEF_GetPostData(request: ICefRequest): string;
     function CEF_GetSentHeader(request: ICefRequest;
@@ -612,7 +611,7 @@ begin
       end;
     end;
   end;
-  Result := ansi;
+  Result := string(ansi);
 end;
 
 constructor TSpecialCEFReq.Create;
@@ -733,21 +732,19 @@ end;
 function TSandcatV8Extension.Execute(const name: ustring;
   const obj: ICefv8Value; const arguments: TCefv8ValueArray;
   var retval: ICefv8Value; var exception: ustring): Boolean;
-var
-  printstr: string;
   procedure LogRequest(Details, rid, Method, url, rcvdheader, Response: string);
   var
-    pkt: tjinilist;
+    j: tjinilist;
   begin
-    pkt := tjinilist.Create;
-    pkt.values['ReqID'] := rid;
-    pkt.values['Details'] := Details;
-    pkt.values['ResponseHeaders'] := rcvdheader;
-    pkt.values['Method'] := Method;
-    pkt.values['URL'] := url;
-    pkt.values['ResponseFilename'] := SaveResponseToFile(Response);
-    SendCDMessage(fV8MsgHandle, CRM_XHR_LOG, pkt.text);
-    pkt.free;
+    j := tjinilist.Create;
+    j.values['ReqID'] := rid;
+    j.values['Details'] := Details;
+    j.values['ResponseHeaders'] := rcvdheader;
+    j.values['Method'] := Method;
+    j.values['URL'] := url;
+    j.values['ResponseFilename'] := SaveResponseToFile(Response);
+    SendCDMessage(fV8MsgHandle, CRM_XHR_LOG, j.text);
+    j.free;
   end;
 
 begin
@@ -1345,7 +1342,7 @@ begin
     begin
       if canclear then
         model.clear;
-      canclear := false;
+      //canclear := false;
       if addsep then
         model.AddSeparator;
       fn := extracturlfilename(params.SourceUrl);
@@ -1606,7 +1603,7 @@ begin
   pData := PCopyDataStruct(message.LParam);
   if (pData = nil) then
     exit;
-  str := StrPas(PAnsiChar(pData^.lpData));
+  str := string(StrPas(PAnsiChar(pData^.lpData)));
   msgid := pData^.dwData;
   case msgid of
     CRM_LOG_REQUEST_JSON:
@@ -1818,10 +1815,10 @@ var
 var
   reqown: TSpecialCEFReq;
   urlreq: ICefUrlRequest;
-  function CreateField(const str: AnsiString): ICefPostDataElement;
+  function CreateField(const str: String): ICefPostDataElement;
   begin
     Result := TCefPostDataElementRef.New;
-    Result.SetToBytes(Length(str), PAnsiChar(str));
+    Result.SetToBytes(Length(ansistring(str)), PAnsiChar(ansistring(str)));
   end;
 
 begin
@@ -1995,7 +1992,7 @@ begin
       t := TCatChromium(self.Browser);
       self.Browser := nil;
       t.SetSource(str);
-      t := nil;
+      //t := nil;
     end;
   finally
     fCriticalSection.Leave;

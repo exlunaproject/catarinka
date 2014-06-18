@@ -14,7 +14,7 @@ interface
 uses
 {$IF CompilerVersion >= 23} // XE2 or higher
   Winapi.Messages, System.Classes, System.Types, System.SysUtils,
-  Winapi.Windows, Vcl.ActnList,
+  Winapi.Windows, Vcl.ActnList, System.Actions,
 {$ELSE}
   Messages, Classes, Types, SysUtils, Windows, ActnList,
 {$IFEND}

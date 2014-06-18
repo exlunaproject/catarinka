@@ -15,7 +15,6 @@ uses
 {$ELSE}
   SysUtils;
 {$IFEND}
-
 function PointerToStr(const P: Pointer): string;
 function StrToPointer(const s: string): Pointer;
 
@@ -28,11 +27,7 @@ var
 begin
   PP := @P;
   PC := PP;
-{$IFDEF UNICODE}
-  Result := pansichar(PC^);
-{$ELSE}
-  Result := pchar(PC^);
-{$ENDIF}
+  Result := string(pansichar(PC^));
 end;
 
 function StrToPointer(const s: string): Pointer;
@@ -41,10 +36,10 @@ var
   P: Pointer;
   PC: ^Cardinal;
   PP: ^Pointer;
-  tStr: {$IFDEF UNICODE}pansichar{$ELSE}pchar{$ENDIF};
+  tStr: pansichar;
 begin
   GetMem(tStr, 1 + Length(s));
-  StrPCopy(tStr, s);
+  StrPCopy(tStr, ansistring(s));
   c := integer(tStr);
   PC := @c;
   P := PC;

@@ -178,6 +178,7 @@ end;
 
 function AskYN(const question: string): Boolean;
 begin
+  result:= false;
   case Application.MessageBox({$IFDEF UNICODE}pwidechar{$ELSE}pchar{$ENDIF}(question), {$IFDEF UNICODE}pwidechar{$ELSE}pchar{$ENDIF}(Application.Title), mb_YesNo + mb_DefButton1) of
     IDYes:
       Result := true;

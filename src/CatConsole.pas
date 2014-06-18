@@ -57,13 +57,13 @@ type
     procedure ResetFull;
     procedure SetCurrentLine(s: string);
     procedure SetPrompt(s: string);
-    constructor Create(AOwner: TWinControl);
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    // properties
     property Console: TConsole read fConsole;
     property CustomHandler: string read fCustomHandler write SetCustomHandler;
     property LastCommand: string read GetLastCommand;
     property PromptText: string read fPromptText write fPromptText;
-  published
     property OnScriptCommand: TCatConsoleOnScriptCommand read fOnScriptCommand
       write fOnScriptCommand;
   end;
@@ -309,8 +309,6 @@ begin
 end;
 
 procedure TCatConsole.PopupMenuitemClick(Sender: TObject);
-var
-  s: string;
 begin
   case tmenuitem(Sender).Tag of
     1:
@@ -366,7 +364,7 @@ begin
   WriteVersion;
 end;
 
-constructor TCatConsole.Create(AOwner: TWinControl);
+constructor TCatConsole.Create(AOwner: TComponent);
 var
   mi: tmenuitem;
 begin

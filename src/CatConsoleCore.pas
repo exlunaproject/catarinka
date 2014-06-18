@@ -47,7 +47,8 @@ of this file under either the MPL or the GPL.
 
 interface
 
-uses Windows, Classes, StdCtrls, Controls, Graphics, Messages, Math, ClipBrd;
+uses Windows, Classes, StdCtrls, Controls, Graphics, Messages, Math, ClipBrd,
+  Types;
 
 const
   // Constants defining the default look of the console
@@ -127,8 +128,8 @@ type
     fLines: TConsoleLines;
     fCaretOffset: TPoint;
     fPaintLock: Integer;
-    fScrollBars: TScrollStyle;
-    fMouseWheelAccumulator: integer;
+    //fScrollBars: TScrollStyle;
+    //fMouseWheelAccumulator: integer;
     fInsertMode: boolean;
     fOverwriteCaret: TConsoleCaretType;
     fInsertCaret: TConsoleCaretType;
@@ -149,7 +150,7 @@ type
     function GetFont: TFont;
     procedure SetCaretX(Value: Integer);
     procedure SetFont(const Value: TFont);
-    procedure SetScrollBars(const Value: TScrollStyle);
+    //procedure SetScrollBars(const Value: TScrollStyle);
     procedure SizeOrFontChanged(bFont: boolean);
     procedure UpdateScrollBars;
     function CaretXYPix: TPoint;
@@ -461,12 +462,11 @@ end;
 // and makes a physical caret position out of it (based on first visible line)
 function TCustomConsole.LogicalToPhysicalPos(p: TPoint): TPoint;
 var s: string;
-    i, L: integer;
+    i: integer;
     x: integer;
 begin
   if p.Y - 1 < fLines.Count then begin
     s := fLines.WrappedLines[p.Y - 1];
-    l := Length(s);
     x := 0;
     for i := 1 to p.x - 1 do begin
         inc(x);
@@ -774,10 +774,10 @@ begin
   Canvas.Font.Assign(Value);
 end;
 
-procedure TCustomConsole.SetScrollBars(const Value: TScrollStyle);
+{procedure TCustomConsole.SetScrollBars(const Value: TScrollStyle);
 begin
-  { TODO : add scrollbar support }
-end;
+  // TODO : add scrollbar support
+end; }
 
 procedure TCustomConsole.ShowCaret;
 begin

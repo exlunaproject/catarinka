@@ -52,7 +52,6 @@ type
     property OptionList: TStringList read fOptionList;
     property Values[const CID: string]: Variant read FGetValue
       write SetValue; default;
-  published
   end;
 
 implementation

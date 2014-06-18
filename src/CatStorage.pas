@@ -42,7 +42,6 @@ type
     destructor Destroy; override;
     // properties
     property Filename: string read fFilename write fFilename;
-  published
   end;
 
 implementation
