@@ -80,7 +80,7 @@ procedure SplitString(const s: string; separator: Char;
 procedure StripBlankLines(const sl: TStringList);
 
 {$IF CompilerVersion < 20} // Before D2009
-function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
+function CharInSet(c: Char; CharSet: TSysCharSet): Boolean;
 {$IFEND}
 
 const
@@ -88,11 +88,14 @@ const
 
 implementation
 
-{$IF CompilerVersion < 20} // Before D2009
-function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
+{$IF CompilerVersion < 20}
+// Before D2009
+function CharInSet(c: Char; CharSet: TSysCharSet): Boolean;
 begin
- if C in CharSet then
-  result:=true else result:=false;
+  if c in CharSet then
+    result := true
+  else
+    result := false;
 end;
 {$IFEND}
 
@@ -137,11 +140,7 @@ var
   tmpstr: string;
 begin
   tmpstr := s;
-{$IFDEF UNICODE}
   SetLength(tmpstr, StrLen(PAnsiChar(AnsiString(prefix))));
-{$ELSE}
-  SetLength(tmpstr, StrLen(PChar(prefix)));
-{$ENDIF}
   result := AnsiCompareText(tmpstr, prefix) = 0;
 end;
 
@@ -228,7 +227,7 @@ begin
   result := emptystr;
   for i := 1 to length(s) do
   begin
-    if (charinset(s[i],['0' .. '9', 'A' .. 'Z', 'a' .. 'z', '_'])) then
+    if (CharInSet(s[i], ['0' .. '9', 'A' .. 'Z', 'a' .. 'z', '_'])) then
       result := result + Copy(s, i, 1);
   end;
 end;
@@ -269,7 +268,8 @@ var
   v, c: Integer;
 begin
   Val(s, v, c);
-  if v = 0 then begin // avoid compiler warning
+  if v = 0 then
+  begin // avoid compiler warning
   end;
   result := c = 0;
 end;
@@ -281,7 +281,7 @@ var
 begin
   result := true;
   for i := 1 to length(s) do
-    if not(charinset(s[i],['0' .. '9', 'A' .. 'F', 'a' .. 'f'])) then
+    if not(CharInSet(s[i], ['0' .. '9', 'A' .. 'F', 'a' .. 'f'])) then
     begin
       result := false;
       Break;
@@ -371,7 +371,7 @@ begin
   SetLength(result, length(s));
   l := 0;
   for i := 1 to length(s) do
-    if not(charinset(s[i],['0' .. '9'])) then
+    if not(CharInSet(s[i], ['0' .. '9'])) then
     begin
       inc(l);
       result[l] := s[i];
@@ -467,7 +467,7 @@ begin
   SetLength(result, length(s));
   for i := 1 to length(s) do
   begin
-    if not(charinset(s[i],badchars)) then
+    if not(CharInSet(s[i], badchars)) then
     begin
       inc(P);
       result[P] := s[i];
@@ -494,7 +494,7 @@ begin
   tmpstr := emptystr;
   for i := 1 to length(s) do
   begin
-    if (charinset(s[i],['0' .. '9', 'A' .. 'Z', 'a' .. 'z'])) then
+    if (CharInSet(s[i], ['0' .. '9', 'A' .. 'Z', 'a' .. 'z'])) then
       tmpstr := tmpstr + Copy(s, i, 1);
   end;
   result := tmpstr;
@@ -609,13 +609,13 @@ end;
 procedure GetTextBetweenTags(const s, tag1, tag2: string; const list: TStrings;
   const includetags: Boolean = false);
 var
-  pScan, pEnd, pTag1, pTag2: {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF};
+  pScan, pEnd, pTag1, pTag2: PAnsiChar;
   foundText, searchtext: string;
 begin
   searchtext := Uppercase(s);
-  pTag1 := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(Uppercase(tag1)));
-  pTag2 := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(Uppercase(tag2)));
-  pScan := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(searchtext));
+  pTag1 := PAnsiChar(AnsiString(Uppercase(tag1)));
+  pTag2 := PAnsiChar(AnsiString(Uppercase(tag2)));
+  pScan := PAnsiChar(AnsiString(searchtext));
   repeat
     pScan := StrPos(pScan, pTag1);
     if pScan <> nil then
@@ -624,9 +624,8 @@ begin
       pEnd := StrPos(pScan, pTag2);
       if pEnd <> nil then
       begin
-        SetString(foundText,
-{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(s)) + (pScan -
-{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(searchtext))), pEnd - pScan);
+        SetString(foundText, PAnsiChar(AnsiString(s)) +
+          (pScan - PAnsiChar(AnsiString(searchtext))), pEnd - pScan);
         if includetags then
           list.Add(Uppercase(tag1) + foundText + Uppercase(tag2))
         else
@@ -699,12 +698,9 @@ var
   pSource: Array [0 .. 255] of {$IFDEF UNICODE}AnsiChar{$ELSE}Char{$ENDIF};
   pPattern: Array [0 .. 255] of {$IFDEF UNICODE}AnsiChar{$ELSE}Char{$ENDIF};
 
-  function MatchPattern(element, pattern:
-{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}): Boolean;
+  function MatchPattern(element, pattern: PAnsiChar): Boolean;
 
-    function IsPatternWild(pattern:
-{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}): Boolean;
-    // var t: Integer;
+    function IsPatternWild(pattern: PAnsiChar): Boolean;
     begin
       result := StrScan(pattern, '*') <> nil;
       if not result then
@@ -738,8 +734,8 @@ var
   end;
 
 begin
-  StrPCopy(pSource, source);
-  StrPCopy(pPattern, pattern);
+  StrCopy(pSource, PAnsiChar(AnsiString(source)));
+  StrCopy(pPattern, PAnsiChar(AnsiString(pattern)));
   result := MatchPattern(pSource, pPattern);
 end;
 
