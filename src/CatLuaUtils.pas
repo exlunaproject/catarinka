@@ -191,7 +191,7 @@ var
   ar: plua_Debug; // use plua_debug, not lua_debug!
   VarName: MyPAnsiChar;
   VarValue: Variant;
-  current, stack: integer;
+  current: integer;
   found: boolean;
   Name: string;
 begin
@@ -213,6 +213,8 @@ begin
     if VarName = Name then
     begin
       found := true;
+      if found = true then begin // hides H2077 compiler warning
+      end;
       // writeln('Found var:'+varname);
       try
         VarValue := pLua_GetLuaVar(L, -1); // plua_tovariant(L, -1);
@@ -264,6 +266,8 @@ begin
     if VarName = Name then
     begin
       found := true;
+      if found = true then begin // hides H2077 compiler warning
+      end;
       // writeln('Found var:'+varname+' changing to:'+newvalue);
       // lua_pop(L,1);
       try

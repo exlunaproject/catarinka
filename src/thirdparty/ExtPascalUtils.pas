@@ -1,8 +1,13 @@
 {
-Unit for complementary functions
-Author: Wanderlan Santos dos Anjos (wanderlan.anjos@gmail.com)
-Date: jul-2008
-License: BSD<extlink http://www.opensource.org/licenses/bsd-license.php>BSD</extlink>
+  Unit for complementary functions
+  Copyright (c) 2008 Wanderlan Santos dos Anjos (wanderlan.anjos@gmail.com)
+  Modifications copyright (c) 2014 Felipe Daragon
+
+  License: BSD (http://www.opensource.org/licenses/bsd-license.php)
+
+  Changes:
+  * FD: Added CharInSet so it could compile without any warnings (needed for
+  D2009 and up).
 }
 unit ExtPascalUtils;
 
@@ -153,6 +158,14 @@ implementation
 
 uses
   StrUtils, SysUtils, Math, DateUtils;
+
+{$IF CompilerVersion < 20} // Before D2009
+function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
+begin
+ if C in CharSet then
+  result:=true else result:=false;
+end;
+{$IFEND}
 
 {$IF not Defined(FPC) and (RTLVersion <= 17)}
 function TStringList.GetDelimitedText: string;
@@ -332,7 +345,7 @@ begin
   end
   else begin
     I := pos('%', Result);
-    if (pos(';', Result) = 0) and (I <> 0) and ((length(Result) > 1) and (I < length(Result)) and (Result[I+1] in ['0'..'9'])) then begin // Has param place holder, ";" disable place holder
+    if (pos(';', Result) = 0) and (I <> 0) and ((length(Result) > 1) and (I < length(Result)) and (CharInSet(Result[I+1],['0'..'9']))) then begin // Has param place holder, ";" disable place holder
       J := FirstDelimiter(' "''[]{}><=!*-+/,', Result, I+2);
       if J = 0 then J := length(Result)+1;
       if J <> (length(Result)+1) then begin
@@ -345,7 +358,7 @@ begin
       end;
     end
     else
-      if (I = 1) and (length(Result) > 1) and (Result[2] in ['a'..'z', 'A'..'Z']) then
+      if (I = 1) and (length(Result) > 1) and (CharInSet(Result[2],['a'..'z', 'A'..'Z'])) then
         Result := copy(Result, 2, length(Result))
       else
         Result := '"' + Result + '"'
@@ -372,7 +385,7 @@ begin
   Result := '';
   JS := GetEnumName(TypeInfo, Value);
   for I := 1 to length(JS) do
-    if JS[I] in ['A'..'Z'] then begin
+    if CharInSet(JS[I],['A'..'Z']) then begin
       Result := LowerCase(copy(JS, I, 100));
       if Result = 'perc' then Result := '%';
       exit
@@ -408,7 +421,7 @@ var
 begin
   Result := false;
   for I := 1 to length(S) do
-    if S[I] in ['a'..'z'] then exit;
+    if CharInSet(S[I],['a'..'z']) then exit;
   Result := true;
 end;
 
@@ -557,7 +570,7 @@ begin
           repeat
             inc(I);
             // find multiple statement block end
-            if (length(Res) >= I) and (Res[I] in ['{', '}', ';']) then backward := true;
+            if (length(Res) >= I) and (CharInset(Res[I], ['{', '}', ';'])) then backward := true;
             if inNew and (length(Res) >= I) and (Res[I] = ']') then backward := true;
           until (I > length(Res)) or (Res[I] = ',') or backward;
           if not backward then // add new line
@@ -706,7 +719,7 @@ begin
   for I := 1 to length(Rex) do
     case Rex[I] of
       '\' :
-        if CountAll and (I < length(Rex)) and (Rex[I+1] in ['d', 'D', 'l', 'f', 'n', 'r', 's', 'S', 't', 'w', 'W']) then inc(Slash);
+        if CountAll and (I < length(Rex)) and (CharInSet(Rex[I+1],['d', 'D', 'l', 'f', 'n', 'r', 's', 'S', 't', 'w', 'W'])) then inc(Slash);
       ',', '{' : begin
         N := '';
         if Slash > 1 then begin

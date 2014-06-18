@@ -67,6 +67,8 @@ begin
       13:
         begin
           read(f, c);
+          if ord(c) = 13 then begin // hides H2077 compiler warning
+          end;
           Break;
         end;
     else

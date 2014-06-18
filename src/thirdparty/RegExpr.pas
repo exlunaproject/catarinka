@@ -5,6 +5,11 @@ unit RegExpr;
      Delphi Regular Expressions
 
  Copyright (c) 1999-2004 Andrey V. Sorokin, St.Petersburg, Russia
+ Modifications (c) 2014 Felipe Daragon
+
+ Changes:
+ * Added CharInSet so it could compile without any warnings (needed for D2009 and
+ up)
 
  You may use this software in any kind of development,
  including comercial, redistribute, and modify it freely,
@@ -650,6 +655,14 @@ const
  {$ELSE}
  XIgnoredChars = [' ', #9, #$d, #$a];
  {$ENDIF}
+
+{$IF CompilerVersion < 20} // FD, before D2009
+function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
+begin
+ if C in CharSet then
+  result:=true else result:=false;
+end;
+{$IFEND}
 
 {=============================================================}
 {=================== WideString functions ====================}
@@ -2295,8 +2308,8 @@ function TRegExpr.ParseAtom (var flagp : integer) : PRegExprChar;
              if RangeEnd = EscChar then begin
                {$IFDEF UniCode} //###0.935
                if (ord ((regparse + 1)^) < 256)
-                  and (char ((regparse + 1)^)
-                        in ['d', 'D', 's', 'S', 'w', 'W']) then begin
+                  and (CharInSet(char ((regparse + 1)^),
+                        ['d', 'D', 's', 'S', 'w', 'W'])) then begin
                {$ELSE}
                if (regparse + 1)^ in ['d', 'D', 's', 'S', 'w', 'W'] then begin
                {$ENDIF}
@@ -3678,7 +3691,7 @@ function TRegExpr.Substitute (const ATemplate : RegExprString) : RegExprString;
     else
      while (p < TemplateEnd) and
       {$IFDEF UniCode} //###0.935
-      (ord (p^) < 256) and (char (p^) in Digits)
+      (ord (p^) < 256) and (CharInSet(char (p^),Digits))
       {$ELSE}
       (p^ in Digits)
       {$ENDIF}
