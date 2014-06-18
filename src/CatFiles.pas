@@ -214,7 +214,7 @@ var
 begin
   if Result = nil then
     exit;
-  tmpPath := IncludeTrailingBackSlash(ExtractFilePath(dir));
+  tmpPath := IncludeTrailingPathDelimiter(ExtractFilePath(dir));
   rc := FindFirst(dir, faAnyFile, sr);
   while rc = 0 do
   begin
@@ -241,7 +241,7 @@ begin
       exit;
     h := FindFirstFile({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(filename), f);
     if h = INVALID_HANDLE_VALUE then
-      RaiseLastWin32Error;
+      RaiseLastOSError;
     try
       Result := f.nFileSizeHigh shl 32 + f.nFileSizeLow;
     finally

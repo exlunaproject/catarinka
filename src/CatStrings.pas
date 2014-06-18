@@ -79,10 +79,22 @@ procedure SplitString(const s: string; separator: Char;
   substrings: TStringList);
 procedure StripBlankLines(const sl: TStringList);
 
+{$IF CompilerVersion < 20} // Before D2009
+function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
+{$IFEND}
+
 const
   CRLF = #13 + #10;
 
 implementation
+
+{$IF CompilerVersion < 20} // Before D2009
+function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
+begin
+ if C in CharSet then
+  result:=true else result:=false;
+end;
+{$IFEND}
 
 function After(const s, substr: string): string;
 var
@@ -216,7 +228,7 @@ begin
   result := emptystr;
   for i := 1 to length(s) do
   begin
-    if (s[i] in ['0' .. '9', 'A' .. 'Z', 'a' .. 'z', '_']) then
+    if (charinset(s[i],['0' .. '9', 'A' .. 'Z', 'a' .. 'z', '_'])) then
       result := result + Copy(s, i, 1);
   end;
 end;
@@ -257,6 +269,8 @@ var
   v, c: Integer;
 begin
   Val(s, v, c);
+  if v = 0 then begin // avoid compiler warning
+  end;
   result := c = 0;
 end;
 
@@ -267,7 +281,7 @@ var
 begin
   result := true;
   for i := 1 to length(s) do
-    if not(s[i] in ['0' .. '9', 'A' .. 'F', 'a' .. 'f']) then
+    if not(charinset(s[i],['0' .. '9', 'A' .. 'F', 'a' .. 'f'])) then
     begin
       result := false;
       Break;
@@ -357,7 +371,7 @@ begin
   SetLength(result, length(s));
   l := 0;
   for i := 1 to length(s) do
-    if not(s[i] in ['0' .. '9']) then
+    if not(charinset(s[i],['0' .. '9'])) then
     begin
       inc(l);
       result[l] := s[i];
@@ -453,7 +467,7 @@ begin
   SetLength(result, length(s));
   for i := 1 to length(s) do
   begin
-    if not(s[i] in badchars) then
+    if not(charinset(s[i],badchars)) then
     begin
       inc(P);
       result[P] := s[i];
@@ -480,7 +494,7 @@ begin
   tmpstr := emptystr;
   for i := 1 to length(s) do
   begin
-    if (s[i] in ['0' .. '9', 'A' .. 'Z', 'a' .. 'z']) then
+    if (charinset(s[i],['0' .. '9', 'A' .. 'Z', 'a' .. 'z'])) then
       tmpstr := tmpstr + Copy(s, i, 1);
   end;
   result := tmpstr;
@@ -599,9 +613,9 @@ var
   foundText, searchtext: string;
 begin
   searchtext := Uppercase(s);
-  pTag1 := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(Uppercase(tag1));
-  pTag2 := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(Uppercase(tag2));
-  pScan := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(searchtext);
+  pTag1 := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(Uppercase(tag1)));
+  pTag2 := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(Uppercase(tag2)));
+  pScan := {$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(searchtext));
   repeat
     pScan := StrPos(pScan, pTag1);
     if pScan <> nil then
@@ -611,8 +625,8 @@ begin
       if pEnd <> nil then
       begin
         SetString(foundText,
-{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(s) + (pScan -
-{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(searchtext)), pEnd - pScan);
+{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(s)) + (pScan -
+{$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(searchtext))), pEnd - pScan);
         if includetags then
           list.Add(Uppercase(tag1) + foundText + Uppercase(tag2))
         else

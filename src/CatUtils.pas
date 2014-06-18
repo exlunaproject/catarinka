@@ -24,9 +24,9 @@ procedure CatDelay(const ms: Integer);
 var
   c, te: Integer;
 begin
-  c := GetTickCount;
+  c := integer(GetTickCount);
   repeat
-    te := GetTickCount - c;
+    te := integer(GetTickCount) - c;
     if te < 0 then
       te := te + MaxInt;
 

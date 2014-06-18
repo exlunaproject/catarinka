@@ -72,7 +72,7 @@ var
 begin
   Result := True;
   for i := 1 to Length(S) do
-    if not(S[i] in cJSONChars) then
+    if not(CharInSet(S[i], cJSONChars)) then
     begin
       Result := False;
       Break;

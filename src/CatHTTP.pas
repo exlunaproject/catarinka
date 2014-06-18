@@ -510,7 +510,7 @@ begin
       sp := '%20';
     for i := 1 to length(s) do
     begin
-      if not(s[i] in preserve) then
+      if not(charinset(s[i], preserve)) then
         result := result + '%' + IntToHex(ord(s[i]), 2)
       else if (s[i] = ' ') then
         result := result + sp
@@ -532,8 +532,8 @@ var
 begin
   result := s;
   for i := 1 to length(result) - 1 do
-    if (result[i] in (['~', '/'] - ['.', '-', 'A' .. 'Z', 'a' .. 'z'])) then
-      if result[i + 1] in ['a' .. 'z'] then
+    if charinset(result[i],(['~', '/'] - ['.', '-', 'A' .. 'Z', 'a' .. 'z'])) then
+      if charinset(result[i + 1],['a' .. 'z']) then
         result[i + 1] := Char(ord(result[i + 1]) and not $20);
 end;
 

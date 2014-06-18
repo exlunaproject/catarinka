@@ -149,6 +149,14 @@ type
 
 implementation
 
+{$IF CompilerVersion < 20} // Before D2009
+function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
+begin
+ if C in CharSet then
+  result:=true else result:=false;
+end;
+{$IFEND}
+
 function GetLineByPos(const s: string; const Position: Integer): Integer;
 var
   i, ln: Integer;
@@ -251,7 +259,7 @@ begin
   fParams.Clear;
   // getting parameters
   while not (i>len) do begin
-    if (text[i] in ['''', '"']) then begin
+    if charinset(text[i],['''', '"']) then begin
       if (text[i]='"')
        then begin if not q1 then q2:= not q2 end
        else begin if not q2 then q1:= not q1 end;

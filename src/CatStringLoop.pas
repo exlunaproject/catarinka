@@ -61,7 +61,6 @@ type
     property CurrentUpper: string read GetCurrentUpper;
     property IsCSV: boolean read fIsCSV write fIsCSV;
     property List: TStringList read FList;
-  published
   end;
 
 implementation
