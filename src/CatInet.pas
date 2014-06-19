@@ -128,7 +128,7 @@ begin
   Result := EmptyStr;
   if WSAStartup(MakeWord(1, 1), WSAData) <> 0 then
     Exit;
-  Addr := inet_addr({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(IP)));
+  Addr := inet_addr(PAnsiChar(ansistring(IP)));
   HostEnt := gethostbyaddr(@Addr, 4, PF_INET);
   if HostEnt = nil then
     Exit;
@@ -140,7 +140,7 @@ end;
 function IsValidIP(const IP: string): Boolean;
 begin
   Result := ((IP <> emptystr) and
-    (inet_addr({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(IP))) <>
+    (inet_addr(PAnsiChar(ansistring(IP))) <>
     integer(INADDR_NONE)));
 end;
 
@@ -152,7 +152,7 @@ var
 begin
   Result := '0.0.0.0';
   WSAStartup($101, WSAData);
-  p := GetHostByName({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(AnsiString(name)));
+  p := GetHostByName(PAnsiChar(AnsiString(name)));
   if Assigned(p) then
   begin
     A := PInAddr(p^.h_Addr_List^)^;

@@ -40,7 +40,7 @@ begin
     BinaryStream.Size := Length(HexStr) div 2;
     if BinaryStream.Size > 0 then
     begin
-      HexToBin({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(HexStr)), BinaryStream.Memory,
+      HexToBin(PAnsiChar(ansistring(HexStr)), BinaryStream.Memory,
         BinaryStream.Size);
       if gunzip then
         GUnZipStream(BinaryStream);
@@ -63,7 +63,7 @@ begin
     BinaryStream.Size := Length(HexStr) div 2;
     if BinaryStream.Size > 0 then
     begin
-      HexToBin({$IFDEF UNICODE}PAnsiChar{$ELSE}PChar{$ENDIF}(ansistring(HexStr)), BinaryStream.Memory,
+      HexToBin(PAnsiChar(ansistring(HexStr)), BinaryStream.Memory,
         BinaryStream.Size);
       GUnZipStream(BinaryStream);
       res.LoadFromStream(BinaryStream);

@@ -53,7 +53,7 @@ end;
 // Example: Memo1.Lines.Text := GetResourceAsString('sample_txt', 'text');
 function GetResourceAsString(const ResName, ResType: MyPWideChar): string;
 var
-  rd: {$IFDEF UNICODE}pansichar{$ELSE}PChar{$ENDIF}; // resource data
+  rd: pansichar; // resource data
   sz: longword; // resource size
 begin
   rd := GetResourceAsPointer(ResName, ResType, sz);
