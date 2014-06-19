@@ -246,6 +246,8 @@ type
     property AutoUseInsertMode: boolean read FAutoUseInsertMode write SetAutoUseInsertMode;
     // CharWidth: Returns the width of a single char
     property CharWidth: Integer read GetCharWidth;
+    // CanPaste: Returns True if text from the clipboard can be pasted
+    property CanPaste: boolean read GetCanPaste;
     // CaretX: CaretX stores the caret position in the current line
     property CaretX: Integer read fCaretX write SetCaretX;
     // Font: Wrapped to Canvas.Font
