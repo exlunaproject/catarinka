@@ -9,14 +9,16 @@ unit CatChromium;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.Classes, Winapi.Windows, Winapi.Messages, Vcl.Controls, Vcl.Graphics,
   Vcl.Forms, System.SysUtils, System.SyncObjs, Vcl.Dialogs, Vcl.Clipbrd,
 {$ELSE}
   Classes, Windows, Messages, Controls, Graphics, Forms, SysUtils, SyncObjs,
   Dialogs, Clipbrd,
-{$IFEND}
+{$ENDIF}
   cefvcl, ceflib, superobject, CatJSON;
 
 type
@@ -1726,7 +1728,7 @@ begin
   ControlStyle := ControlStyle + [csAcceptsControls];
   Color := clWindow;
   fMsgHandle :=
-{$IF CompilerVersion >= 23}System.{$IFEND}Classes.AllocateHWnd(crmMessage);
+{$IFDEF DXE2_OR_UP}System.{$ENDIF}Classes.AllocateHWnd(crmMessage);
   fCriticalSection := TCriticalSection.Create;
   fPreventPopup := true;
   fInterceptRequests := true;
@@ -1958,7 +1960,7 @@ end;
 
 destructor TCatChromium.Destroy;
 begin
-{$IF CompilerVersion >= 23}System.{$IFEND}Classes.DeallocateHWnd(fMsgHandle);
+{$IFDEF DXE2_OR_UP}System.{$ENDIF}Classes.DeallocateHWnd(fMsgHandle);
   fInterceptRequests := false;
   ClearEvents;
   // StopLoadBlank;

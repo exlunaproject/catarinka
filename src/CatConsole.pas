@@ -9,13 +9,15 @@ unit CatConsole;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Vcl.Forms, Vcl.Controls, System.SysUtils, System.Classes, Vcl.Graphics,
   Vcl.Menus, Vcl.Clipbrd, Vcl.Dialogs,
 {$ELSE}
   Forms, Controls, SysUtils, Classes, Graphics, Menus, Clipbrd, Dialogs,
-{$IFEND}
+{$ENDIF}
   CatConsoleCore, CatStringLoop, CatPrefs;
 
 type

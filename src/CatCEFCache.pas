@@ -9,12 +9,14 @@ unit CatCEFCache;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Winapi.Windows, System.Classes, System.SysUtils, Vcl.Dialogs;
 {$ELSE}
   Windows, Classes, SysUtils, Dialogs;
-{$IFEND}
+{$ENDIF}
 
 function ChromeCacheToString(const HTML: string): string;
 function GetChromeCacheResponseHeaders(const HTML: string): string;

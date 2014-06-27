@@ -11,12 +11,14 @@ unit CatRes;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.SysUtils, Winapi.Windows, vcl.imaging.Jpeg, System.Classes;
 {$ELSE}
   SysUtils, Windows, Jpeg, Classes;
-{$IFEND}
+{$ENDIF}
 
 type
   MyPWideChar = {$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF};

@@ -10,12 +10,14 @@ unit CatHTTP;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23}
+{$IFDEF DXE2_OR_UP}
   System.Classes, System.SysUtils, Vcl.Graphics;
 {$ELSE}
   Classes, SysUtils, Graphics;
-{$IFEND}
+{$ENDIF}
 
 type
   TURLParts = record

@@ -11,13 +11,15 @@ unit CatSynEdit;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Winapi.Messages, System.Classes, System.Types, System.SysUtils,
   Winapi.Windows, Vcl.ActnList, System.Actions,
 {$ELSE}
   Messages, Classes, Types, SysUtils, Windows, ActnList,
-{$IFEND}
+{$ENDIF}
   Menus, SynEdit;
   
 {$DEFINE OVMOUSEWHEEL}

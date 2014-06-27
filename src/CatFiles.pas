@@ -12,12 +12,14 @@ unit CatFiles;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Winapi.Windows, System.Classes, System.SysUtils, Winapi.ShellAPI;
 {$ELSE}
   Windows, Classes, SysUtils, ShellAPI;
-{$IFEND}
+{$ENDIF}
 function DeleteFolder(const dir: string): boolean;
 function DirExists(const dir: string): boolean;
 function FileCanBeOpened(const filename: String): boolean;
@@ -247,7 +249,7 @@ begin
     try
       Result := f.nFileSizeHigh shl 32 + f.nFileSizeLow;
     finally
-{$IF CompilerVersion >= 23}Winapi.{$IFEND}Windows.FindClose(h);
+{$IFDEF DXE2_OR_UP}Winapi.{$ENDIF}Windows.FindClose(h);
     end;
   except
   end;

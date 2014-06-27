@@ -9,12 +9,14 @@ unit CatPointer;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.SysUtils;
 {$ELSE}
   SysUtils;
-{$IFEND}
+{$ENDIF}
 function PointerToStr(const P: Pointer): string;
 function StrToPointer(const s: string): Pointer;
 

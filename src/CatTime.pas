@@ -9,12 +9,14 @@ unit CatTime;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.SysUtils, Vcl.Controls;
 {$ELSE}
   SysUtils, Controls;
-{$IFEND}
+{$ENDIF}
 function CalcAge(const StartDate, Date: TDate): integer;
 function DateTimeToUnix(const Date: TDateTime): Longint;
 function DescribeDateDiff(const t, d: string): string;

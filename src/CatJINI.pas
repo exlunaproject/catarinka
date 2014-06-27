@@ -14,12 +14,14 @@ unit CatJINI;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.SysUtils, System.Classes, Winapi.Windows,
 {$ELSE}
   Classes, SysUtils, Windows,
-{$IFEND}
+{$ENDIF}
   Superobject;
 
 type

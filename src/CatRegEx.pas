@@ -11,12 +11,14 @@ unit CatRegex;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.Classes, System.SysUtils;
 {$ELSE}
   Classes, SysUtils;
-{$IFEND}
+{$ENDIF}
 function RegExpFind(const s, re: string): string;
 function RegExpReplace(const s, re, sreplacement: string): string;
 function CatMatch(const substr, s: string): boolean;

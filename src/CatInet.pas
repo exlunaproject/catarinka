@@ -11,13 +11,15 @@ unit CatInet;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Winapi.Windows, Winapi.WinSock, System.SysUtils, System.Win.Registry,
   Winapi.WinInet;
 {$ELSE}
   Windows, WinSock, SysUtils, Registry, WinInet;
-{$IFEND}
+{$ENDIF}
 
 function GetAbsoluteURL(const baseURL, relURL: string): string;
 function GetTinyUrl(const URL: string): string;

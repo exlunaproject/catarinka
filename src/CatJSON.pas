@@ -17,12 +17,14 @@ unit CatJSON;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.Classes, System.SysUtils, System.Variants,
 {$ELSE}
   Classes, SysUtils, Variants,
-{$IFEND}
+{$ENDIF}
   SuperObject;
 
 const

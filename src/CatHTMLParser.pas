@@ -69,12 +69,14 @@ unit CatHTMLParser;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.SysUtils, System.Classes;
 {$ELSE}
   Classes, SysUtils;
-{$IFEND}
+{$ENDIF}
 
 
 type
@@ -149,13 +151,13 @@ type
 
 implementation
 
-{$IF CompilerVersion < 20} // Before D2009
+{$IFDEF CHARINSET_UNAVAILABLE}
 function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
 begin
  if C in CharSet then
   result:=true else result:=false;
 end;
-{$IFEND}
+{$ENDIF}
 
 function GetLineByPos(const s: string; const Position: Integer): Integer;
 var

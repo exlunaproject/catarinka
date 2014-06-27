@@ -10,12 +10,14 @@ unit CatUtils;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Winapi.Windows, Vcl.Forms;
 {$ELSE}
   Windows, Forms;
-{$IFEND}
+{$ENDIF}
 procedure CatDelay(const ms: Integer);
 
 implementation

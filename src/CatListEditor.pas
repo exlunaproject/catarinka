@@ -12,15 +12,17 @@ unit CatListEditor;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls,
   Vcl.StdCtrls, Vcl.ImgList, Vcl.Buttons, Vcl.Menus, System.Types;
 {$ELSE}
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ImgList, Buttons, Menus, Types;
-{$IFEND}
+{$ENDIF}
 
 type
   TListBoxAlignment = (lbBottom, lbLeft ,lbRight, lbTop);    //added all four alignments

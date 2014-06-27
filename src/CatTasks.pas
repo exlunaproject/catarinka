@@ -11,12 +11,14 @@ unit CatTasks;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   Winapi.Windows, Vcl.Forms, System.SysUtils, System.Classes, Winapi.TlHelp32;
 {$ELSE}
   Windows, Forms, SysUtils, Classes, TlHelp32;
-{$IFEND}
+{$ENDIF}
 function KillTask(const ExeFileName: string): Integer;
 function RunTask(const ExeFileName: string; const Wait: boolean = false;
   const WindowState: Integer = SW_SHOW): Cardinal;

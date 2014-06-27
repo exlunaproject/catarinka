@@ -13,12 +13,14 @@ unit CatHighlighters;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.Classes, System.SysUtils, System.TypInfo, Vcl.Graphics,
 {$ELSE}
   Classes, SysUtils, TypInfo, Graphics,
-{$IFEND}
+{$ENDIF}
   SynEditHighlighter,
   SynHighlighterRuby,
   SynHighlighterPerl,

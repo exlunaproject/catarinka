@@ -656,13 +656,19 @@ const
  XIgnoredChars = [' ', #9, #$d, #$a];
  {$ENDIF}
 
-{$IF CompilerVersion < 20} // FD, before D2009
+{$IFNDEF FPC}
+ {$IF CompilerVersion < 20} // Before D2009
+  {$DEFINE CHARINSET_UNAVAILABLE}
+ {$IFEND}
+{$ENDIF}
+
+{$IFDEF CHARINSET_UNAVAILABLE}
 function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
 begin
  if C in CharSet then
   result:=true else result:=false;
 end;
-{$IFEND}
+{$ENDIF}
 
 {=============================================================}
 {=================== WideString functions ====================}

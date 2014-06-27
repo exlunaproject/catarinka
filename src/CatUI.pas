@@ -14,15 +14,17 @@ unit CatUI;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23}
+{$IFDEF DXE2_OR_UP}
   Winapi.Windows, Vcl.Forms, Vcl.Menus, Vcl.ExtCtrls, System.SysUtils,
   System.Classes, Vcl.Controls, Vcl.ComCtrls, Winapi.CommCtrl, Winapi.Messages,
   Winapi.ShlObj;
 {$ELSE}
   Windows, Forms, Menus, ExtCtrls, SysUtils, Classes, Controls, ComCtrls,
   CommCtrl, Messages, ShlObj;
-{$IFEND}
+{$ENDIF}
 function AskYN(const question: string): Boolean;
 function GetWindowState: integer;
 function ForceForegroundWindow(hwnd: THandle): Boolean;

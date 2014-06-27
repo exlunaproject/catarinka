@@ -16,12 +16,14 @@ unit CatStrings;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.Classes, System.SysUtils, System.StrUtils;
 {$ELSE}
   Classes, SysUtils, StrUtils;
-{$IFEND}
+{$ENDIF}
 function After(const s, substr: string): string;
 function ASCIIToInt(const s: string): Integer;
 function Base64Encode(const s: string): string;
@@ -79,16 +81,16 @@ procedure SplitString(const s: string; separator: Char;
   substrings: TStringList);
 procedure StripBlankLines(const sl: TStringList);
 
-{$IF CompilerVersion < 20} // Before D2009
+{$IFDEF CHARINSET_UNAVAILABLE}
 function CharInSet(c: Char; CharSet: TSysCharSet): Boolean;
-{$IFEND}
+{$ENDIF}
 
 const
   CRLF = #13 + #10;
 
 implementation
 
-{$IF CompilerVersion < 20}
+{$IFDEF CHARINSET_UNAVAILABLE}
 // Before D2009
 function CharInSet(c: Char; CharSet: TSysCharSet): Boolean;
 begin
@@ -97,7 +99,7 @@ begin
   else
     result := false;
 end;
-{$IFEND}
+{$ENDIF}
 
 function After(const s, substr: string): string;
 var

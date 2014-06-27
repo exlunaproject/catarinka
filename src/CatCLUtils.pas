@@ -9,12 +9,14 @@ unit CatCLUtils;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.SysUtils;
 {$ELSE}
   SysUtils;
-{$IFEND}
+{$ENDIF}
 function GetCmdLine: string;
 function GetCmdParam(const param: string; const def_value: string = ''): string;
 function GetCmdParamQuoted(const param: string;

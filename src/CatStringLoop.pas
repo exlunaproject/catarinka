@@ -11,12 +11,14 @@ unit CatStringLoop;
 
 interface
 
+{$I Catarinka.inc}
+
 uses
-{$IF CompilerVersion >= 23} // XE2 or higher
+{$IFDEF DXE2_OR_UP}
   System.Classes, System.SysUtils;
 {$ELSE}
   Classes, SysUtils;
-{$IFEND}
+{$ENDIF}
 
 type
   TStringLoop = class

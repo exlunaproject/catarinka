@@ -11,7 +11,14 @@
 }
 unit ExtPascalUtils;
 
-{$IFDEF FPC}{$MACRO ON}{$MODE DELPHI}{$ENDIF}
+{$IFDEF FPC}
+ {$MACRO ON}
+ {$MODE DELPHI}
+{$ELSE}
+ {$IF CompilerVersion < 20} // Before D2009
+  {$DEFINE CHARINSET_UNAVAILABLE}
+ {$IFEND}
+{$ENDIF}
 
 interface
 
@@ -159,13 +166,13 @@ implementation
 uses
   StrUtils, SysUtils, Math, DateUtils;
 
-{$IF CompilerVersion < 20} // Before D2009
+{$IFDEF CHARINSET_UNAVAILABLE} // Before D2009
 function CharInSet(C:Char;CharSet:TSysCharSet):boolean;
 begin
  if C in CharSet then
   result:=true else result:=false;
 end;
-{$IFEND}
+{$ENDIF}
 
 {$IF not Defined(FPC) and (RTLVersion <= 17)}
 function TStringList.GetDelimitedText: string;
