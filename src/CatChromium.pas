@@ -382,7 +382,7 @@ const // Download related
   SCD_CANCELED = 3;
   
 const // Shutdown modes
-  SHTD_NORMAL = 10;
+  SHTD_STANDARD = 10;
   SHTD_FORCED = 11;
   SHTD_MANUAL = 12;
 
@@ -419,7 +419,7 @@ end;
 procedure CatCEFShutdown(mode:integer);
 begin
   case mode of
-    SHTD_NORMAL: ; // do nothing
+    SHTD_STANDARD: ; // do nothing
     SHTD_FORCED: KillProcessbyPID(GetCurrentProcessId);
     SHTD_MANUAL: begin
       ceflib.CefShutDown;
