@@ -380,13 +380,18 @@ const // Download related
   SCD_INPROGRESS = 1;
   SCD_COMPLETE = 2;
   SCD_CANCELED = 3;
+  
+const // Shutdown modes
+  SHTD_NORMAL = 10;
+  SHTD_FORCED = 11;
+  SHTD_MANUAL = 12;
 
 function GetCEFUserAgent: string;
 function GetCEFDefaults(settings: TCatJSON): string;
 function CEFV8ValueToStr(v: ICefv8Value): string;
 function BuildRequest(Method, url: string; PostData: string = '')
   : TCatChromiumRequest;
-procedure CatCEFShutdown(force: Boolean = false);
+procedure CatCEFShutdown(mode:integer);
 procedure SendCDMessage(desthandle, msgid: integer; l: string);
 procedure Send_WriteValue(desthandle: integer; key, value: string);
 
@@ -411,13 +416,15 @@ begin
   Result.Details := emptystr;
 end;
 
-procedure CatCEFShutdown(force: Boolean = false);
+procedure CatCEFShutdown(mode:integer);
 begin
-  if force = true then
-    KillProcessbyPID(GetCurrentProcessId)
-  else begin
-    ceflib.CefShutDown;
-    ExitProcess(0);
+  case mode of
+    SHTD_NORMAL: ; // do nothing
+    SHTD_FORCED: KillProcessbyPID(GetCurrentProcessId);
+    SHTD_MANUAL: begin
+      ceflib.CefShutDown;
+      ExitProcess(0);
+      end;
   end;
 end;
 
@@ -1943,11 +1950,12 @@ begin
   while isLoading do
   begin
     application.ProcessMessages;
-    catdelay(100);
+    catdelay(1000);
   end;
 end;
 
-// With past CEF releases, this would avoid some AV cases when closing a tab
+// Stop loading and load a blank page - helps avoid some AV cases when
+// closing an active tab
 procedure TCatChromium.StopLoadBlank;
 begin
   if isLoading then
@@ -1963,7 +1971,7 @@ begin
 {$IFDEF DXE2_OR_UP}System.{$ENDIF}Classes.DeallocateHWnd(fMsgHandle);
   fInterceptRequests := false;
   ClearEvents;
-  // StopLoadBlank;
+  StopLoadBlank;
   fCrm.free;
   fURLLog.free;
   fResourceList.free;
