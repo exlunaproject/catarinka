@@ -19,7 +19,18 @@ uses
   Classes, Windows, Messages, Controls, Graphics, Forms, SysUtils, SyncObjs,
   Dialogs, Clipbrd,
 {$ENDIF}
-  cefvcl, ceflib, superobject, CatJSON;
+{$IFDEF USEWACEF}
+  WACefComponent, WACefInterfaces, WACefTypes, WACefOwns, WACefCExports,
+  WACefLib, WACefRefs,
+{$ELSE}
+  cefvcl, ceflib,
+{$ENDIF}
+  superobject, CatJSON;
+
+{$IFDEF USEWACEF}
+type
+ TChromium = TWAChromium;
+{$ENDIF}
 
 type
   TCatChromiumOnBrowserMessage = procedure(const msg: integer;
@@ -48,7 +59,7 @@ type
     const fullPath: string) of object;
   TCatChromiumOnLoadingStateChange = procedure(Sender: TObject;
     const isLoading, canGoBack, canGoForward: Boolean) of object;
-  TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode: integer;
+  TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode: {$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
     const errorText, failedUrl: string) of object;
 
 type
@@ -163,7 +174,7 @@ type
       const frame: ICefFrame; const request: ICefRequest;
       out Result: ICefResourceHandler);
     procedure crmLoadError(Sender: TObject; const Browser: ICefBrowser;
-      const frame: ICefFrame; errorCode: integer;
+      const frame: ICefFrame; errorCode: {$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
       const errorText, failedUrl: ustring);
     procedure crmLoadingStateChange(Sender: TObject; const Browser: ICefBrowser;
       isLoading, canGoBack, canGoForward: Boolean);
@@ -422,7 +433,11 @@ begin
     SHTD_STANDARD: ; // do nothing
     SHTD_FORCED: KillProcessbyPID(GetCurrentProcessId);
     SHTD_MANUAL: begin
+      {$IFDEF USEWACEF}
+      cef_shutdown;
+      {$ELSE}
       ceflib.CefShutDown;
+      {$ENDIF}
       ExitProcess(0);
       end;
   end;
@@ -466,6 +481,15 @@ begin
   list.free;
 end;
 
+function GetCEFCacheDir: string;
+begin
+{$IFDEF USEWACEF}
+  Result := CefCachePath;
+{$ELSE}
+  Result := CefCache;
+{$ENDIF}
+end;
+
 function GetCEFUserAgent: string;
 begin
   Result := CefUserAgent;
@@ -478,7 +502,7 @@ begin
   TempFileCount := TempFileCount + 1;
   f := inttostr(GetCurrentProcessId) + ' - ' + inttostr(DateTimeToUnix(now)) +
     '-' + inttostr(TempFileCount) + '.tmp';
-  Result := CefCache + 'Headers\' + f;
+  Result := GetCEFCacheDir + 'Headers\' + f;
 end;
 
 function SaveResponseToFile(s: string): string;
@@ -486,7 +510,7 @@ var
   sl: TStringList;
 begin
   Result := GetTempFile;
-  if CefCache = emptystr then
+  if GetCEFCacheDir = emptystr then
     exit;
   sl := TStringList.Create;
   sl.text := s;
@@ -602,7 +626,7 @@ begin
   PostData := request.getPostData;
   if PostData <> nil then
   begin
-    list := PostData.GetElements(PostData.GetCount);
+    list := PostData.GetElements(PostData.{$IFDEF USEWACEF}GetElementCount{$ELSE}GetCount{$ENDIF});
     for i := 0 to list.Count - 1 do
     begin
       postElement := list[i] as ICefPostDataElement;
@@ -866,7 +890,7 @@ const
     + '})();';
 begin
   fSandcatV8Extension := TSandcatV8Extension.Create;
-  CefRegisterExtension('v8/browser', v8extension,
+  {$IFDEF USEWACEF}TWACef.RegisterExtension{$ELSE}CefRegisterExtension{$ENDIF}('v8/browser', v8extension,
     fSandcatV8Extension as ICefV8Handler);
 end;
 
@@ -1040,7 +1064,7 @@ begin
   if fCrm.Browser = nil then
     exit;
   if fCrm.Browser.GetHost <> nil then
-    Result := fCrm.Browser.GetHost.GetDevToolsURL(true);
+    Result := {$IFDEF USEWACEF}''{$ELSE}fCrm.Browser.GetHost.GetDevToolsURL(true){$ENDIF};
 end;
 
 function TCatChromium.GetURLShort: string;
@@ -1211,7 +1235,7 @@ begin
 end;
 
 procedure TCatChromium.crmLoadError(Sender: TObject; const Browser: ICefBrowser;
-const frame: ICefFrame; errorCode: integer;
+const frame: ICefFrame; errorCode: {$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
 const errorText, failedUrl: ustring);
 begin
   if IsMain(Browser, frame) = false then
@@ -1442,9 +1466,12 @@ begin
     exit;
   fSentRequests := fSentRequests + 1;
   // sendmessagetotab(msghandle,CRM_LOGWRITELN,'getresourcehandler:'+request.getUrl);
+ {$IFNDEF USEWACEF}
+  // causing WACEF crash
   reqown := TSpecialCEFReq.Create;
   reqown.MsgHandle := self.fMsgHandle;
   req := TCefUrlRequestRef.New(request, reqown) as ICefUrlRequest;
+ {$ENDIF}
 end;
 
 procedure TCatChromium.crmBeforeResourceLoad(Sender: TObject;
@@ -1687,7 +1714,9 @@ procedure TCatChromium.LoadSettings(settings, DefaultSettings: TCatJSON);
 begin
   // LoadCustomCSS;
   fNeedRecreate := false;
+  {$IFNDEF USEWACEF}
   fCrm.Options.AcceleratedCompositing := GetState(CRMO_ACCELERATED_COMPOSITING);
+  {$ENDIF}
   fCrm.Options.ApplicationCache := GetState(CRMO_APPLICATION_CACHE);
   fCrm.Options.AuthorAndUserStyles := GetState(CRMO_AUTHOR_AND_USER_STYLES);
   fCrm.Options.CaretBrowsing := GetState(CRMO_CARET_BROWSING);
@@ -1841,8 +1870,10 @@ begin
     r.Method := 'GET';
   if req.IgnoreCache then
     r.Flags := r.Flags + [UR_FLAG_SKIP_CACHE];
+  {$IFNDEF USEWACEF}
   if req.UseCookies then
     r.Flags := r.Flags + [UR_FLAG_ALLOW_COOKIES];
+  {$ENDIF}
   if req.UseCachedCredentials then
     r.Flags := r.Flags + [UR_FLAG_ALLOW_CACHED_CREDENTIALS];
   if req.PostData <> emptystr then
@@ -1904,8 +1935,10 @@ begin
   // Better to use crm.Load() instead of:
   // if crm.Browser.GetMainFrame<>nil then crm.Browser.GetMainFrame.LoadURL(url);
   fCrm.Load(url);
+ {$IFNDEF USEWACEF}
   if fNeedRecreate then
     fCrm.ReCreateBrowser(url);
+ {$ENDIF}
   fCrm.Visible := true;
 end;
 
