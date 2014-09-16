@@ -1466,12 +1466,9 @@ begin
     exit;
   fSentRequests := fSentRequests + 1;
   // sendmessagetotab(msghandle,CRM_LOGWRITELN,'getresourcehandler:'+request.getUrl);
- {$IFNDEF USEWACEF}
-  // causing WACEF crash
   reqown := TSpecialCEFReq.Create;
   reqown.MsgHandle := self.fMsgHandle;
   req := TCefUrlRequestRef.New(request, reqown) as ICefUrlRequest;
- {$ENDIF}
 end;
 
 procedure TCatChromium.crmBeforeResourceLoad(Sender: TObject;
