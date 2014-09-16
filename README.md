@@ -2,7 +2,7 @@
 
 Catarinka is a set of visual and non-visual components, and methods for Pascal/Delphi, developed as part of the [Sandcat Browser](https://github.com/felipedaragon/sandcat) project. This kit includes the following components:
 
-* `TCatChromium` - A web browser component built on top of DCEF3.
+* `TCatChromium` - A web browser component built on top of WACEF3/DCEF3.
 * `TCatConsole` - Console component built on top of a modified version of the Console component by Michael Elsdörfer.
 * `TCatHighlighters` - Provides quick access to multiple SynEdit highlighters with a color scheme adapted from the CodeRay project.
 * `TCatHTMLParser` - HTML Parser based on a component by Przemyslaw Jankowski
