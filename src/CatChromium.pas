@@ -2004,7 +2004,9 @@ begin
   while isLoading do
   begin
     application.ProcessMessages;
+    {$IFNDEF USEWACEF}
     catdelay(1000);
+    {$ENDIF}
   end;
 end;
 
