@@ -424,21 +424,24 @@ type
     // Default behavior.
     UR_FLAG_NONE                      = 0,
     // If set the cache will be skipped when handling the request.
-    UR_FLAG_SKIP_CACHE                = 1 shl 0,
+    UR_FLAG_SKIP_CACHE,
     // If set user name, password, and cookies may be sent with the request.
-    UR_FLAG_ALLOW_CACHED_CREDENTIALS  = 1 shl 1,
+    UR_FLAG_ALLOW_CACHED_CREDENTIALS,
+    // If set cookies may be sent with the request and saved from the response.
+    // UR_FLAG_ALLOW_CACHED_CREDENTIALS must also be set.
+    UR_FLAG_ALLOW_COOKIES,
     // If set upload progress events will be generated when a request has a body.
-    UR_FLAG_REPORT_UPLOAD_PROGRESS    = 1 shl 3,
+    UR_FLAG_REPORT_UPLOAD_PROGRESS,
     // If set load timing info will be collected for the request.
-    UR_FLAG_REPORT_LOAD_TIMING        = 1 shl 4,
+    UR_FLAG_REPORT_LOAD_TIMING,
     // If set the headers sent and received for the request will be recorded.
-    UR_FLAG_REPORT_RAW_HEADERS        = 1 shl 5,
+    UR_FLAG_REPORT_RAW_HEADERS,
     // If set the CefURLRequestClient::OnDownloadData method will not be called.
-    UR_FLAG_NO_DOWNLOAD_DATA          = 1 shl 6,
+    UR_FLAG_NO_DOWNLOAD_DATA,
     // If set 5XX redirect errors will be propagated to the observer instead of
     // automatically re-tried. This currently only applies for requests
     // originated in the browser process.
-    UR_FLAG_NO_RETRY_ON_5XX           = 1 shl 7
+    UR_FLAG_NO_RETRY_ON_5XX
   );
   TCefUrlRequestFlags = set of TCefUrlRequestFlag;
 

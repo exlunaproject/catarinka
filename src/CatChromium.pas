@@ -1893,10 +1893,8 @@ begin
     r.Method := 'GET';
   if req.IgnoreCache then
     r.Flags := r.Flags + [UR_FLAG_SKIP_CACHE];
-{$IFNDEF USEWACEF}
   if req.UseCookies then
     r.Flags := r.Flags + [UR_FLAG_ALLOW_COOKIES];
-{$ENDIF}
   if req.UseCachedCredentials then
     r.Flags := r.Flags + [UR_FLAG_ALLOW_CACHED_CREDENTIALS];
   if req.PostData <> emptystr then
