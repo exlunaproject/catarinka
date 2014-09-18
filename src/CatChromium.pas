@@ -63,6 +63,8 @@ type
   TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode:
 {$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
     const errorText, failedUrl: string) of object;
+  TCatChromiumOnCertificateError = procedure(Sender: TObject; certError: TCefErrorcode; const requestUrl: ustring;
+      callback: ICefAllowCertificateErrorCallback; out Result: Boolean) of object;
 
 type
   TCatSourceVisitorOwn = class(TCefStringVisitorOwn)
@@ -123,6 +125,7 @@ type
     fOnConsoleMessage: TCatChromiumOnConsoleMessage;
     fOnBeforeResourceLoad: TCatChromiumOnBeforeResourceLoad;
     fOnBeforeDownload: TCatChromiumOnBeforeDownload;
+    fOnCertificateError: TCatChromiumOnCertificateError;
     fOnDownloadUpdated: TCatChromiumOnDownloadUpdated;
     fOnLoadingStateChange: TCatChromiumOnLoadingStateChange;
     fOnLoadError: TCatChromiumOnLoadError;
@@ -157,6 +160,8 @@ type
       var popupFeatures: TCefPopupFeatures; var windowInfo: TCefWindowInfo;
       var client: ICefClient; var settings: TCefBrowserSettings;
       var noJavascriptAccess: Boolean; out Result: Boolean);
+    procedure crmCertificateError(Sender: TObject; certError: TCefErrorcode; const requestUrl: ustring;
+      callback: ICefAllowCertificateErrorCallback; out Result: Boolean);
     procedure crmConsoleMessage(Sender: TObject; const Browser: ICefBrowser;
       const message, source: ustring; line: integer; out Result: Boolean);
     procedure crmJsdialog(Sender: TObject; const Browser: ICefBrowser;
@@ -251,6 +256,8 @@ type
       read fOnAfterSetSource write fOnAfterSetSource;
     property OnBrowserMessage: TCatChromiumOnBrowserMessage
       read fOnBrowserMessage write fOnBrowserMessage;
+    property OnCertificateError: TCatChromiumOnCertificateError
+      read fOnCertificateError write fOnCertificateError;
     property OnLoadEnd: TCatChromiumOnLoadEnd read fOnLoadEnd write fOnLoadEnd;
     property OnLoadStart: TCatChromiumOnLoadStart read fOnLoadStart
       write fOnLoadStart;
@@ -1498,6 +1505,39 @@ begin
   // targetUrl:=u; // ToDo: CEF3 latest returns a constant
 end;
 
+function CertErrorCodeToErrorName(c:TCefErrorcode):string;
+begin
+  case c of
+    ERR_CERT_COMMON_NAME_INVALID: result := 'Certificate common name invalid.';
+    ERR_CERT_DATE_INVALID: result := 'Certificate date invalid.';
+    ERR_CERT_AUTHORITY_INVALID: result := 'Certificate authority invalid.';
+    ERR_CERT_CONTAINS_ERRORS: result := 'Certificate contains errors.';
+    ERR_CERT_NO_REVOCATION_MECHANISM: result := 'No certificate revocation mechanism.';
+    ERR_CERT_UNABLE_TO_CHECK_REVOCATION: result := 'Unable to check certificate revocation.';
+    ERR_CERT_REVOKED: result := 'Certificate revoked.';
+    ERR_CERT_INVALID: result := 'Invalid certificate.';
+    ERR_CERT_END: result := 'Certificate end.';
+  end;
+end;
+
+procedure TCatChromium.crmCertificateError(Sender: TObject; certError: TCefErrorcode; const requestUrl: ustring;
+      callback: ICefAllowCertificateErrorCallback; out Result: Boolean);
+var
+  button: integer;
+  msg, caption: string;
+begin
+  if assigned(OnCertificateError) then
+    OnCertificateError(sender,certError, requestUrl, callback, result);
+  msg := format('Warning: %s Proceed anyway?',[CertErrorCodeToErrorName(certError)]);
+  caption := requesturl;
+  button := Application.MessageBox(pWideChar(msg), pWideChar(caption),
+    mb_YesNo + mb_DefButton1 + mb_ICONWARNING);
+  case button of
+   IDYes: callback.cont(true);
+   IDNo: callback.cont(false);
+  end;
+end;
+
 procedure TCatChromium.crmConsoleMessage(Sender: TObject;
 const Browser: ICefBrowser; const message, source: ustring; line: integer;
 out Result: Boolean);
@@ -1549,7 +1589,7 @@ begin
   fCrm.Browser.GetHost.ShowDevTools(info, fCrm.Browser.GetHost.GetClient,
     settings);
 {$ELSE}
-  SendMessageToTab(CRM_NEWTAB, fCrm.Browser.GetHost.GetDevToolsURL);
+  SendMessageToTab(CRM_NEWTAB, fCrm.Browser.GetHost.GetDevToolsURL(true));
 {$ENDIF}
 end;
 
@@ -1813,6 +1853,9 @@ begin
   fCrm.OnBeforeResourceLoad := crmBeforeResourceLoad;
   fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
   fCrm.OnBeforePopup := crmBeforePopup;
+{$IFDEF USEWACEF}
+  fCrm.OnCertificateError := crmCertificateError;
+{$ENDIF}
   fCrm.OnConsoleMessage := crmConsoleMessage;
   fCrm.OnJsdialog := crmJsdialog;
   fCrm.OnBeforeDownload := crmBeforeDownload;
@@ -1839,6 +1882,7 @@ begin
     OnBeforePopup := nil;
     OnBeforeResourceLoad := nil;
     OnConsoleMessage := nil;
+    OnCertificateError := nil;
     OnDownloadUpdated := nil;
     OnGetAuthCredentials := nil;
     OnGetResourceHandler := nil;
