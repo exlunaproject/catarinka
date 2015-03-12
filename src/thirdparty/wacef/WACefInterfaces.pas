@@ -59,8 +59,6 @@ type
   ICefDomVisitor = interface;
   ICefDomDocument = interface;
   ICefDomNode = interface;
-  ICefDomEvent = interface;
-  ICefDomEventListener = interface;
   ICefBeforeDownloadCallback = interface;
   ICefDownloadItemCallback = interface;
   ICefDownloadHandler = interface;
@@ -130,11 +128,10 @@ type
 
   TCefDomVisitorProc = {$IFNDEF FPC}reference to {$ENDIF} procedure(const  document: ICefDomDocument);
   TCefStringVisitorProc = {$IFNDEF FPC}reference to {$ENDIF} procedure(const  str: ustring);
-  TCefDomEventListenerProc = {$IFNDEF FPC}reference to {$ENDIF} procedure(const  event: ICefDomEvent);
-  TCefCookieVisitorProc = {$IFNDEF FPC}reference to {$ENDIF} function(const  cookie:TWACefCookie; count, total: Integer; out deleteCookie: Boolean): Boolean;
+  TCefCookieVisitorProc = {$IFNDEF FPC}reference to {$ENDIF} function(const  cookie:TWACefCookie; count, total: cint; out deleteCookie: Boolean): Boolean;
   TOnRegisterCustomSchemes = {$IFNDEF FPC}reference to {$ENDIF} procedure(const  registrar: ICefSchemeRegistrar);
   TOnBeforeCommandLineProcessing = {$IFNDEF FPC}reference to {$ENDIF} procedure(const  processType: ustring; const  commandLine: ICefCommandLine);
-  TCefWebPluginInfoVisitorProc = {$IFNDEF FPC}reference to {$ENDIF} function(const  info: ICefWebPluginInfo; count, total: Integer): Boolean;
+  TCefWebPluginInfoVisitorProc = {$IFNDEF FPC}reference to {$ENDIF} function(const  info: ICefWebPluginInfo; count, total: cint): Boolean;
   TCefV8AccessorGetterProc = {$IFNDEF FPC}reference to {$ENDIF} function(const  name: ustring; const  obj: ICefv8Value; out value: ICefv8Value; const  exception: ustring): Boolean;
   TCefV8AccessorSetterProc = {$IFNDEF FPC}reference to {$ENDIF} function(const  name: ustring; const  obj, value: ICefv8Value; const  exception: ustring): Boolean;
   TCefRunFileDialogCallbackProc = {$IFNDEF FPC}reference to {$ENDIF} procedure(const  browserHost: ICefBrowserHost; filePaths: TStrings);
@@ -175,7 +172,7 @@ type
     procedure Reload;
     procedure ReloadIgnoreCache;
     procedure StopLoad;
-    function GetIdentifier: Integer;
+    function GetIdentifier: cint;
     function IsSame(const that: ICefBrowser): Boolean;
     function IsPopup: Boolean;
     function HasDocument: Boolean;
@@ -192,7 +189,7 @@ type
     property FocusedFrame: ICefFrame read GetFocusedFrame;
     property FrameCount: csize_t read GetFrameCount;
     property Host: ICefBrowserHost read GetHost;
-    property Identifier: Integer read GetIdentifier;
+    property Identifier: cint read GetIdentifier;
   end;
 
   ICefRunFileDialogCallback = interface(ICefBase)
@@ -218,15 +215,17 @@ type
     procedure Print;
     procedure Find(identifier: cint; const  searchText:ustring; fwd:Boolean; matchCase:Boolean; findNext:Boolean);
     procedure StopFinding(clearSelection:Boolean);
-    procedure ShowDevTools(var windowInfo:TCefWindowInfo; const client:ICefClient; var settings:TCefBrowserSettings);
+    procedure ShowDevTools(var windowInfo:TCefWindowInfo; const client:ICefClient; var settings:TCefBrowserSettings; InspectElementAt: TCefPoint); overload;
+    procedure ShowDevTools(var windowInfo:TCefWindowInfo; const client:ICefClient; var settings:TCefBrowserSettings); overload;
     procedure CloseDevTools;
     procedure SetMouseCursorChangeDisabled(disabled:Boolean);
     function GetIsMouseCursorChangeDisabled:Boolean;
+    procedure ReplaceMisspelling(const word: ustring);
     function GetIsWindowRenderingDisabled:boolean;
     procedure WasResized;
     procedure WasHidden(hidden:Boolean);
     procedure NotifyScreenInfoChanged;
-    procedure Invalidate(const  dirtyRect:PCefRect; const  aType:TCefPaintElementType);
+    procedure Invalidate(const aType: TCefPaintElementType);
     procedure SendKeyEvent(const  event:TCefKeyEvent);
     procedure SendMouseClickEvent(const  event:TCefMouseEvent; aType:TCefMouseButtonType;
       mouseUp:boolean; clickCount:integer);
@@ -301,7 +300,7 @@ type
     function IsValid: Boolean;
     function IsReadOnly: Boolean;
     function Copy: ICefCommandLine;
-    procedure InitFromArgv(argc: Integer; const  argv: PPAnsiChar);
+    procedure InitFromArgv(argc: cint; const  argv: PPAnsiChar);
     procedure InitFromString(const  commandLine: ustring);
     procedure Reset;
     procedure GetArgv(argv: TStrings);
@@ -326,15 +325,15 @@ type
     procedure OnBeforeContextMenu(const  browser: ICefBrowser; const  frame: ICefFrame;
       const  params: ICefContextMenuParams; const  model: ICefMenuModel);
     function OnContextMenuCommand(const  browser: ICefBrowser; const  frame: ICefFrame;
-      const  params: ICefContextMenuParams; commandId: Integer;
+      const  params: ICefContextMenuParams; commandId: cint;
       eventFlags: TCefEventFlags): Boolean;
     procedure OnContextMenuDismissed(const  browser: ICefBrowser; const  frame: ICefFrame);
   end;
 
   ICefContextMenuParams = interface(ICefBase)
   ['{E31BFA9E-D4E2-49B7-A05D-20018C8794EB}']
-    function GetXCoord: Integer;
-    function GetYCoord: Integer;
+    function GetXCoord: cint;
+    function GetYCoord: cint;
     function GetTypeFlags: TCefContextMenuTypeFlags;
     function GetLinkUrl: ustring;
     function GetUnfilteredLinkUrl: ustring;
@@ -349,8 +348,8 @@ type
     function IsEditable: Boolean;
     function GetEditStateFlags: TCefContextMenuEditStateFlags;
 
-    property XCoord: Integer read GetXCoord;
-    property YCoord: Integer read GetYCoord;
+    property XCoord: cint read GetXCoord;
+    property YCoord: cint read GetYCoord;
     property TypeFlags: TCefContextMenuTypeFlags read GetTypeFlags;
     property LinkUrl: ustring read GetLinkUrl;
     property UnfilteredLinkUrl: ustring read GetUnfilteredLinkUrl;
@@ -383,7 +382,7 @@ type
 
   ICefCookieVisitor = interface(ICefBase)
   ['{8378CF1B-84AB-4FDB-9B86-34DDABCCC402}']
-    function Visit(const  cookie:TWACefCookie; count, total: Integer; out deleteCookie: Boolean): Boolean;
+    function Visit(const  cookie:TWACefCookie; count, total: cint; out deleteCookie: Boolean): Boolean;
   end;
 
   //............................................................................cef_dialog_handler_capi
@@ -407,7 +406,7 @@ type
     procedure OnTitleChange(const  browser: ICefBrowser; const  title: ustring);
     function OnTooltip(const  browser: ICefBrowser; var text: ustring): Boolean;
     procedure OnStatusMessage(const  browser: ICefBrowser; const  value: ustring);
-    function OnConsoleMessage(const  browser: ICefBrowser; const  message, source: ustring; line: Integer): Boolean;
+    function OnConsoleMessage(const  browser: ICefBrowser; const  message, source: ustring; line: cint): Boolean;
   end;
 
   //............................................................................cef_dom_capi
@@ -427,9 +426,9 @@ type
     function GetFocusedNode: ICefDomNode;
     function HasSelection: Boolean;
     function GetSelectionStartNode: ICefDomNode;
-    function GetSelectionStartOffset: Integer;
+    function GetSelectionStartOffset: cint;
     function GetSelectionEndNode: ICefDomNode;
-    function GetSelectionEndOffset: Integer;
+    function GetSelectionEndOffset: cint;
     function GetSelectionAsMarkup: ustring;
     function GetSelectionAsText: ustring;
     function GetBaseUrl: ustring;
@@ -442,9 +441,9 @@ type
     property Title: ustring read GetTitle;
     property FocusedNode: ICefDomNode read GetFocusedNode;
     property SelectionStartNode: ICefDomNode read GetSelectionStartNode;
-    property SelectionStartOffset: Integer read GetSelectionStartOffset;
+    property SelectionStartOffset: cint read GetSelectionStartOffset;
     property SelectionEndNode: ICefDomNode read GetSelectionEndNode;
-    property SelectionEndOffset: Integer read GetSelectionEndOffset;
+    property SelectionEndOffset: cint read GetSelectionEndOffset;
     property SelectionAsMarkup: ustring read GetSelectionAsMarkup;
     property SelectionAsText: ustring read GetSelectionAsText;
     property BaseUrl: ustring read GetBaseUrl;
@@ -470,10 +469,6 @@ type
     function HasChildren: Boolean;
     function GetFirstChild: ICefDomNode;
     function GetLastChild: ICefDomNode;
-    procedure AddEventListener(const  eventType: ustring; useCapture: Boolean;
-      const  listener: ICefDomEventListener);
-    procedure AddEventListenerProc(const  eventType: ustring; useCapture: Boolean;
-      const  proc: TCefDomEventListenerProc);
     function GetElementTagName: ustring;
     function HasElementAttributes: Boolean;
     function HasElementAttribute(const  attrName: ustring): Boolean;
@@ -493,32 +488,6 @@ type
     property LastChild: ICefDomNode read GetLastChild;
     property ElementTagName: ustring read GetElementTagName;
     property ElementInnerText: ustring read GetElementInnerText;
-  end;
-
-  ICefDomEvent = interface(ICefBase)
-  ['{2CBD2259-ADC6-4187-9008-A666B57695CE}']
-    function GetType: ustring;
-    function GetCategory: TCefDomEventCategory;
-    function GetPhase: TCefDomEventPhase;
-    function CanBubble: Boolean;
-    function CanCancel: Boolean;
-    function GetDocument: ICefDomDocument;
-    function GetTarget: ICefDomNode;
-    function GetCurrentTarget: ICefDomNode;
-
-    property EventType: ustring read GetType;
-    property Category: TCefDomEventCategory read GetCategory;
-    property Phase: TCefDomEventPhase read GetPhase;
-    property Bubble: Boolean read CanBubble;
-    property Cancel: Boolean read CanCancel;
-    property Document: ICefDomDocument read GetDocument;
-    property Target: ICefDomNode read GetTarget;
-    property CurrentTarget: ICefDomNode read GetCurrentTarget;
-  end;
-
-  ICefDomEventListener = interface(ICefBase)
-  ['{68BABB49-1824-42D0-ACCC-FDE9F8D39B88}']
-    procedure HandleEvent(const  event: ICefDomEvent);
   end;
 
   //............................................................................cef_download_handler_capi
@@ -548,26 +517,26 @@ type
     function IsComplete: Boolean;
     function IsCanceled: Boolean;
     function GetCurrentSpeed: Int64;
-    function GetPercentComplete: Integer;
+    function GetPercentComplete: cint;
     function GetTotalBytes: Int64;
     function GetReceivedBytes: Int64;
     function GetStartTime: TDateTime;
     function GetEndTime: TDateTime;
     function GetFullPath: ustring;
-    function GetId: Integer;
+    function GetId: cint;
     function GetUrl: ustring;
     function GetSuggestedFileName: ustring;
     function GetContentDisposition: ustring;
     function GetMimeType: ustring;
 
     property CurrentSpeed: Int64 read GetCurrentSpeed;
-    property PercentComplete: Integer read GetPercentComplete;
+    property PercentComplete: cint read GetPercentComplete;
     property TotalBytes: Int64 read GetTotalBytes;
     property ReceivedBytes: Int64 read GetReceivedBytes;
     property StartTime: TDateTime read GetStartTime;
     property EndTime: TDateTime read GetEndTime;
     property FullPath: ustring read GetFullPath;
-    property Id: Integer read GetId;
+    property Id: cint read GetId;
     property Url: ustring read GetUrl;
     property SuggestedFileName: ustring read GetSuggestedFileName;
     property ContentDisposition: ustring read GetContentDisposition;
@@ -634,7 +603,7 @@ type
     procedure LoadRequest(const  request: ICefRequest);
     procedure LoadUrl(const  url: ustring);
     procedure LoadString(const  str, url: ustring);
-    procedure ExecuteJavaScript(const  code, scriptUrl: ustring; startLine: Integer);
+    procedure ExecuteJavaScript(const  code, scriptUrl: ustring; startLine: cint);
     function IsMain: Boolean;
     function IsFocused: Boolean;
     function GetName: ustring;
@@ -667,9 +636,9 @@ type
   ICefGeolocationHandler = interface(ICefBase)
   ['{1178EE62-BAE7-4E44-932B-EAAC7A18191C}']
     procedure OnRequestGeolocationPermission(const  browser: ICefBrowser;
-      const  requestingUrl: ustring; requestId: Integer; const  callback: ICefGeolocationCallback);
+      const  requestingUrl: ustring; requestId: cint; const  callback: ICefGeolocationCallback);
     procedure OnCancelGeolocationPermission(const  browser: ICefBrowser;
-      const  requestingUrl: ustring; requestId: Integer);
+      const  requestingUrl: ustring; requestId: cint);
   end;
 
   //............................................................................cef_jsdialog_handler_capi
@@ -718,7 +687,7 @@ type
   ['{2C63FB82-345D-4A5B-9858-5AE7A85C9F49}']
     procedure OnLoadingStateChange(const  browser: ICefBrowser; IsLoading:boolean; CanGoBack:boolean; CanGoForward:boolean);
     procedure OnLoadStart(const  browser: ICefBrowser; const  frame: ICefFrame);
-    procedure OnLoadEnd(const  browser: ICefBrowser; const  frame: ICefFrame; httpStatusCode: Integer);
+    procedure OnLoadEnd(const  browser: ICefBrowser; const  frame: ICefFrame; httpStatusCode: cint);
     procedure OnLoadError(const  browser: ICefBrowser; const  frame: ICefFrame; errorCode: TCefErrorCode;
       const  errorText, failedUrl: ustring);
   end;
@@ -727,54 +696,54 @@ type
   ICefMenuModel = interface(ICefBase)
   ['{40AF19D3-8B4E-44B8-8F89-DEB5907FC495}']
     function Clear: Boolean;
-    function GetCount: Integer;
+    function GetCount: cint;
     function AddSeparator: Boolean;
-    function AddItem(commandId: Integer; const  text: ustring): Boolean;
-    function AddCheckItem(commandId: Integer; const  text: ustring): Boolean;
-    function AddRadioItem(commandId: Integer; const  text: ustring; groupId: Integer): Boolean;
-    function AddSubMenu(commandId: Integer; const  text: ustring): ICefMenuModel;
-    function InsertSeparatorAt(index: Integer): Boolean;
-    function InsertItemAt(index, commandId: Integer; const  text: ustring): Boolean;
-    function InsertCheckItemAt(index, commandId: Integer; const  text: ustring): Boolean;
-    function InsertRadioItemAt(index, commandId: Integer; const  text: ustring; groupId: Integer): Boolean;
-    function InsertSubMenuAt(index, commandId: Integer; const  text: ustring): ICefMenuModel;
-    function Remove(commandId: Integer): Boolean;
-    function RemoveAt(index: Integer): Boolean;
-    function GetIndexOf(commandId: Integer): Integer;
-    function GetCommandIdAt(index: Integer): Integer;
-    function SetCommandIdAt(index, commandId: Integer): Boolean;
-    function GetLabel(commandId: Integer): ustring;
-    function GetLabelAt(index: Integer): ustring;
-    function SetLabel(commandId: Integer; const  text: ustring): Boolean;
-    function SetLabelAt(index: Integer; const  text: ustring): Boolean;
-    function GetType(commandId: Integer): TCefMenuItemType;
-    function GetTypeAt(index: Integer): TCefMenuItemType;
-    function GetGroupId(commandId: Integer): Integer;
-    function GetGroupIdAt(index: Integer): Integer;
-    function SetGroupId(commandId, groupId: Integer): Boolean;
-    function SetGroupIdAt(index, groupId: Integer): Boolean;
-    function GetSubMenu(commandId: Integer): ICefMenuModel;
-    function GetSubMenuAt(index: Integer): ICefMenuModel;
-    function IsVisible(commandId: Integer): Boolean;
-    function isVisibleAt(index: Integer): Boolean;
-    function SetVisible(commandId: Integer; visible: Boolean): Boolean;
-    function SetVisibleAt(index: Integer; visible: Boolean): Boolean;
-    function IsEnabled(commandId: Integer): Boolean;
-    function IsEnabledAt(index: Integer): Boolean;
-    function SetEnabled(commandId: Integer; enabled: Boolean): Boolean;
-    function SetEnabledAt(index: Integer; enabled: Boolean): Boolean;
-    function IsChecked(commandId: Integer): Boolean;
-    function IsCheckedAt(index: Integer): Boolean;
-    function setChecked(commandId: Integer; checked: Boolean): Boolean;
-    function setCheckedAt(index: Integer; checked: Boolean): Boolean;
-    function HasAccelerator(commandId: Integer): Boolean;
-    function HasAcceleratorAt(index: Integer): Boolean;
-    function SetAccelerator(commandId, keyCode: Integer; shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
-    function SetAcceleratorAt(index, keyCode: Integer; shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
-    function RemoveAccelerator(commandId: Integer): Boolean;
-    function RemoveAcceleratorAt(index: Integer): Boolean;
-    function GetAccelerator(commandId: Integer; out keyCode: Integer; out shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
-    function GetAcceleratorAt(index: Integer; out keyCode: Integer; out shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
+    function AddItem(commandId: cint; const  text: ustring): Boolean;
+    function AddCheckItem(commandId: cint; const  text: ustring): Boolean;
+    function AddRadioItem(commandId: cint; const  text: ustring; groupId: cint): Boolean;
+    function AddSubMenu(commandId: cint; const  text: ustring): ICefMenuModel;
+    function InsertSeparatorAt(index: cint): Boolean;
+    function InsertItemAt(index, commandId: cint; const  text: ustring): Boolean;
+    function InsertCheckItemAt(index, commandId: cint; const  text: ustring): Boolean;
+    function InsertRadioItemAt(index, commandId: cint; const  text: ustring; groupId: cint): Boolean;
+    function InsertSubMenuAt(index, commandId: cint; const  text: ustring): ICefMenuModel;
+    function Remove(commandId: cint): Boolean;
+    function RemoveAt(index: cint): Boolean;
+    function GetIndexOf(commandId: cint): cint;
+    function GetCommandIdAt(index: cint): cint;
+    function SetCommandIdAt(index, commandId: cint): Boolean;
+    function GetLabel(commandId: cint): ustring;
+    function GetLabelAt(index: cint): ustring;
+    function SetLabel(commandId: cint; const  text: ustring): Boolean;
+    function SetLabelAt(index: cint; const  text: ustring): Boolean;
+    function GetType(commandId: cint): TCefMenuItemType;
+    function GetTypeAt(index: cint): TCefMenuItemType;
+    function GetGroupId(commandId: cint): cint;
+    function GetGroupIdAt(index: cint): cint;
+    function SetGroupId(commandId, groupId: cint): Boolean;
+    function SetGroupIdAt(index, groupId: cint): Boolean;
+    function GetSubMenu(commandId: cint): ICefMenuModel;
+    function GetSubMenuAt(index: cint): ICefMenuModel;
+    function IsVisible(commandId: cint): Boolean;
+    function isVisibleAt(index: cint): Boolean;
+    function SetVisible(commandId: cint; visible: Boolean): Boolean;
+    function SetVisibleAt(index: cint; visible: Boolean): Boolean;
+    function IsEnabled(commandId: cint): Boolean;
+    function IsEnabledAt(index: cint): Boolean;
+    function SetEnabled(commandId: cint; enabled: Boolean): Boolean;
+    function SetEnabledAt(index: cint; enabled: Boolean): Boolean;
+    function IsChecked(commandId: cint): Boolean;
+    function IsCheckedAt(index: cint): Boolean;
+    function setChecked(commandId: cint; checked: Boolean): Boolean;
+    function setCheckedAt(index: cint; checked: Boolean): Boolean;
+    function HasAccelerator(commandId: cint): Boolean;
+    function HasAcceleratorAt(index: cint): Boolean;
+    function SetAccelerator(commandId, keyCode: cint; shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
+    function SetAcceleratorAt(index, keyCode: cint; shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
+    function RemoveAccelerator(commandId: cint): Boolean;
+    function RemoveAcceleratorAt(index: cint): Boolean;
+    function GetAccelerator(commandId: cint; out keyCode: cint; out shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
+    function GetAcceleratorAt(index: cint; out keyCode: cint; out shiftPressed, ctrlPressed, altPressed: Boolean): Boolean;
   end;
 
   //............................................................................cef_print_handler_capi
@@ -850,7 +819,7 @@ type
   ['{2AB9C201-F638-4AFE-ADDA-3DCDB556B2FD}']
     function GetRootScreenRect(const  browser:ICefBrowser; rect:PCefRect):Boolean;
     function GetViewRect(const  browser:ICefBrowser; rect:PCefRect):Boolean;
-    function GetScreenPoint(const  browser: ICefBrowser; viewX, viewY: Integer;
+    function GetScreenPoint(const  browser: ICefBrowser; viewX, viewY: cint;
       screenX, screenY: pcint):Boolean;
     function GetScreenInfo(const browser:ICefBrowser; out ScreenInfo: TCefScreenInfo): Boolean;
     procedure OnPopupShow(const  browser:ICefBrowser; show:Boolean);
@@ -921,9 +890,11 @@ type
     function IsReadOnly: Boolean;
     function GetElementCount: csize_t;
     function GetElements(Count: csize_t): IInterfaceList; // ICefPostDataElement
-    function RemoveElement(const  element: ICefPostDataElement): Integer;
-    function AddElement(const  element: ICefPostDataElement): Integer;
+    function RemoveElement(const  element: ICefPostDataElement): cint;
+    function AddElement(const  element: ICefPostDataElement): cint;
     procedure RemoveElements;
+
+    property ElementCount: csize_t read GetElementCount;
   end;
 
   ICefPostDataElement = interface(ICefBase)
@@ -975,7 +946,7 @@ type
     procedure OnResourceRedirect(const  browser: ICefBrowser; const  frame: ICefFrame;
       const  oldUrl: ustring; var newUrl: ustring);
     function GetAuthCredentials(const  browser: ICefBrowser; const  frame: ICefFrame;
-      isProxy: Boolean; const  host: ustring; port: Integer; const  realm, scheme: ustring;
+      isProxy: Boolean; const  host: ustring; port: cint; const  realm, scheme: ustring;
       const  callback: ICefAuthCallback): Boolean;
     function OnQuotaRequest(const  browser: ICefBrowser;
       const  originUrl: ustring; newSize: Int64; const  callback: ICefQuotaCallback): Boolean;
@@ -991,8 +962,8 @@ type
   //............................................................................cef_resource_bundle_handler_capi
   ICefResourceBundleHandler = interface(ICefBase)
     ['{09C264FD-7E03-41E3-87B3-4234E82B5EA2}']
-    function GetLocalizedString(messageId: Integer; out stringVal: ustring): Boolean;
-    function GetDataResource(resourceId: Integer; out data: Pointer; out dataSize: csize_t): Boolean;
+    function GetLocalizedString(messageId: cint; out stringVal: ustring): Boolean;
+    function GetDataResource(resourceId: cint; out data: Pointer; out dataSize: csize_t): Boolean;
   end;
 
   //............................................................................cef_resource_handler_capi
@@ -1001,8 +972,8 @@ type
     function ProcessRequest(const  request: ICefRequest; const  callback: ICefCallback): Boolean;
     procedure GetResponseHeaders(const  response: ICefResponse;
       out responseLength: Int64; out redirectUrl: ustring);
-    function ReadResponse(const  dataOut: Pointer; bytesToRead: Integer;
-      var bytesRead: Integer; const  callback: ICefCallback): Boolean;
+    function ReadResponse(const  dataOut: Pointer; bytesToRead: cint;
+      var bytesRead: cint; const  callback: ICefCallback): Boolean;
     function CanGetCookie(const  cookie: PCefCookie): Boolean;
     function CanSetCookie(const  cookie: PCefCookie): Boolean;
     procedure Cancel;
@@ -1012,8 +983,8 @@ type
   ICefResponse = interface(ICefBase)
   ['{E9C896E4-59A8-4B96-AB5E-6EA3A498B7F1}']
     function IsReadOnly: Boolean;
-    function GetStatus: Integer;
-    procedure SetStatus(status: Integer);
+    function GetStatus: cint;
+    procedure SetStatus(status: cint);
     function GetStatusText: ustring;
     procedure SetStatusText(const  StatusText: ustring);
     function GetMimeType: ustring;
@@ -1022,7 +993,7 @@ type
     procedure GetHeaderMap(const  headerMap: ICefStringMultimap);
     procedure SetHeaderMap(const  headerMap: ICefStringMultimap);
 
-    property Status: Integer read GetStatus write SetStatus;
+    property Status: cint read GetStatus write SetStatus;
     property StatusText: ustring read GetStatusText write SetStatusText;
     property MimeType: ustring read GetMimeType write SetMimeType;
   end;
@@ -1053,7 +1024,7 @@ type
   ICefStreamReader = interface(ICefBase)
     ['{DD5361CB-E558-49C5-A4BD-D1CE84ADB277}']
     function Read(ptr: Pointer; size, n: csize_t): csize_t;
-    function Seek(offset: Int64; whence: Integer): Integer;
+    function Seek(offset: Int64; whence: cint): cint;
     function Tell: Int64;
     function Eof: Boolean;
     function MayBlock: Boolean;
@@ -1162,20 +1133,20 @@ type
     function GetMessage: ustring;
     function GetSourceLine: ustring;
     function GetScriptResourceName: ustring;
-    function GetLineNumber: Integer;
-    function GetStartPosition: Integer;
-    function GetEndPosition: Integer;
-    function GetStartColumn: Integer;
-    function GetEndColumn: Integer;
+    function GetLineNumber: cint;
+    function GetStartPosition: cint;
+    function GetEndPosition: cint;
+    function GetStartColumn: cint;
+    function GetEndColumn: cint;
 
     property Message: ustring read GetMessage;
     property SourceLine: ustring read GetSourceLine;
     property ScriptResourceName: ustring read GetScriptResourceName;
-    property LineNumber: Integer read GetLineNumber;
-    property StartPosition: Integer read GetStartPosition;
-    property EndPosition: Integer read GetEndPosition;
-    property StartColumn: Integer read GetStartColumn;
-    property EndColumn: Integer read GetEndColumn;
+    property LineNumber: cint read GetLineNumber;
+    property StartPosition: cint read GetStartPosition;
+    property EndPosition: cint read GetEndPosition;
+    property StartColumn: cint read GetStartColumn;
+    property EndColumn: cint read GetEndColumn;
   end;
 
   ICefv8Value = interface(ICefBase)
@@ -1194,7 +1165,7 @@ type
     function IsFunction: Boolean;
     function IsSame(const  that: ICefv8Value): Boolean;
     function GetBoolValue: Boolean;
-    function GetIntValue: Integer;
+    function GetIntValue: cint;
     function GetUIntValue: csize_t;
     function GetDoubleValue: Double;
     function GetDateValue: TDateTime;
@@ -1206,22 +1177,22 @@ type
     function WillRethrowExceptions: Boolean;
     function SetRethrowExceptions(rethrow: Boolean): Boolean;
     function HasValueByKey(const  key: ustring): Boolean;
-    function HasValueByIndex(index: Integer): Boolean;
+    function HasValueByIndex(index: cint): Boolean;
     function DeleteValueByKey(const  key: ustring): Boolean;
-    function DeleteValueByIndex(index: Integer): Boolean;
+    function DeleteValueByIndex(index: cint): Boolean;
     function GetValueByKey(const  key: ustring): ICefv8Value;
-    function GetValueByIndex(index: Integer): ICefv8Value;
+    function GetValueByIndex(index: cint): ICefv8Value;
     function SetValueByKey(const  key: ustring; const  value: ICefv8Value;
       attribute: TCefV8PropertyAttribute): Boolean;
-    function SetValueByIndex(index: Integer; const  value: ICefv8Value): Boolean;
+    function SetValueByIndex(index: cint; const  value: ICefv8Value): Boolean;
     function SetValueByAccessor(const  key: ustring; settings: TCefV8AccessControl;
       attribute: TCefV8PropertyAttribute): Boolean;
-    function GetKeys(const  keys: TStrings): Integer;
+    function GetKeys(const  keys: TStrings): cint;
     function SetUserData(const  data: ICefv8Value): Boolean;
     function GetUserData: ICefv8Value;
-    function GetExternallyAllocatedMemory: Integer;
-    function AdjustExternallyAllocatedMemory(changeInBytes: Integer): Integer;
-    function GetArrayLength: Integer;
+    function GetExternallyAllocatedMemory: cint;
+    function AdjustExternallyAllocatedMemory(changeInBytes: cint): cint;
+    function GetArrayLength: cint;
     function GetFunctionName: ustring;
     function GetFunctionHandler: ICefv8Handler;
     function ExecuteFunction(const  obj: ICefv8Value;
@@ -1233,11 +1204,11 @@ type
   ICefV8StackTrace = interface(ICefBase)
   ['{32111C84-B7F7-4E3A-92B9-7CA1D0ADB613}']
     function IsValid:boolean;
-    function GetFrameCount: Integer;
-    function GetFrame(index: Integer): ICefV8StackFrame;
+    function GetFrameCount: cint;
+    function GetFrame(index: cint): ICefV8StackFrame;
 
-    property FrameCount: Integer read GetFrameCount;
-    property Frame[index: Integer]: ICefV8StackFrame read GetFrame;
+    property FrameCount: cint read GetFrameCount;
+    property Frame[index: cint]: ICefV8StackFrame read GetFrame;
   end;
 
   ICefV8StackFrame = interface(ICefBase)
@@ -1246,16 +1217,16 @@ type
     function GetScriptName: ustring;
     function GetScriptNameOrSourceUrl: ustring;
     function GetFunctionName: ustring;
-    function GetLineNumber: Integer;
-    function GetColumn: Integer;
+    function GetLineNumber: cint;
+    function GetColumn: cint;
     function IsEval: Boolean;
     function IsConstructor: Boolean;
 
     property ScriptName: ustring read GetScriptName;
     property ScriptNameOrSourceUrl: ustring read GetScriptNameOrSourceUrl;
     property FunctionName: ustring read GetFunctionName;
-    property LineNumber: Integer read GetLineNumber;
-    property Column: Integer read GetColumn;
+    property LineNumber: cint read GetLineNumber;
+    property Column: cint read GetColumn;
   end;
 
   //............................................................................cef_values_capi
@@ -1281,7 +1252,7 @@ type
     function Remove(const  key: ustring): Boolean;
     function GetType(const  key: ustring): TCefValueType;
     function GetBool(const  key: ustring): Boolean;
-    function GetInt(const  key: ustring): Integer;
+    function GetInt(const  key: ustring): cint;
     function GetDouble(const  key: ustring): Double;
     function GetString(const  key: ustring): ustring;
     function GetBinary(const  key: ustring): ICefBinaryValue;
@@ -1289,7 +1260,7 @@ type
     function GetList(const  key: ustring): ICefListValue;
     function SetNull(const  key: ustring): Boolean;
     function SetBool(const  key: ustring; value: Boolean): Boolean;
-    function SetInt(const  key: ustring; value: Integer): Boolean;
+    function SetInt(const  key: ustring; value: cint): Boolean;
     function SetDouble(const  key: ustring; value: Double): Boolean;
     function SetString(const  key, value: ustring): Boolean;
     function SetBinary(const  key: ustring; const  value: ICefBinaryValue): Boolean;
@@ -1306,23 +1277,23 @@ type
     function SetSize(size: csize_t): Boolean;
     function GetSize: csize_t;
     function Clear: Boolean;
-    function Remove(index: Integer): Boolean;
-    function GetType(index: Integer): TCefValueType;
-    function GetBool(index: Integer): Boolean;
-    function GetInt(index: Integer): Integer;
-    function GetDouble(index: Integer): Double;
-    function GetString(index: Integer): ustring;
-    function GetBinary(index: Integer): ICefBinaryValue;
-    function GetDictionary(index: Integer): ICefDictionaryValue;
-    function GetList(index: Integer): ICefListValue;
-    function SetNull(index: Integer): Boolean;
-    function SetBool(index: Integer; value: Boolean): Boolean;
-    function SetInt(index, value: Integer): Boolean;
-    function SetDouble(index: Integer; value: Double): Boolean;
-    function SetString(index: Integer; const  value: ustring): Boolean;
-    function SetBinary(index: Integer; const  value: ICefBinaryValue): Boolean;
-    function SetDictionary(index: Integer; const  value: ICefDictionaryValue): Boolean;
-    function SetList(index: Integer; const  value: ICefListValue): Boolean;
+    function Remove(index: cint): Boolean;
+    function GetType(index: cint): TCefValueType;
+    function GetBool(index: cint): Boolean;
+    function GetInt(index: cint): cint;
+    function GetDouble(index: cint): Double;
+    function GetString(index: cint): ustring;
+    function GetBinary(index: cint): ICefBinaryValue;
+    function GetDictionary(index: cint): ICefDictionaryValue;
+    function GetList(index: cint): ICefListValue;
+    function SetNull(index: cint): Boolean;
+    function SetBool(index: cint; value: Boolean): Boolean;
+    function SetInt(index, value: cint): Boolean;
+    function SetDouble(index: cint; value: Double): Boolean;
+    function SetString(index: cint; const  value: ustring): Boolean;
+    function SetBinary(index: cint; const  value: ICefBinaryValue): Boolean;
+    function SetDictionary(index: cint; const  value: ICefDictionaryValue): Boolean;
+    function SetList(index: cint; const  value: ICefListValue): Boolean;
   end;
 
   ICefWebPluginInfo = interface(ICefBase)
@@ -1340,7 +1311,7 @@ type
 
   ICefWebPluginInfoVisitor = interface(ICefBase)
   ['{7523D432-4424-4804-ACAD-E67D2313436E}']
-    function Visit(const  info: ICefWebPluginInfo; count, total: Integer): Boolean;
+    function Visit(const  info: ICefWebPluginInfo; count, total: cint): Boolean;
   end;
 
   ICefWebPluginUnstableCallback = interface(ICefBase)
@@ -1355,7 +1326,7 @@ type
     function HasError: Boolean;
     function GetError: ustring;
     function GetType: TCefXmlNodeType;
-    function GetDepth: Integer;
+    function GetDepth: cint;
     function GetLocalName: ustring;
     function GetPrefix: ustring;
     function GetQualifiedName: ustring;
@@ -1367,13 +1338,13 @@ type
     function GetValue: ustring;
     function HasAttributes: Boolean;
     function GetAttributeCount: csize_t;
-    function GetAttributeByIndex(index: Integer): ustring;
+    function GetAttributeByIndex(index: cint): ustring;
     function GetAttributeByQName(const  qualifiedName: ustring): ustring;
     function GetAttributeByLName(const  localName, namespaceURI: ustring): ustring;
     function GetInnerXml: ustring;
     function GetOuterXml: ustring;
-    function GetLineNumber: Integer;
-    function MoveToAttributeByIndex(index: Integer): Boolean;
+    function GetLineNumber: cint;
+    function MoveToAttributeByIndex(index: cint): Boolean;
     function MoveToAttributeByQName(const  qualifiedName: ustring): Boolean;
     function MoveToAttributeByLName(const  localName, namespaceURI: ustring): Boolean;
     function MoveToFirstAttribute: Boolean;
@@ -1389,10 +1360,10 @@ type
     function Close: Boolean;
     function GetFileName: ustring;
     function GetFileSize: Int64;
-    function GetFileLastModified: LongInt;
+    function GetFileLastModified: Time_t;
     function OpenFile(const  password: ustring): Boolean;
     function CloseFile: Boolean;
-    function ReadFile(buffer: Pointer; bufferSize: csize_t): Integer;
+    function ReadFile(buffer: Pointer; bufferSize: csize_t): cint;
     function Tell: Int64;
     function Eof: Boolean;
   end;
@@ -1400,41 +1371,41 @@ type
   ICefStringMap = interface
   ['{A33EBC01-B23A-4918-86A4-E24A243B342F}']
     function GetHandle: TCefStringMap;
-    function GetSize: Integer;
+    function GetSize: cint;
     function Find(const  Key: ustring): ustring;
-    function GetKey(Index: Integer): ustring;
-    function GetValue(Index: Integer): ustring;
+    function GetKey(Index: cint): ustring;
+    function GetValue(Index: cint): ustring;
     procedure Append(const  Key, Value: ustring);
     procedure Clear;
 
     property Handle: TCefStringMap read GetHandle;
-    property Size: Integer read GetSize;
-    property Key[index: Integer]: ustring read GetKey;
-    property Value[index: Integer]: ustring read GetValue;
+    property Size: cint read GetSize;
+    property Key[index: cint]: ustring read GetKey;
+    property Value[index: cint]: ustring read GetValue;
   end;
 
   ICefStringMultimap = interface
     ['{583ED0C2-A9D6-4034-A7C9-20EC7E47F0C7}']
     function GetHandle: TCefStringMultimap;
-    function GetSize: Integer;
-    function FindCount(const  Key: ustring): Integer;
-    function GetEnumerate(const  Key: ustring; ValueIndex: Integer): ustring;
-    function GetKey(Index: Integer): ustring;
-    function GetValue(Index: Integer): ustring;
+    function GetSize: cint;
+    function FindCount(const  Key: ustring): cint;
+    function GetEnumerate(const  Key: ustring; ValueIndex: cint): ustring;
+    function GetKey(Index: cint): ustring;
+    function GetValue(Index: cint): ustring;
     procedure Append(const  Key, Value: ustring);
     procedure Clear;
 
     property Handle: TCefStringMap read GetHandle;
-    property Size: Integer read GetSize;
-    property Key[index: Integer]: ustring read GetKey;
-    property Value[index: Integer]: ustring read GetValue;
-    property Enumerate[const  aKey: ustring; ValueIndex: Integer]: ustring read GetEnumerate;
+    property Size: cint read GetSize;
+    property Key[index: cint]: ustring read GetKey;
+    property Value[index: cint]: ustring read GetValue;
+    property Enumerate[const  aKey: ustring; ValueIndex: cint]: ustring read GetEnumerate;
   end;
 
   ICefCustomStreamReader = interface(ICefBase)
     ['{BBCFF23A-6FE7-4C28-B13E-6D2ACA5C83B7}']
     function Read(ptr: Pointer; size, n: csize_t): csize_t;
-    function Seek(offset: Int64; whence: Integer): Integer;
+    function Seek(offset: Int64; whence: cint): cint;
     function Tell: Int64;
     function Eof: Boolean;
   end;

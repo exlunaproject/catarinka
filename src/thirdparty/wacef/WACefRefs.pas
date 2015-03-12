@@ -287,15 +287,17 @@ type
     procedure Print;
     procedure Find(identifier: cint; const  searchText: ustring; fwd: Boolean; matchCase: Boolean; findNext: Boolean);
     procedure StopFinding(clearSelection: Boolean);
-    procedure ShowDevTools(var windowInfo: TCefWindowInfo; const client: ICefClient; var settings: TCefBrowserSettings);
+    procedure ShowDevTools(var windowInfo: TCefWindowInfo; const client: ICefClient; var settings: TCefBrowserSettings; InspectElementAt: TCefPoint); overload;
+    procedure ShowDevTools(var windowInfo: TCefWindowInfo; const client: ICefClient; var settings: TCefBrowserSettings); overload;
     procedure CloseDevTools;
     procedure SetMouseCursorChangeDisabled(disabled: Boolean);
     function GetIsMouseCursorChangeDisabled: Boolean;
+    procedure ReplaceMisspelling(const word: ustring);
     function GetIsWindowRenderingDisabled: Boolean;
     procedure WasResized;
     procedure WasHidden(hidden: Boolean);
     procedure NotifyScreenInfoChanged;
-    procedure Invalidate(const  dirtyRect:PCefRect; const  aType: TCefPaintElementType);
+    procedure Invalidate(const aType: TCefPaintElementType);
     procedure SendKeyEvent(const  event: TCefKeyEvent);
     procedure SendMouseClickEvent(const  event: TCefMouseEvent; aType: TCefMouseButtonType;
       mouseUp: Boolean; clickCount: cint);
@@ -618,10 +620,6 @@ type
     function HasChildren: Boolean;
     function GetFirstChild: ICefDomNode;
     function GetLastChild: ICefDomNode;
-    procedure AddEventListener(const eventType: ustring;
-      useCapture: Boolean; const listener: ICefDomEventListener);
-    procedure AddEventListenerProc(const eventType: ustring; useCapture: Boolean;
-      const proc: TCefDomEventListenerProc);
     function GetElementTagName: ustring;
     function HasElementAttributes: Boolean;
     function HasElementAttribute(const attrName: ustring): Boolean;
@@ -653,20 +651,6 @@ type
     function GetCompleteUrl(const partialURL: ustring): ustring;
   public
     class function UnWrap(data: Pointer): ICefDomDocument;
-  end;
-
-  TCefDomEventRef = class(TCefBaseRef, ICefDomEvent)
-  protected
-    function GetType: ustring;
-    function GetCategory: TCefDomEventCategory;
-    function GetPhase: TCefDomEventPhase;
-    function CanBubble: Boolean;
-    function CanCancel: Boolean;
-    function GetDocument: ICefDomDocument;
-    function GetTarget: ICefDomNode;
-    function GetCurrentTarget: ICefDomNode;
-  public
-    class function UnWrap(data: Pointer): ICefDomEvent;
   end;
 
   TCefDownLoadItemRef = class(TCefBaseRef, ICefDownLoadItem)
@@ -2357,9 +2341,15 @@ begin
 end;
 
 procedure TCefBrowserHostRef.ShowDevTools(var windowInfo: TCefWindowInfo; const client: ICefClient;
+  var settings: TCefBrowserSettings; InspectElementAt: TCefPoint);
+begin
+  PCefBrowserHost(FData)^.show_dev_tools(PCefBrowserHost(FData), @windowInfo, TWACef.GetData(client), @settings, @InspectElementAt);
+end;
+
+procedure TCefBrowserHostRef.ShowDevTools(var windowInfo: TCefWindowInfo; const client: ICefClient;
   var settings: TCefBrowserSettings);
 begin
-  PCefBrowserHost(FData)^.show_dev_tools(PCefBrowserHost(FData), @windowInfo, TWACef.GetData(client), @settings);
+  PCefBrowserHost(FData)^.show_dev_tools(PCefBrowserHost(FData), @windowInfo, TWACef.GetData(client), @settings, nil);
 end;
 
 procedure TCefBrowserHostRef.CloseDevTools;
@@ -2375,6 +2365,14 @@ end;
 function TCefBrowserHostRef.GetIsMouseCursorChangeDisabled: Boolean;
 begin
   Result:=PCefBrowserHost(FData)^.is_mouse_cursor_change_disabled(PCefBrowserHost(FData))<>0;
+end;
+
+procedure TCefBrowserHostRef.ReplaceMisspelling(const word: ustring);
+var
+  w: TCefString;
+begin
+  w := TWACef.ToCefString(word);
+  PCefBrowserHost(FData)^.replace_misspelling(PCefBrowserHost(FData), @w);
 end;
 
 function TCefBrowserHostRef.GetIsWindowRenderingDisabled: Boolean;
@@ -2397,9 +2395,9 @@ begin
   PCefBrowserHost(FData)^.notify_screen_info_changed(PCefBrowserHost(FData));
 end;
 
-procedure TCefBrowserHostRef.Invalidate(const dirtyRect:PCefRect; const aType: TCefPaintElementType);
+procedure TCefBrowserHostRef.Invalidate(const aType: TCefPaintElementType);
 begin
-  PCefBrowserHost(FData)^.invalidate(PCefBrowserHost(FData),dirtyRect,aType);
+  PCefBrowserHost(FData)^.invalidate(PCefBrowserHost(FData), aType);
 end;
 
 procedure TCefBrowserHostRef.SendKeyEvent(const event: TCefKeyEvent);
@@ -3787,22 +3785,6 @@ begin
     Result := nil;
 end;
 
-//..............................................................................TCefDomNodeRef
-procedure TCefDomNodeRef.AddEventListener(const eventType: ustring;
-  useCapture: Boolean; const listener: ICefDomEventListener);
-var
-  et: TCefString;
-begin
-  et := TWACef.ToCefString(eventType);
-  PCefDomNode(FData)^.add_event_listener(PCefDomNode(FData), @et, TWACef.GetData(listener), Ord(useCapture));
-end;
-
-procedure TCefDomNodeRef.AddEventListenerProc(const eventType: ustring; useCapture: Boolean;
-  const proc: TCefDomEventListenerProc);
-begin
-  AddEventListener(eventType, useCapture, TCefFastDomEventListener.Create(proc) as ICefDomEventListener);
-end;
-
 function TCefDomNodeRef.GetAsMarkup: ustring;
 begin
   Result := TWACef.StringFreeAndGet(PCefDomNode(FData)^.get_as_markup(PCefDomNode(FData)));
@@ -4040,54 +4022,6 @@ class function TCefDomDocumentRef.UnWrap(data: Pointer): ICefDomDocument;
 begin
   if data <> nil then
     Result := Create(data) as ICefDomDocument else
-    Result := nil;
-end;
-
-//..............................................................................TCefDomEventRef
-function TCefDomEventRef.CanBubble: Boolean;
-begin
-  Result := PCefDomEvent(FData)^.can_bubble(PCefDomEvent(FData)) <> 0;
-end;
-
-function TCefDomEventRef.CanCancel: Boolean;
-begin
-  Result := PCefDomEvent(FData)^.can_cancel(PCefDomEvent(FData)) <> 0;
-end;
-
-function TCefDomEventRef.GetCategory: TCefDomEventCategory;
-begin
-  Result := PCefDomEvent(FData)^.get_category(PCefDomEvent(FData));
-end;
-
-function TCefDomEventRef.GetCurrentTarget: ICefDomNode;
-begin
-  Result := TCefDomNodeRef.UnWrap(PCefDomEvent(FData)^.get_current_target(PCefDomEvent(FData)));
-end;
-
-function TCefDomEventRef.GetDocument: ICefDomDocument;
-begin
-  Result := TCefDomDocumentRef.UnWrap(PCefDomEvent(FData)^.get_document(PCefDomEvent(FData)));
-end;
-
-function TCefDomEventRef.GetPhase: TCefDomEventPhase;
-begin
-  Result := PCefDomEvent(FData)^.get_phase(PCefDomEvent(FData));
-end;
-
-function TCefDomEventRef.GetTarget: ICefDomNode;
-begin
-  Result := TCefDomNodeRef.UnWrap(PCefDomEvent(FData)^.get_target(PCefDomEvent(FData)));
-end;
-
-function TCefDomEventRef.GetType: ustring;
-begin
-  Result := TWACef.StringFreeAndGet(PCefDomEvent(FData)^.get_type(PCefDomEvent(FData)));
-end;
-
-class function TCefDomEventRef.UnWrap(data: Pointer): ICefDomEvent;
-begin
-  if data <> nil then
-    Result := Create(data) as ICefDomEvent else
     Result := nil;
 end;
 
@@ -4787,7 +4721,7 @@ end;
 
 function TCefRequestRef.GetFlags: TCefUrlRequestFlags;
 begin
-  Result := PCefRequest(FData)^.get_flags(PCefRequest(FData));
+  PByte(@result)^ := PCefRequest(FData)^.get_flags(PCefRequest(FData));
 end;
 
 procedure TCefRequestRef.GetHeaderMap(const HeaderMap: ICefStringMultimap);

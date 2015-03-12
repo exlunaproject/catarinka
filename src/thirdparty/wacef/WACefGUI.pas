@@ -93,6 +93,7 @@ type
     const messageText: ustring; isReload: Boolean;
     const callback: ICefJsDialogCallback; out Result: Boolean) of object;
   TOnResetDialogState = procedure(Sender: TObject; const Browser: ICefBrowser) of object;
+  TOnDialogClosed = procedure(Sender: TObject; const Browser: ICefBrowser) of object;
 
   { KeyboardHandler }
   TOnPreKeyEvent = procedure(Sender: TObject; const Browser: ICefBrowser; const event: PCefKeyEvent;

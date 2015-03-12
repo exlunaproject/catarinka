@@ -49,9 +49,12 @@ uses
   LMessages,
   WSLCLClasses,
   WSControls,
-  {$ENDIF}
+  Controls,
+  Graphics,
+  {$ELSE}
   Vcl.Controls,
   Vcl.Graphics,
+  {$ENDIF}
   Messages,
   Classes,
   WACefGUI,
@@ -446,7 +449,11 @@ implementation
 
 {$IFNDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
 uses
+  {$IFDEF FPC}
+  ExtCtrls;
+  {$ELSE}
 	Vcl.ExtCtrls;
+  {$ENDIF}
 var
   Timer:TTimer;
   CefInstances:Integer = 0;
@@ -1201,8 +1208,8 @@ destructor TWACustomChromium.Destroy;
 begin
   if Assigned(FCanvas) then
     FreeAndNil(FCanvas);
-  {if FBrowser <> nil then
-    FBrowser.Host.CloseBrowser(true);}
+{  if FBrowser <> nil then
+    FBrowser.Host.CloseBrowser(false);}
   if FHandler <> nil then
     (FHandler as ICefClientHandler).Disconnect;
   FHandler := nil;
@@ -1227,4 +1234,4 @@ end;
 
 initialization
 
-end.
+end.

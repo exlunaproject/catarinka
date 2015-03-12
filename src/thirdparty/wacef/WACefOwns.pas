@@ -177,6 +177,29 @@ type
     constructor Create; virtual;
   end;
 
+  TCefV8ExceptionOwn = class(TCefBaseOwn, ICefV8Exception)
+  private
+    FMessage: ustring;
+    FSourceLine: ustring;
+    FScriptResourceName: ustring;
+    FLineNumber: cint;
+    FStartPosition: cint;
+    FEndPosition: cint;
+    FStartColumn: cint;
+    FEndColumn: cint;
+  protected
+    function GetMessage: ustring; virtual;
+    function GetSourceLine: ustring; virtual;
+    function GetScriptResourceName: ustring; virtual;
+    function GetLineNumber: cint; virtual;
+    function GetStartPosition: cint; virtual;
+    function GetEndPosition: cint; virtual;
+    function GetStartColumn: cint; virtual;
+    function GetEndColumn: cint; virtual;
+  public
+    constructor Create; virtual;
+  end;
+
   TCefDomVisitorOwn = class(TCefBaseOwn, ICefDomVisitor)
   protected
     procedure visit(const document: ICefDomDocument); virtual;
@@ -191,22 +214,6 @@ type
     procedure visit(const document: ICefDomDocument); override;
   public
     constructor Create(const proc: TCefDomVisitorProc); reintroduce; virtual;
-  end;
-
-  TCefDomEventListenerOwn = class(TCefBaseOwn, ICefDomEventListener)
-  protected
-    procedure HandleEvent(const event: ICefDomEvent); virtual;
-  public
-    constructor Create; virtual;
-  end;
-
-  TCefFastDomEventListener = class(TCefDomEventListenerOwn)
-  private
-    FProc: TCefDomEventListenerProc;
-  protected
-    procedure HandleEvent(const event: ICefDomEvent); override;
-  public
-    constructor Create(const proc: TCefDomEventListenerProc); reintroduce; virtual;
   end;
 
   TCefDisplayHandlerOwn = class(TCefBaseOwn, ICefDisplayHandler)
@@ -613,9 +620,9 @@ begin
   Result := TCefBaseOwn(TWACef.GetObject(self))._Release;
 end;
 
-function cef_base_get_refct(self: PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+function cef_base_has_one_ref(self: PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 begin
-  Result := TCefBaseOwn(TWACef.GetObject(self)).FRefCount;
+  Result := Ord(TCefBaseOwn(TWACef.GetObject(self)).FRefCount = 1);
 end;
 
 function cef_base_add_ref_owned(self: PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -628,7 +635,7 @@ begin
   Result := 1;
 end;
 
-function cef_base_get_refct_owned(self: PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+function cef_base_has_one_ref_owned(self: PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 begin
   Result := 1;
 end;
@@ -644,12 +651,12 @@ begin
   begin
     PCefBase(FData)^.add_ref := @cef_base_add_ref_owned;
     PCefBase(FData)^.release := @cef_base_release_owned;
-    PCefBase(FData)^.get_refct := @cef_base_get_refct_owned;
+    PCefBase(FData)^.has_one_ref := @cef_base_has_one_ref_owned;
   end else
   begin
     PCefBase(FData)^.add_ref := @cef_base_add_ref;
     PCefBase(FData)^.release := @cef_base_release;
-    PCefBase(FData)^.get_refct := @cef_base_get_refct;
+    PCefBase(FData)^.has_one_ref := @cef_base_has_one_ref;
   end;
 end;
 
@@ -1619,6 +1626,119 @@ begin
   Result := False;
 end;
 
+//..............................................................................TCefV8ExceptionOwn
+function cef_v8_exception_get_message(self: PCefV8Exception): PCefStringUserFree;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := TWACef.UserFreeString(GetMessage);
+end;
+
+function cef_v8_exception_get_source_line(self: PCefV8Exception): PCefStringUserFree;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := TWACef.UserFreeString(GetSourceLine);
+end;
+
+function cef_v8_exception_get_script_resource_name(self: PCefV8Exception): PCefStringUserFree;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := TWACef.UserFreeString(GetScriptResourceName);
+end;
+
+function cef_v8_exception_get_line_number(self: PCefV8Exception): cint;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := GetLineNumber;
+end;
+
+function cef_v8_exception_get_start_position(self: PCefV8Exception): cint;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := GetStartPosition;
+end;
+
+function cef_v8_exception_get_end_position(self: PCefV8Exception): cint;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := GetEndPosition;
+end;
+
+function cef_v8_exception_get_start_column(self: PCefV8Exception): cint;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := GetStartColumn;
+end;
+
+function cef_v8_exception_get_end_column(self: PCefV8Exception): cint;
+begin
+  with TCefV8ExceptionOwn(TWACef.GetObject(self)) do
+    Result := GetEndColumn;
+end;
+
+{Protected section}
+function TCefV8ExceptionOwn.GetMessage: ustring;
+begin
+  Result := FMessage;
+end;
+
+function TCefV8ExceptionOwn.GetSourceLine: ustring;
+begin
+  Result := FSourceLine;
+end;
+
+function TCefV8ExceptionOwn.GetScriptResourceName: ustring;
+begin
+  Result := FScriptResourceName;
+end;
+
+function TCefV8ExceptionOwn.GetLineNumber: cint;
+begin
+  Result := FLineNumber;
+end;
+
+function TCefV8ExceptionOwn.GetStartPosition: cint;
+begin
+  Result := FStartPosition;
+end;
+
+function TCefV8ExceptionOwn.GetEndPosition: cint;
+begin
+  Result := FEndPosition;
+end;
+
+function TCefV8ExceptionOwn.GetStartColumn: cint;
+begin
+  Result := FStartColumn;
+end;
+
+function TCefV8ExceptionOwn.GetEndColumn;
+begin
+  Result := FEndColumn;
+end;
+
+{Public section}
+constructor TCefV8ExceptionOwn.Create;
+begin
+  inherited CreateData(SizeOf(TCefV8Exception));
+  FMessage := '';
+  FSourceLine := '';
+  FScriptResourceName := '';
+  FLineNumber := 0;
+  FStartPosition := 0;
+  FEndPosition := 0;
+  FStartColumn := 0;
+  FEndColumn := 0;
+
+  PCefV8Exception(FData)^.get_message  := @cef_v8_exception_get_message;
+  PCefV8Exception(FData)^.get_source_line  := @cef_v8_exception_get_source_line;
+  PCefV8Exception(FData)^.get_script_resource_name  := @cef_v8_exception_get_script_resource_name;
+  PCefV8Exception(FData)^.get_line_number  := @cef_v8_exception_get_line_number;
+  PCefV8Exception(FData)^.get_start_position  := @cef_v8_exception_get_start_position;
+  PCefV8Exception(FData)^.get_end_position  := @cef_v8_exception_get_end_position;
+  PCefV8Exception(FData)^.get_start_column  := @cef_v8_exception_get_start_column;
+  PCefV8Exception(FData)^.get_end_column  := @cef_v8_exception_get_end_column;
+end;
+
 //..............................................................................TCefDomVisitorOwn
 procedure cef_dom_visitor_visite(self: PCefDomVisitor; document: PCefDomDocument); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 begin
@@ -1646,38 +1766,6 @@ end;
 procedure TCefFastDomVisitor.visit(const document: ICefDomDocument);
 begin
   FProc(document);
-end;
-
-//..............................................................................TCefDomEventListenerOwn
-procedure cef_dom_event_listener_handle_event(self: PCefDomEventListener; event: PCefDomEvent); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-begin
-  TCefDomEventListenerOwn(TWACef.GetObject(self)).HandleEvent(TCefDomEventRef.UnWrap(event));
-end;
-
-constructor TCefDomEventListenerOwn.Create;
-begin
-  inherited CreateData(SizeOf(TCefDomEventListener));
-  with PCefDomEventListener(FData)^ do
-    handle_event := @cef_dom_event_listener_handle_event;
-end;
-
-procedure TCefDomEventListenerOwn.HandleEvent(const event: ICefDomEvent);
-begin
-
-end;
-
-//..............................................................................TCefFastEventListener
-constructor TCefFastDomEventListener.Create(
-  const proc: TCefDomEventListenerProc);
-begin
-  inherited Create;
-  FProc := proc;
-end;
-
-procedure TCefFastDomEventListener.HandleEvent(const event: ICefDomEvent);
-begin
-  inherited;
-  FProc(event);
 end;
 
 //..............................................................................TCefDownloadHandlerOwn

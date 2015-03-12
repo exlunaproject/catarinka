@@ -44,6 +44,7 @@ uses
 type
   //............................................................................ConversionTypes
   Time_t = LongInt;
+  void = Pointer;
 
   {$IFNDEF FPC}
   //............................................................................CTypes
@@ -424,24 +425,23 @@ type
     // Default behavior.
     UR_FLAG_NONE                      = 0,
     // If set the cache will be skipped when handling the request.
-    UR_FLAG_SKIP_CACHE,
+    UR_FLAG_SKIP_CACHE                = 1 shl 0,
     // If set user name, password, and cookies may be sent with the request.
-    UR_FLAG_ALLOW_CACHED_CREDENTIALS,
-    // If set cookies may be sent with the request and saved from the response.
-    // UR_FLAG_ALLOW_CACHED_CREDENTIALS must also be set.
-    UR_FLAG_ALLOW_COOKIES,
+    UR_FLAG_ALLOW_CACHED_CREDENTIALS  = 1 shl 1,
     // If set upload progress events will be generated when a request has a body.
-    UR_FLAG_REPORT_UPLOAD_PROGRESS,
+    UR_FLAG_ALLOW_COOKIES             = 1 shl 2,
+    // If set upload progress events will be generated when a request has a body.
+    UR_FLAG_REPORT_UPLOAD_PROGRESS    = 1 shl 3,
     // If set load timing info will be collected for the request.
-    UR_FLAG_REPORT_LOAD_TIMING,
+    UR_FLAG_REPORT_LOAD_TIMING        = 1 shl 4,
     // If set the headers sent and received for the request will be recorded.
-    UR_FLAG_REPORT_RAW_HEADERS,
+    UR_FLAG_REPORT_RAW_HEADERS        = 1 shl 5,
     // If set the CefURLRequestClient::OnDownloadData method will not be called.
-    UR_FLAG_NO_DOWNLOAD_DATA,
+    UR_FLAG_NO_DOWNLOAD_DATA          = 1 shl 6,
     // If set 5XX redirect errors will be propagated to the observer instead of
     // automatically re-tried. This currently only applies for requests
     // originated in the browser process.
-    UR_FLAG_NO_RETRY_ON_5XX
+    UR_FLAG_NO_RETRY_ON_5XX           = 1 shl 7
   );
   TCefUrlRequestFlags = set of TCefUrlRequestFlag;
 
@@ -555,23 +555,23 @@ type
   );
 
   // Supported event bit flags.
-  TCefEventFlags = (
-    EVENTFLAG_NONE                = 0,
-    EVENTFLAG_CAPS_LOCK_ON        = 1 shl 0,
-    EVENTFLAG_SHIFT_DOWN          = 1 shl 1,
-    EVENTFLAG_CONTROL_DOWN        = 1 shl 2,
-    EVENTFLAG_ALT_DOWN            = 1 shl 3,
-    EVENTFLAG_LEFT_MOUSE_BUTTON   = 1 shl 4,
-    EVENTFLAG_MIDDLE_MOUSE_BUTTON = 1 shl 5,
-    EVENTFLAG_RIGHT_MOUSE_BUTTON  = 1 shl 6,
+  TCefEventFlag = (
+    EVENTFLAG_NONE                ,//= 0,
+    EVENTFLAG_CAPS_LOCK_ON        ,//= 1 shl 0,
+    EVENTFLAG_SHIFT_DOWN          ,//= 1 shl 1,
+    EVENTFLAG_CONTROL_DOWN        ,//= 1 shl 2,
+    EVENTFLAG_ALT_DOWN            ,//= 1 shl 3,
+    EVENTFLAG_LEFT_MOUSE_BUTTON   ,//= 1 shl 4,
+    EVENTFLAG_MIDDLE_MOUSE_BUTTON ,//= 1 shl 5,
+    EVENTFLAG_RIGHT_MOUSE_BUTTON  ,//= 1 shl 6,
     // Mac OS-X command key.
-    EVENTFLAG_COMMAND_DOWN        = 1 shl 7,
-    EVENTFLAG_NUM_LOCK_ON         = 1 shl 8,
-    EVENTFLAG_IS_KEY_PAD          = 1 shl 9,
-    EVENTFLAG_IS_LEFT             = 1 shl 10,
-    EVENTFLAG_IS_RIGHT            = 1 shl 11
+    EVENTFLAG_COMMAND_DOWN        ,//= 1 shl 7,
+    EVENTFLAG_NUM_LOCK_ON         ,//= 1 shl 8,
+    EVENTFLAG_IS_KEY_PAD          ,//= 1 shl 9,
+    EVENTFLAG_IS_LEFT             ,//= 1 shl 10,
+    EVENTFLAG_IS_RIGHT            //= 1 shl 11
   );
-  //TCefEventFlags = set of TCefEventFlag;
+  TCefEventFlags = set of TCefEventFlag;
 
   // Supported menu item types.
   TCefMenuItemType = (
@@ -588,17 +588,17 @@ type
     // No node is selected.
     CM_TYPEFLAG_NONE        = 0,
     // The top page is selected.
-    CM_TYPEFLAG_PAGE,
+    CM_TYPEFLAG_PAGE        = 1 shl 0,
     // A subframe page is selected.
-    CM_TYPEFLAG_FRAME,
+    CM_TYPEFLAG_FRAME       = 1 shl 1,
     // A link is selected.
-    CM_TYPEFLAG_LINK,
+    CM_TYPEFLAG_LINK        = 1 shl 2,
     // A media node is selected.
-    CM_TYPEFLAG_MEDIA,
+    CM_TYPEFLAG_MEDIA       = 1 shl 3,
     // There is a textual or mixed selection that is selected.
-    CM_TYPEFLAG_SELECTION,
+    CM_TYPEFLAG_SELECTION   = 1 shl 4,
     // An editable element is selected.
-    CM_TYPEFLAG_EDITABLE
+    CM_TYPEFLAG_EDITABLE    = 1 shl 5
   );
   TCefContextMenuTypeFlags = set of TCefContextMenuTypeFlag;
 
@@ -619,20 +619,20 @@ type
   );
 
   // Supported context menu media state bit flags.
-  TCefContextMenuMediaStateFlags = (
-    CM_MEDIAFLAG_NONE                  = 0,
-    CM_MEDIAFLAG_ERROR                 = 1 shl 0,
-    CM_MEDIAFLAG_PAUSED                = 1 shl 1,
-    CM_MEDIAFLAG_MUTED                 = 1 shl 2,
-    CM_MEDIAFLAG_LOOP                  = 1 shl 3,
-    CM_MEDIAFLAG_CAN_SAVE              = 1 shl 4,
-    CM_MEDIAFLAG_HAS_AUDIO             = 1 shl 5,
-    CM_MEDIAFLAG_HAS_VIDEO             = 1 shl 6,
-    CM_MEDIAFLAG_CONTROL_ROOT_ELEMENT  = 1 shl 7,
-    CM_MEDIAFLAG_CAN_PRINT             = 1 shl 8,
-    CM_MEDIAFLAG_CAN_ROTATE            = 1 shl 9
+  TCefContextMenuMediaStateFlag = (
+    CM_MEDIAFLAG_NONE                  ,//= 0,
+    CM_MEDIAFLAG_ERROR                 ,//= 1 shl 0,
+    CM_MEDIAFLAG_PAUSED                ,//= 1 shl 1,
+    CM_MEDIAFLAG_MUTED                 ,//= 1 shl 2,
+    CM_MEDIAFLAG_LOOP                  ,//= 1 shl 3,
+    CM_MEDIAFLAG_CAN_SAVE              ,//= 1 shl 4,
+    CM_MEDIAFLAG_HAS_AUDIO             ,//= 1 shl 5,
+    CM_MEDIAFLAG_HAS_VIDEO             ,//= 1 shl 6,
+    CM_MEDIAFLAG_CONTROL_ROOT_ELEMENT  ,//= 1 shl 7,
+    CM_MEDIAFLAG_CAN_PRINT             ,//= 1 shl 8,
+    CM_MEDIAFLAG_CAN_ROTATE            //= 1 shl 9
   );
-  //TCefContextMenuMediaStateFlags = set of TCefContextMenuMediaStateFlag;
+  TCefContextMenuMediaStateFlags = set of TCefContextMenuMediaStateFlag;
 
   // Supported context menu edit state bit flags.
   TCefContextMenuEditStateFlag = (
@@ -806,6 +806,13 @@ type
   );
 
   //............................................................................Structs
+  // Structure representing a point.
+  PCefPoint = ^TCefPoint;
+  TCefPoint = record
+    x: cint;
+    y: cint;
+  end;
+
   // Structure representing a print job page range.
   PCefPageRange = ^TCefPageRange;
   TCefPageRange = record
@@ -1299,7 +1306,7 @@ type
 		y: cint;
 		// Bit flags describing any pressed modifier keys. See
 		// cef_event_flags_t for values.
-		modifiers: cuint32;
+		modifiers: TCefEventFlags;
 	end;
 
   // Structure representing geoposition information. The properties of this
