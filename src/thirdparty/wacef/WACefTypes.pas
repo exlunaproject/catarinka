@@ -588,17 +588,17 @@ type
     // No node is selected.
     CM_TYPEFLAG_NONE        = 0,
     // The top page is selected.
-    CM_TYPEFLAG_PAGE        = 1 shl 0,
+    CM_TYPEFLAG_PAGE        ,//= 1 shl 0,
     // A subframe page is selected.
-    CM_TYPEFLAG_FRAME       = 1 shl 1,
+    CM_TYPEFLAG_FRAME       ,//= 1 shl 1,
     // A link is selected.
-    CM_TYPEFLAG_LINK        = 1 shl 2,
+    CM_TYPEFLAG_LINK        ,//= 1 shl 2,
     // A media node is selected.
-    CM_TYPEFLAG_MEDIA       = 1 shl 3,
+    CM_TYPEFLAG_MEDIA       ,//= 1 shl 3,
     // There is a textual or mixed selection that is selected.
-    CM_TYPEFLAG_SELECTION   = 1 shl 4,
+    CM_TYPEFLAG_SELECTION   ,//= 1 shl 4,
     // An editable element is selected.
-    CM_TYPEFLAG_EDITABLE    = 1 shl 5
+    CM_TYPEFLAG_EDITABLE    //= 1 shl 5
   );
   TCefContextMenuTypeFlags = set of TCefContextMenuTypeFlag;
 
