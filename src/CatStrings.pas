@@ -57,6 +57,7 @@ function MD5Hash(s: UTF8String): UTF8String;
 function Occurs(substr, s: string): Integer;
 function RandomString(const len: Integer;
   const chars: string = 'abcdefghijklmnopqrstuvwxyz'): string;
+function RemoveLastChar(const s: string): string;
 function RemoveNumbers(const s: string): string;
 function RemoveQuotes(const s: string): string;
 function RemoveShortcuts(const s: string): string;
@@ -364,6 +365,18 @@ begin
     result := emptystr
   else if result = '''''' then
     result := emptystr;
+end;
+
+// Removes the last character from a string
+function RemoveLastChar(const s: string): string;
+var
+ len: Integer; astr:string;
+begin
+  astr := s;
+  len := Length(astr);
+  if len > 0 then
+     Delete(astr, len, 1);
+  Result := astr;
 end;
 
 function RemoveNumbers(const s: string): string;
