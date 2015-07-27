@@ -26,6 +26,7 @@ type
     fCurrent: TCatJSON;
     fDefault: TCatJSON;
     fFilename: string;
+    fLockedOptions: TStringList;
     fOptionList: TStringList;
     function Encrypt(const CID: string; const Value: Variant): Variant;
     function Decrypt(const CID: string; const Value: Variant): Variant;
@@ -37,6 +38,7 @@ type
       : Variant; overload;
     function GetRegValue(const CID: string;
       const DefaultValue: Variant): Variant;
+    procedure Lock(const CID: string);
     procedure SetValue(const CID: string; const Value: Variant);
     procedure LoadFromFile(const f: string);
     procedure LoadFromString(const s: string);
@@ -51,6 +53,7 @@ type
     property Current: TCatJSON read fCurrent;
     property Default: TCatJSON read fDefault;
     property Filename: string read fFilename write fFilename;
+    property LockedOptions: TStringList read fLockedOptions;
     property OptionList: TStringList read fOptionList;
     property Values[const CID: string]: Variant read FGetValue
       write SetValue; default;
@@ -155,6 +158,12 @@ begin
     fCurrent.text := s;
 end;
 
+procedure TCatPreferences.Lock(const CID: string);
+begin
+  if flockedoptions.IndexOf(CID) = -1 then
+    flockedoptions.Add(CID);
+end;
+
 procedure TCatPreferences.SaveToFile(const f: string);
 begin
   fCurrent.SaveToFile(f);
@@ -166,10 +175,12 @@ begin
   fCurrent := TCatJSON.Create;
   fDefault := TCatJSON.Create;
   fOptionList := TStringList.Create;
+  fLockedOptions := TStringList.Create;
 end;
 
 destructor TCatPreferences.Destroy;
 begin
+  fLockedOptions.free;
   fOptionList.free;
   fDefault.free;
   fCurrent.free;
