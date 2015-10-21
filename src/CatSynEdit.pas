@@ -16,11 +16,14 @@ interface
 uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Messages, System.Classes, System.Types, System.SysUtils,
-  Winapi.Windows, Vcl.ActnList, System.Actions,
+  Winapi.Windows, Vcl.Menus, Vcl.ActnList,
 {$ELSE}
-  Messages, Classes, Types, SysUtils, Windows, ActnList,
+  Messages, Classes, Types, SysUtils, Windows, Menus, ActnList,
 {$ENDIF}
-  Menus, SynEdit;
+{$IF DXE3_OR_UP}
+  System.Actions,
+{$IFEND}
+  SynEdit;
   
 {$DEFINE OVMOUSEWHEEL}
 

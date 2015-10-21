@@ -680,7 +680,11 @@ end;
 procedure TSpecialCEFReq.OnDownloadData(const request: ICefUrlRequest;
   data: Pointer; dataLength: NativeUInt);
 begin
-  fResponseStream.WriteData(data, dataLength);
+  {$IFDEF DXE3_OR_UP}
+    fResponseStream.WriteData(data, dataLength);
+  {$ELSE}
+    fResponseStream.Write(data, dataLength);
+  {$ENDIF}
   inherited;
 end;
 
