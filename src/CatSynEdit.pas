@@ -24,7 +24,7 @@ uses
   System.Actions,
 {$IFEND}
   SynEdit;
-  
+
 {$DEFINE OVMOUSEWHEEL}
 
 type
@@ -51,10 +51,10 @@ type
     procedure SetPopupMenu_(const Value: TPopupMenu);
     function GetPopupMenu_: TPopupMenu;
   protected
-   {$IFDEF OVMOUSEWHEEL}
+{$IFDEF OVMOUSEWHEEL}
     function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPoint): Boolean; override;
-   {$ENDIF}
+{$ENDIF}
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -66,8 +66,9 @@ implementation
 
 const
   MenuName = 'uSynEditPopupMenu';
-  
+
 {$IFDEF OVMOUSEWHEEL}
+
 function TCatSynEdit.DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
   MousePos: TPoint): Boolean;
 var
@@ -86,7 +87,7 @@ begin
   end;
 end;
 {$ENDIF}
-   
+
 procedure TCatSynEdit.CopyExecute(Sender: TObject);
 begin
   Self.CopyToClipboard;
@@ -183,22 +184,30 @@ procedure TCatSynEdit.CreateActns;
     ActionItem.OnExecute := OnExecute;
     ActionItem.OnUpdate := OnUpdate;
   end;
+  function ShortCut(key: word; Shift: TShiftState): word;
+  begin
+{$IFDEF DXE2_OR_UP}
+    Result := Vcl.Menus.ShortCut(key, Shift);
+{$ELSE}
+    Result := Menus.ShortCut(key, Shift);
+{$ENDIF}
+  end;
 
 begin
-  AddActItem('&Undo', Menus.ShortCut(Word('Z'), [ssCtrl]), False, UndoExecute,
+  AddActItem('&Undo', ShortCut(word('Z'), [ssCtrl]), False, UndoExecute,
     UndoUpdate);
-  AddActItem('&Redo', Menus.ShortCut(Word('Z'), [ssCtrl, ssShift]), False,
+  AddActItem('&Redo', ShortCut(word('Z'), [ssCtrl, ssShift]), False,
     RedoExecute, RedoUpdate);
   AddActItem('-', 0, False, nil, nil);
-  AddActItem('Cu&t', Menus.ShortCut(Word('X'), [ssCtrl]), False, CutExecute,
+  AddActItem('Cu&t', ShortCut(word('X'), [ssCtrl]), False, CutExecute,
     CutUpdate);
-  AddActItem('&Copy', Menus.ShortCut(Word('C'), [ssCtrl]), False, CopyExecute,
+  AddActItem('&Copy', ShortCut(word('C'), [ssCtrl]), False, CopyExecute,
     CopyUpdate);
-  AddActItem('&Paste', Menus.ShortCut(Word('V'), [ssCtrl]), False, PasteExecute,
+  AddActItem('&Paste', ShortCut(word('V'), [ssCtrl]), False, PasteExecute,
     PasteUpdate);
   AddActItem('De&lete', 0, False, DeleteExecute, DeleteUpdate);
   AddActItem('-', 0, False, nil, nil);
-  AddActItem('Select &All', Menus.ShortCut(Word('A'), [ssCtrl]), False,
+  AddActItem('Select &All', ShortCut(word('A'), [ssCtrl]), False,
     SelectAllExecute, SelectAllUpdate);
 end;
 
