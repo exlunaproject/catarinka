@@ -33,152 +33,217 @@ uses
   WACefTypes;
 
 type
-		//............................................................................cef_app_capi
-	PCefApp=^TCefApp;
-	//............................................................................cef_auth_callback_capi
-	PCefAuthCallback=^TCefAuthCallback;
-	//............................................................................cef_base_capi
-	PCefBase=^TCefBase;
-	//............................................................................cef_browser_capi
-	PCefBrowser=^TCefBrowser;
-	PCefRunFileDialogCallback=^TCefRunFileDialogCallback;
-	PCefBrowserHost=^TCefBrowserHost;
-	//............................................................................cef_browser_process_handler_capi
-	PCefBrowserProcessHandler=^TCefBrowserProcessHandler;
-	//............................................................................cef_callback_capi
-	PCefCallback=^TCefCallback;
-	PCefCompletionCallback=^TCefCompletionCallback;
-	//............................................................................cef_client_capi
-	PCefClient=^TCefClient;
-	//............................................................................cef_command_line_capi
-	PCefCommandLine=^TCefCommandLine;
-	//............................................................................cef_context_menu_handler_capi
-	PCefContextMenuHandler=^TCefContextMenuHandler;
-	PCefContextMenuParams=^TCefContextMenuParams;
-	//............................................................................cef_cookie_capi
-	PCefCookieManager=^TCefCookieManager;
-	PCefCookieVisitor=^TCefCookieVisitor;
-	//............................................................................cef_dialog_handler_capi
-	PCefFileDialogCallback=^TCefFileDialogCallback;
-	PCefDialogHandler=^TCefDialogHandler;
-	//............................................................................cef_display_handler_capi
-	PCefDisplayHandler=^TCefDisplayHandler;
-	//............................................................................cef_dom_capi
-	PCefDomvisitor=^TCefDomvisitor;
-	PCefDomdocument=^TCefDomdocument;
-	PCefDomnode=^TCefDomnode;
-	//............................................................................cef_download_handler_capi
-	PCefBeforeDownloadCallback=^TCefBeforeDownloadCallback;
-	PCefDownloadItemCallback=^TCefDownloadItemCallback;
-	PCefDownloadHandler=^TCefDownloadHandler;
-	//............................................................................cef_download_item_capi
-	PCefDownloadItem=^TCefDownloadItem;
-	//............................................................................cef_drag_data_capi
-	PCefDragData=^TCefDragData;
-	//............................................................................cef_drag_handler_capi
-	PCefDragHandler=^TCefDragHandler;
-	//............................................................................cef_focus_handler_capi
-	PCefFocusHandler=^TCefFocusHandler;
-	//............................................................................cef_frame_capi
-	PCefFrame=^TCefFrame;
-	//............................................................................cef_geolocation_capi
-	PCefGetGeolocationCallback=^TCefGetGeolocationCallback;
-	//............................................................................cef_geolocation_handler_capi
-	PCefGeolocationCallback=^TCefGeolocationCallback;
-	PCefGeolocationHandler=^TCefGeolocationHandler;
-	//............................................................................cef_jsdialog_handler_capi
-	PCefJsdialogCallback=^TCefJsdialogCallback;
-	PCefJsdialogHandler=^TCefJsdialogHandler;
-	//............................................................................cef_keyboard_handler_capi
-	PCefKeyboardHandler=^TCefKeyboardHandler;
-	//............................................................................cef_life_span_handler_capi
-	PCefLifeSpanHandler=^TCefLifeSpanHandler;
-	//............................................................................cef_load_handler_capi
-	PCefLoadHandler=^TCefLoadHandler;
-	//............................................................................cef_menu_model_capi
-	PCefMenuModel=^TCefMenuModel;
-	//............................................................................cef_origin_whitelist_capi
-	//............................................................................cef_path_util_capi
-	//............................................................................cef_print_handler_capi
-	PCefPrintDialogCallback=^TCefPrintDialogCallback;
-	PCefPrintJobCallback=^TCefPrintJobCallback;
-	PCefPrintHandler=^TCefPrintHandler;
-	//............................................................................cef_print_settings_capi
-	PCefPrintSettings=^TCefPrintSettings;
-	//............................................................................cef_process_message_capi
-	PCefProcessMessage=^TCefProcessMessage;
-	//............................................................................cef_process_util_capi
-	//............................................................................cef_render_handler_capi
-	PCefRenderHandler=^TCefRenderHandler;
-	//............................................................................cef_render_process_handler_capi
-	PCefRenderProcessHandler=^TCefRenderProcessHandler;
-	//............................................................................cef_request_capi
-	PCefRequest=^TCefRequest;
-	PCefPostData=^TCefPostData;
-	PCefPostDataElement=^TCefPostDataElement;
-	//............................................................................cef_request_context_capi
-	PCefRequestContext=^TCefRequestContext;
-	//............................................................................cef_request_context_handler_capi
-	PCefRequestContextHandler=^TCefRequestContextHandler;
-	//............................................................................cef_request_handler_capi
-	PCefQuotaCallback=^TCefQuotaCallback;
-	PCefAllowCertificateErrorCallback=^TCefAllowCertificateErrorCallback;
-	PCefRequestHandler=^TCefRequestHandler;
-	//............................................................................cef_resource_bundle_handler_capi
-	PCefResourceBundleHandler=^TCefResourceBundleHandler;
-	//............................................................................cef_resource_handler_capi
-	PCefResourceHandler=^TCefResourceHandler;
-	//............................................................................cef_response_capi
-	PCefResponse=^TCefResponse;
-	//............................................................................cef_scheme_capi
-	PCefSchemeRegistrar=^TCefSchemeRegistrar;
-	PCefSchemeHandlerFactory=^TCefSchemeHandlerFactory;
-	//............................................................................cef_stream_capi
-	PCefReadHandler=^TCefReadHandler;
-	PCefStreamReader=^TCefStreamReader;
-	PCefWriteHandler=^TCefWriteHandler;
-	PCefStreamWriter=^TCefStreamWriter;
-	//............................................................................cef_string_visitor_capi
-	PCefStringVisitor=^TCefStringVisitor;
-	//............................................................................cef_task_capi
-	PCefTask=^TCefTask;
-	PCefTaskRunner=^TCefTaskRunner;
-	//............................................................................cef_trace_capi
-	PCefEndTracingCallback=^TCefEndTracingCallback;
-	//............................................................................cef_urlrequest_capi
-	PCefUrlrequest=^TCefUrlrequest;
-	PCefUrlrequestClient=^TCefUrlrequestClient;
-	//............................................................................cef_url_capi
-	//............................................................................cef_v8_capi
-	PCefV8context=^TCefV8context;
-	PCefV8handler=^TCefV8handler;
-	PCefV8accessor=^TCefV8accessor;
-	PCefV8exception=^TCefV8exception;
-	PCefV8value=^TCefV8value;
-	PCefV8stackTrace=^TCefV8stackTrace;
-	PCefV8stackFrame=^TCefV8stackFrame;
-	//............................................................................cef_values_capi
-	PCefBinaryValue=^TCefBinaryValue;
-	PCefDictionaryValue=^TCefDictionaryValue;
-	PCefListValue=^TCefListValue;
-	//............................................................................cef_web_plugin_capi
-	PCefWebPluginInfo=^TCefWebPluginInfo;
-	PCefWebPluginInfoVisitor=^TCefWebPluginInfoVisitor;
-	PCefWebPluginUnstableCallback=^TCefWebPluginUnstableCallback;
-	//............................................................................cef_xml_reader_capi
-	PCefXmlReader=^TCefXmlReader;
-	//............................................................................cef_zip_reader_capi
-	PCefZipReader=^TCefZipReader;
+		//..............................................................................cef_app_capi.h
+	PCefApp = ^TCefApp;
+
+	//..............................................................................cef_auth_callback_capi.h
+	PCefAuthCallback = ^TCefAuthCallback;
+
+	//..............................................................................cef_base_capi.h
+	PCefBase = ^TCefBase;
+
+	//..............................................................................cef_browser_capi.h
+	PCefBrowser = ^TCefBrowser;
+	PCefRunFileDialogCallback = ^TCefRunFileDialogCallback;
+	PCefNavigationEntryVisitor = ^TCefNavigationEntryVisitor;
+	PCefBrowserHost = ^TCefBrowserHost;
+
+	//..............................................................................cef_browser_process_handler_capi.h
+	PCefBrowserProcessHandler = ^TCefBrowserProcessHandler;
+
+	//..............................................................................cef_callback_capi.h
+	PCefCallback = ^TCefCallback;
+	PCefCompletionCallback = ^TCefCompletionCallback;
+
+	//..............................................................................cef_client_capi.h
+	PCefClient = ^TCefClient;
+
+	//..............................................................................cef_command_line_capi.h
+	PCefCommandLine = ^TCefCommandLine;
+
+	//..............................................................................cef_context_menu_handler_capi.h
+	PCefContextMenuHandler = ^TCefContextMenuHandler;
+	PCefContextMenuParams = ^TCefContextMenuParams;
+
+	//..............................................................................cef_cookie_capi.h
+	PCefCookieManager = ^TCefCookieManager;
+	PCefCookieVisitor = ^TCefCookieVisitor;
+	PCefSetCookieCallback = ^TCefSetCookieCallback;
+	PCefDeleteCookiesCallback = ^TCefDeleteCookiesCallback;
+
+	//..............................................................................cef_dialog_handler_capi.h
+	PCefFileDialogCallback = ^TCefFileDialogCallback;
+	PCefDialogHandler = ^TCefDialogHandler;
+
+	//..............................................................................cef_display_handler_capi.h
+	PCefDisplayHandler = ^TCefDisplayHandler;
+
+	//..............................................................................cef_dom_capi.h
+	PCefDomvisitor = ^TCefDomvisitor;
+	PCefDomdocument = ^TCefDomdocument;
+	PCefDomnode = ^TCefDomnode;
+
+	//..............................................................................cef_download_handler_capi.h
+	PCefBeforeDownloadCallback = ^TCefBeforeDownloadCallback;
+	PCefDownloadItemCallback = ^TCefDownloadItemCallback;
+	PCefDownloadHandler = ^TCefDownloadHandler;
+
+	//..............................................................................cef_download_item_capi.h
+	PCefDownloadItem = ^TCefDownloadItem;
+
+	//..............................................................................cef_drag_data_capi.h
+	PCefDragData = ^TCefDragData;
+
+	//..............................................................................cef_drag_handler_capi.h
+	PCefDragHandler = ^TCefDragHandler;
+
+	//..............................................................................cef_find_handler_capi.h
+	PCefFindHandler = ^TCefFindHandler;
+
+	//..............................................................................cef_focus_handler_capi.h
+	PCefFocusHandler = ^TCefFocusHandler;
+
+	//..............................................................................cef_frame_capi.h
+	PCefFrame = ^TCefFrame;
+
+	//..............................................................................cef_geolocation_capi.h
+	PCefGetGeolocationCallback = ^TCefGetGeolocationCallback;
+
+	//..............................................................................cef_geolocation_handler_capi.h
+	PCefGeolocationCallback = ^TCefGeolocationCallback;
+	PCefGeolocationHandler = ^TCefGeolocationHandler;
+
+	//..............................................................................cef_jsdialog_handler_capi.h
+	PCefJsdialogCallback = ^TCefJsdialogCallback;
+	PCefJsdialogHandler = ^TCefJsdialogHandler;
+
+	//..............................................................................cef_keyboard_handler_capi.h
+	PCefKeyboardHandler = ^TCefKeyboardHandler;
+
+	//..............................................................................cef_life_span_handler_capi.h
+	PCefLifeSpanHandler = ^TCefLifeSpanHandler;
+
+	//..............................................................................cef_load_handler_capi.h
+	PCefLoadHandler = ^TCefLoadHandler;
+
+	//..............................................................................cef_menu_model_capi.h
+	PCefMenuModel = ^TCefMenuModel;
+
+	//..............................................................................cef_navigation_entry_capi.h
+	PCefNavigationEntry = ^TCefNavigationEntry;
+
+	//..............................................................................cef_origin_whitelist_capi.h
+
+	//..............................................................................cef_parser_capi.h
+
+	//..............................................................................cef_path_util_capi.h
+
+	//..............................................................................cef_print_handler_capi.h
+	PCefPrintDialogCallback = ^TCefPrintDialogCallback;
+	PCefPrintJobCallback = ^TCefPrintJobCallback;
+	PCefPrintHandler = ^TCefPrintHandler;
+
+	//..............................................................................cef_print_settings_capi.h
+	PCefPrintSettings = ^TCefPrintSettings;
+
+	//..............................................................................cef_process_message_capi.h
+	PCefProcessMessage = ^TCefProcessMessage;
+
+	//..............................................................................cef_process_util_capi.h
+
+	//..............................................................................cef_render_handler_capi.h
+	PCefRenderHandler = ^TCefRenderHandler;
+
+	//..............................................................................cef_render_process_handler_capi.h
+	PCefRenderProcessHandler = ^TCefRenderProcessHandler;
+
+	//..............................................................................cef_request_capi.h
+	PCefRequest = ^TCefRequest;
+	PCefPostData = ^TCefPostData;
+	PCefPostDataElement = ^TCefPostDataElement;
+
+	//..............................................................................cef_request_context_capi.h
+	PCefRequestContext = ^TCefRequestContext;
+
+	//..............................................................................cef_request_context_handler_capi.h
+	PCefRequestContextHandler = ^TCefRequestContextHandler;
+
+	//..............................................................................cef_request_handler_capi.h
+	PCefRequestCallback = ^TCefRequestCallback;
+	PCefRequestHandler = ^TCefRequestHandler;
+
+	//..............................................................................cef_resource_bundle_handler_capi.h
+	PCefResourceBundleHandler = ^TCefResourceBundleHandler;
+
+	//..............................................................................cef_resource_handler_capi.h
+	PCefResourceHandler = ^TCefResourceHandler;
+
+	//..............................................................................cef_response_capi.h
+	PCefResponse = ^TCefResponse;
+
+	//..............................................................................cef_scheme_capi.h
+	PCefSchemeRegistrar = ^TCefSchemeRegistrar;
+	PCefSchemeHandlerFactory = ^TCefSchemeHandlerFactory;
+
+	//..............................................................................cef_ssl_info_capi.h
+	PCefSslcertPrincipal = ^TCefSslcertPrincipal;
+	PCefSslinfo = ^TCefSslinfo;
+
+	//..............................................................................cef_stream_capi.h
+	PCefReadHandler = ^TCefReadHandler;
+	PCefStreamReader = ^TCefStreamReader;
+	PCefWriteHandler = ^TCefWriteHandler;
+	PCefStreamWriter = ^TCefStreamWriter;
+
+	//..............................................................................cef_string_visitor_capi.h
+	PCefStringVisitor = ^TCefStringVisitor;
+
+	//..............................................................................cef_task_capi.h
+	PCefTask = ^TCefTask;
+	PCefTaskRunner = ^TCefTaskRunner;
+
+	//..............................................................................cef_trace_capi.h
+	PCefEndTracingCallback = ^TCefEndTracingCallback;
+
+	//..............................................................................cef_urlrequest_capi.h
+	PCefUrlrequest = ^TCefUrlrequest;
+	PCefUrlrequestClient = ^TCefUrlrequestClient;
+
+	//..............................................................................cef_v8_capi.h
+	PCefV8context = ^TCefV8context;
+	PCefV8handler = ^TCefV8handler;
+	PCefV8accessor = ^TCefV8accessor;
+	PCefV8exception = ^TCefV8exception;
+	PCefV8value = ^TCefV8value;
+	PCefV8stackTrace = ^TCefV8stackTrace;
+	PCefV8stackFrame = ^TCefV8stackFrame;
+
+	//..............................................................................cef_values_capi.h
+	PCefValue = ^TCefValue;
+	PCefBinaryValue = ^TCefBinaryValue;
+	PCefDictionaryValue = ^TCefDictionaryValue;
+	PCefListValue = ^TCefListValue;
+
+	//..............................................................................cef_web_plugin_capi.h
+	PCefWebPluginInfo = ^TCefWebPluginInfo;
+	PCefWebPluginInfoVisitor = ^TCefWebPluginInfoVisitor;
+	PCefWebPluginUnstableCallback = ^TCefWebPluginUnstableCallback;
+
+	//..............................................................................cef_xml_reader_capi.h
+	PCefXmlReader = ^TCefXmlReader;
+
+	//..............................................................................cef_zip_reader_capi.h
+	PCefZipReader = ^TCefZipReader;
 
 
   TCefPostDataElementArray = array[0..(High(Integer) div SizeOf(PCefPostDataElement)) - 1] of PCefPostDataElement;
   PCefPostDataElementArray = ^TCefPostDataElementArray;
-  PCefV8ValueArray = array[0..(High(Integer) div SizeOf(PCefV8Value)) - 1] of PCefV8Value;
+  PCefV8ValueArray = array [0..(High(Integer) div SizeOf(PCefV8Value)) - 1] of PCefV8Value;
   PPCefV8Value = ^PCefV8ValueArray;
 
-  //............................................................................cef_base_capi
+  //..............................................................................cef_base_capi.h
 	// Structure defining the reference count implementation functions. All
-	// framework structures must include the cef_base_t structure first
+	// framework structures must include the cef_base_t structure first.
 	TCefBase = record
 		// Size of the data structure.
 		size: csize_t;
@@ -193,9 +258,9 @@ type
 		has_one_ref: function(self: PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
- 	//............................................................................cef_app_capi
-	// Implement this structure to provide handler implementations. Methods will be
-	// called by the process and/or thread indicated
+  //..............................................................................cef_app_capi.h
+  // Implement this structure to provide handler implementations. Methods will be
+	// called by the process and/or thread indicated.
 	TCefApp = record
 		// Base structure.
 		base: TCefBase;
@@ -227,9 +292,10 @@ type
 		get_render_process_handler: function(self: PCefApp): PCefRenderProcessHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_auth_callback_capi
+
+	//..............................................................................cef_auth_callback_capi.h
 	// Callback structure used for asynchronous continuation of authentication
-	// requests
+	// requests.
 	TCefAuthCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -239,11 +305,11 @@ type
 		cancel: procedure(self: PCefAuthCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  //............................................................................cef_browser_capi
+	//..............................................................................cef_browser_capi.h
 	// Structure used to represent a browser window. When used in the browser
 	// process the functions of this structure may be called on any thread unless
 	// otherwise indicated in the comments. When used in the render process the
-	// functions of this structure may only be called on the main thread
+	// functions of this structure may only be called on the main thread.
 	TCefBrowser = record
 		// Base structure.
 		base: TCefBase;
@@ -289,27 +355,60 @@ type
 		get_frame_identifiers: procedure(self: PCefBrowser; identifiersCount: pcsize_t; identifiers: pcint64); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the names of all existing frames.
 		get_frame_names: procedure(self: PCefBrowser; names: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Send a message to the specified |target_process|. Returns true (1) if the
 		// message was sent successfully.
 		send_process_message: function(self: PCefBrowser; target_process: TCefProcessId; message: PCefProcessMessage): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Structure used to represent a browser window. When used in the browser
+	// process the functions of this structure may be called on any thread unless
+	// otherwise indicated in the comments. When used in the render process the
+	// functions of this structure may only be called on the main thread.
 	// Callback structure for cef_browser_host_t::RunFileDialog. The functions of
-	// this structure will be called on the browser process UI thread
+	// this structure will be called on the browser process UI thread.
 	TCefRunFileDialogCallback = record
 		// Base structure.
 		base: TCefBase;
-		// Called asynchronously after the file dialog is dismissed. If the selection
-		// was successful |file_paths| will be a single value or a list of values
-		// depending on the dialog mode. If the selection was cancelled |file_paths|
-		// will be NULL.
-		cont: procedure(self: PCefRunFileDialogCallback; browser_host: PCefBrowserHost; file_paths: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called asynchronously after the file dialog is dismissed.
+		// |selected_accept_filter| is the 0-based index of the value selected from
+		// the accept filters array passed to cef_browser_host_t::RunFileDialog.
+		// |file_paths| will be a single value or a list of values depending on the
+		// dialog mode. If the selection was cancelled |file_paths| will be NULL.
+		on_file_dialog_dismissed: procedure(self: PCefRunFileDialogCallback; selected_accept_filter: cint; file_paths: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Structure used to represent a browser window. When used in the browser
+	// process the functions of this structure may be called on any thread unless
+	// otherwise indicated in the comments. When used in the render process the
+	// functions of this structure may only be called on the main thread.
+	// Callback structure for cef_browser_host_t::RunFileDialog. The functions of
+	// this structure will be called on the browser process UI thread.
+	// Callback structure for cef_browser_host_t::GetNavigationEntries. The
+	// functions of this structure will be called on the browser process UI thread.
+	TCefNavigationEntryVisitor = record
+		// Base structure.
+		base: TCefBase;
+		// Method that will be executed. Do not keep a reference to |entry| outside of
+		// this callback. Return true (1) to continue visiting entries or false (0) to
+		// stop. |current| is true (1) if this entry is the currently loaded
+		// navigation entry. |index| is the 0-based index of this entry and |total| is
+		// the total number of entries.
+		visit: function(self: PCefNavigationEntryVisitor; entry: PCefNavigationEntry; current: cint; index: cint; total: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+	// Structure used to represent a browser window. When used in the browser
+	// process the functions of this structure may be called on any thread unless
+	// otherwise indicated in the comments. When used in the render process the
+	// functions of this structure may only be called on the main thread.
+	// Callback structure for cef_browser_host_t::RunFileDialog. The functions of
+	// this structure will be called on the browser process UI thread.
+	// Callback structure for cef_browser_host_t::GetNavigationEntries. The
+	// functions of this structure will be called on the browser process UI thread.
 	// Structure used to represent the browser process aspects of a browser window.
 	// The functions of this structure can only be called in the browser process.
 	// They may be called on any thread in that process unless otherwise indicated
-	// in the comments
+	// in the comments.
 	TCefBrowserHost = record
 		// Base structure.
 		base: TCefBase;
@@ -349,14 +448,18 @@ type
 		// Call to run a file chooser dialog. Only a single file chooser dialog may be
 		// pending at any given time. |mode| represents the type of dialog to display.
 		// |title| to the title to be used for the dialog and may be NULL to show the
-		// default title ("Open" or "Save" depending on the mode). |default_file_name|
-		// is the default file name to select in the dialog. |accept_types| is a list
-		// of valid lower-cased MIME types or file extensions specified in an input
-		// element and is used to restrict selectable files to such types. |callback|
-		// will be executed after the dialog is dismissed or immediately if another
-		// dialog is already pending. The dialog will be initiated asynchronously on
-		// the UI thread.
-		run_file_dialog: procedure(self: PCefBrowserHost; mode: TCefFileDialogMode; const title: PCefString; const default_file_name: PCefString; accept_types: TCefStringList; callback: PCefRunFileDialogCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// default title ("Open" or "Save" depending on the mode). |default_file_path|
+		// is the path with optional directory and/or file name component that will be
+		// initially selected in the dialog. |accept_filters| are used to restrict the
+		// selectable file types and may any combination of (a) valid lower-cased MIME
+		// types (e.g. "text/*" or "image/*"), (b) individual file extensions (e.g.
+		// ".txt" or ".png"), or (c) combined description and file extension delimited
+		// using "|" and ";" (e.g. "Image Types|.png;.gif;.jpg").
+		// |selected_accept_filter| is the 0-based index of the filter that will be
+		// selected by default. |callback| will be executed after the dialog is
+		// dismissed or immediately if another dialog is already pending. The dialog
+		// will be initiated asynchronously on the UI thread.
+		run_file_dialog: procedure(self: PCefBrowserHost; mode: TCefFileDialogMode; const title: PCefString; const default_file_path: PCefString; accept_filters: TCefStringList; selected_accept_filter: cint; callback: PCefRunFileDialogCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Download the file at |url| using cef_download_handler_t.
 		start_download: procedure(self: PCefBrowserHost; const url: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Print the current browser contents.
@@ -365,7 +468,8 @@ type
 		// running simultaniously. |forward| indicates whether to search forward or
 		// backward within the page. |matchCase| indicates whether the search should
 		// be case-sensitive. |findNext| indicates whether this is the first request
-		// or a follow-up.
+		// or a follow-up. The cef_find_handler_t instance, if any, returned via
+		// cef_client_t::GetFindHandler will be called to report find results.
 		find: procedure(self: PCefBrowserHost; identifier: cint; const searchText: PCefString; forward: cint; matchCase: cint; findNext: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Cancel all searches that are currently going on.
 		stop_finding: procedure(self: PCefBrowserHost; clearSelection: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -375,6 +479,11 @@ type
 		// Explicitly close the developer tools window if one exists for this browser
 		// instance.
 		close_dev_tools: procedure(self: PCefBrowserHost); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Retrieve a snapshot of current navigation entries as values sent to the
+		// specified visitor. If |current_only| is true (1) only the current
+		// navigation entry will be sent, otherwise all navigation entries will be
+		// sent.
+		get_navigation_entries: procedure(self: PCefBrowserHost; visitor: PCefNavigationEntryVisitor; current_only: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Set whether mouse cursor change is disabled.
 		set_mouse_cursor_change_disabled: procedure(self: PCefBrowserHost; disabled: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if mouse cursor change is disabled.
@@ -475,10 +584,11 @@ type
 		drag_source_system_drag_ended: procedure(self: PCefBrowserHost); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_browser_process_handler_capi
+
+	//..............................................................................cef_browser_process_handler_capi.h
 	// Structure used to implement browser process callbacks. The functions of this
 	// structure will be called on the browser process main thread unless otherwise
-	// indicated
+	// indicated.
 	TCefBrowserProcessHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -502,8 +612,9 @@ type
 		get_print_handler: function(self: PCefBrowserProcessHandler): PCefPrintHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_callback_capi
-	// Generic callback structure used for asynchronous continuation
+
+	//..............................................................................cef_callback_capi.h
+	// Generic callback structure used for asynchronous continuation.
 	TCefCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -513,7 +624,8 @@ type
 		cancel: procedure(self: PCefCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	// Generic callback structure used for asynchronous completion
+	// Generic callback structure used for asynchronous continuation.
+	// Generic callback structure used for asynchronous completion.
 	TCefCompletionCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -521,8 +633,9 @@ type
 		on_complete: procedure(self: PCefCompletionCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_client_capi
-	// Implement this structure to provide handler implementations
+
+	//..............................................................................cef_client_capi.h
+	// Implement this structure to provide handler implementations.
 	TCefClient = record
 		// Base structure.
 		base: TCefBase;
@@ -539,6 +652,8 @@ type
 		get_download_handler: function(self: PCefClient): PCefDownloadHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return the handler for drag events.
 		get_drag_handler: function(self: PCefClient): PCefDragHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Return the handler for find result events.
+		get_find_handler: function(self: PCefClient): PCefFindHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return the handler for focus events.
 		get_focus_handler: function(self: PCefClient): PCefFocusHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return the handler for geolocation permissions requests. If no handler is
@@ -563,70 +678,80 @@ type
 		on_process_message_received: function(self: PCefClient; browser: PCefBrowser; source_process: TCefProcessId; message: PCefProcessMessage): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_command_line_capi
-	TCefCommandLine=record
+
+	//..............................................................................cef_command_line_capi.h
+	// Structure used to create and/or parse command line arguments. Arguments with
+	// '--', '-' and, on Windows, '/' prefixes are considered switches. Switches
+	// will always precede any arguments without switch prefixes. Switches can
+	// optionally have a value specified using the '=' delimiter (e.g.
+	// "-switch=value"). An argument of "--" will terminate switch parsing with all
+	// subsequent tokens, regardless of prefix, being interpreted as non-switch
+	// arguments. Switch names are considered case-insensitive. This structure can
+	// be used before cef_initialize() is called.
+	TCefCommandLine = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Returns true (1) if this object is valid. Do not call any other functions
 		// if this function returns false (0).
-		is_valid:function(self:PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_valid: function(self: PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the values of this object are read-only. Some APIs may
 		// expose read-only objects.
-		is_read_only:function(self:PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_read_only: function(self: PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns a writable copy of this object.
-		copy:function(self:PCefCommandLine):PCefCommandLine; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		copy: function(self: PCefCommandLine): PCefCommandLine; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Initialize the command line with the specified |argc| and |argv| values.
 		// The first argument must be the name of the program. This function is only
 		// supported on non-Windows platforms.
-		init_from_argv:procedure(self:PCefCommandLine; argc: cint; const argv:PPAnsiChar); {$IFNDEF UNIX}{$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF}{$ELSE}cdecl{$ENDIF};
+		init_from_argv: procedure(self: PCefCommandLine; argc: cint; const argv: PPAnsiChar); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Initialize the command line with the string returned by calling
 		// GetCommandLineW(). This function is only supported on Windows.
-		init_from_string:procedure(self:PCefCommandLine; const command_line:PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		init_from_string: procedure(self: PCefCommandLine; const command_line: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Reset the command-line switches and arguments but leave the program
 		// component unchanged.
-		reset:procedure(self:PCefCommandLine); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		reset: procedure(self: PCefCommandLine); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Retrieve the original command line string as a vector of strings. The argv
-		// array: { program, [(--|-|/)switch[=value]]*, [--], [argument]*
-    get_argv:procedure(self: PCefCommandLine; argv: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Constructs and returns the represented command line string. Use this
-    // function cautiously because quoting behavior is unclear.
-    // The resulting string must be freed by calling cef_string_userfree_free().
-    get_command_line_string:function(self: PCefCommandLine):PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Get the program part of the command line string (the first item).
-    // The resulting string must be freed by calling cef_string_userfree_free().
-    get_program:function(self: PCefCommandLine):PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Set the program part of the command line string (the first item).
-    set_program:procedure(self: PCefCommandLine; const _program: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Returns true (1) if the command line has switches.
-    has_switches:function(self: PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Returns true (1) if the command line contains the given switch.
-    has_switch:function(self: PCefCommandLine; const name:PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Returns the value associated with the given switch. If the switch has no
-    // value or isn't present this function returns the NULL string.
-    // The resulting string must be freed by calling cef_string_userfree_free().
-    get_switch_value:function(self: PCefCommandLine; const name:PCefString):PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Returns the map of switch names and values. If a switch has no value an
-    // NULL string is returned.
-    get_switches:procedure(self: PCefCommandLine; switches:TCefStringMap); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Add a switch to the end of the command line. If the switch has no value
-    // pass an NULL value string.
-    append_switch:procedure(self: PCefCommandLine; const name:PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Add a switch with the specified value to the end of the command line.
-    append_switch_with_value:procedure(self: PCefCommandLine; const name:PCefString; const value:PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // True if there are remaining command line arguments.
-    has_arguments:function(self: PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Get the remaining command line arguments.
-    get_arguments:procedure(self: PCefCommandLine; arguments:TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Add an argument to the end of the command line.
-    append_argument:procedure(self: PCefCommandLine; const argument:PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-    // Insert a command before the current command. Common for debuggers, like
-    // "valgrind" or "gdb --args".
-    prepend_wrapper:procedure(self: PCefCommandLine; const wrapper:PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// array: { program, [(--|-|/)switch[=value]]*, [--], [argument]* }
+		get_argv: procedure(self: PCefCommandLine; argv: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Constructs and returns the represented command line string. Use this
+		// function cautiously because quoting behavior is unclear.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_command_line_string: function(self: PCefCommandLine): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Get the program part of the command line string (the first item).
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_program: function(self: PCefCommandLine): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Set the program part of the command line string (the first item).
+		set_program: procedure(self: PCefCommandLine; const _program: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if the command line has switches.
+		has_switches: function(self: PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if the command line contains the given switch.
+		has_switch: function(self: PCefCommandLine; const name: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the value associated with the given switch. If the switch has no
+		// value or isn't present this function returns the NULL string.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_switch_value: function(self: PCefCommandLine; const name: PCefString): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the map of switch names and values. If a switch has no value an
+		// NULL string is returned.
+		get_switches: procedure(self: PCefCommandLine; switches: TCefStringMap); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Add a switch to the end of the command line. If the switch has no value
+		// pass an NULL value string.
+		append_switch: procedure(self: PCefCommandLine; const name: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Add a switch with the specified value to the end of the command line.
+		append_switch_with_value: procedure(self: PCefCommandLine; const name: PCefString; const value: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// True if there are remaining command line arguments.
+		has_arguments: function(self: PCefCommandLine): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Get the remaining command line arguments.
+		get_arguments: procedure(self: PCefCommandLine; arguments: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Add an argument to the end of the command line.
+		append_argument: procedure(self: PCefCommandLine; const argument: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Insert a command before the current command. Common for debuggers, like
+		// "valgrind" or "gdb --args".
+		prepend_wrapper: procedure(self: PCefCommandLine; const wrapper: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_context_menu_handler_capi
+
+	//..............................................................................cef_context_menu_handler_capi.h
 	// Implement this structure to handle context menu events. The functions of this
-	// structure will be called on the UI thread
+	// structure will be called on the UI thread.
 	TCefContextMenuHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -649,8 +774,10 @@ type
 		on_context_menu_dismissed: procedure(self: PCefContextMenuHandler; browser: PCefBrowser; frame: PCefFrame); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Implement this structure to handle context menu events. The functions of this
+	// structure will be called on the UI thread.
 	// Provides information about the context menu state. The ethods of this
-	// structure can only be accessed on browser process the UI thread
+	// structure can only be accessed on browser process the UI thread.
 	TCefContextMenuParams = record
 		// Base structure.
 		base: TCefBase;
@@ -701,9 +828,6 @@ type
 		// invoked on.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_misspelled_word: function(self: PCefContextMenuParams): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the hash of the misspelled word, if any, that the context menu was
-		// invoked on.
-		get_misspelling_hash: function(self: PCefContextMenuParams): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if suggestions exist, false (0) otherwise. Fills in
 		// |suggestions| from the spell check service for the misspelled word if there
 		// is one.
@@ -718,56 +842,63 @@ type
 		get_edit_state_flags: function(self: PCefContextMenuParams): TCefContextMenuEditStateFlags; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_cookie_capi
+
+	//..............................................................................cef_cookie_capi.h
 	// Structure used for managing cookies. The functions of this structure may be
-	// called on any thread unless otherwise indicated
+	// called on any thread unless otherwise indicated.
 	TCefCookieManager = record
 		// Base structure.
 		base: TCefBase;
 		// Set the schemes supported by this manager. By default only "http" and
-		// "https" schemes are supported. Must be called before any cookies are
-		// accessed.
-		set_supported_schemes: procedure(self: PCefCookieManager; schemes: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Visit all cookies. The returned cookies are ordered by longest path, then
-		// by earliest creation date. Returns false (0) if cookies cannot be accessed.
+		// "https" schemes are supported. If |callback| is non-NULL it will be
+		// executed asnychronously on the IO thread after the change has been applied.
+		// Must be called before any cookies are accessed.
+		set_supported_schemes: procedure(self: PCefCookieManager; schemes: TCefStringList; callback: PCefCompletionCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Visit all cookies on the IO thread. The returned cookies are ordered by
+		// longest path, then by earliest creation date. Returns false (0) if cookies
+		// cannot be accessed.
 		visit_all_cookies: function(self: PCefCookieManager; visitor: PCefCookieVisitor): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Visit a subset of cookies. The results are filtered by the given url
-		// scheme, host, domain and path. If |includeHttpOnly| is true (1) HTTP-only
-		// cookies will also be included in the results. The returned cookies are
-		// ordered by longest path, then by earliest creation date. Returns false (0)
-		// if cookies cannot be accessed.
+		// Visit a subset of cookies on the IO thread. The results are filtered by the
+		// given url scheme, host, domain and path. If |includeHttpOnly| is true (1)
+		// HTTP-only cookies will also be included in the results. The returned
+		// cookies are ordered by longest path, then by earliest creation date.
+		// Returns false (0) if cookies cannot be accessed.
 		visit_url_cookies: function(self: PCefCookieManager; const url: PCefString; includeHttpOnly: cint; visitor: PCefCookieVisitor): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets a cookie given a valid URL and explicit user-provided cookie
 		// attributes. This function expects each attribute to be well-formed. It will
 		// check for disallowed characters (e.g. the ';' character is disallowed
-		// within the cookie value attribute) and will return false (0) without
-		// setting the cookie if such characters are found. This function must be
-		// called on the IO thread.
-		set_cookie: function(self: PCefCookieManager; const url: PCefString; const cookie: PCefCookie): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// within the cookie value attribute) and fail without setting the cookie if
+		// such characters are found. If |callback| is non-NULL it will be executed
+		// asnychronously on the IO thread after the cookie has been set. Returns
+		// false (0) if an invalid URL is specified or if cookies cannot be accessed.
+		set_cookie: function(self: PCefCookieManager; const url: PCefString; const cookie: PCefCookie; callback: PCefSetCookieCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Delete all cookies that match the specified parameters. If both |url| and
-		// values |cookie_name| are specified all host and domain cookies matching
+		// |cookie_name| values are specified all host and domain cookies matching
 		// both will be deleted. If only |url| is specified all host cookies (but not
 		// domain cookies) irrespective of path will be deleted. If |url| is NULL all
-		// cookies for all hosts and domains will be deleted. Returns false (0) if a
-		// non- NULL invalid URL is specified or if cookies cannot be accessed. This
-		// function must be called on the IO thread.
-		delete_cookies: function(self: PCefCookieManager; const url: PCefString; const cookie_name: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// cookies for all hosts and domains will be deleted. If |callback| is non-
+		// NULL it will be executed asnychronously on the IO thread after the cookies
+		// have been deleted. Returns false (0) if a non-NULL invalid URL is specified
+		// or if cookies cannot be accessed. Cookies can alternately be deleted using
+		// the Visit*Cookies() functions.
+		delete_cookies: function(self: PCefCookieManager; const url: PCefString; const cookie_name: PCefString; callback: PCefDeleteCookiesCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the directory path that will be used for storing cookie data. If
 		// |path| is NULL data will be stored in memory only. Otherwise, data will be
 		// stored at the specified |path|. To persist session cookies (cookies without
 		// an expiry date or validity interval) set |persist_session_cookies| to true
 		// (1). Session cookies are generally intended to be transient and most Web
-		// browsers do not persist them. Returns false (0) if cookies cannot be
-		// accessed.
-		set_storage_path: function(self: PCefCookieManager; const path: PCefString; persist_session_cookies: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Flush the backing store (if any) to disk and execute the specified
-		// |callback| on the IO thread when done. Returns false (0) if cookies cannot
-		// be accessed.
+		// browsers do not persist them. If |callback| is non-NULL it will be executed
+		// asnychronously on the IO thread after the manager's storage has been
+		// initialized. Returns false (0) if cookies cannot be accessed.
+		set_storage_path: function(self: PCefCookieManager; const path: PCefString; persist_session_cookies: cint; callback: PCefCompletionCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Flush the backing store (if any) to disk. If |callback| is non-NULL it will
+		// be executed asnychronously on the IO thread after the flush is complete.
+		// Returns false (0) if cookies cannot be accessed.
 		flush_store: function(self: PCefCookieManager; callback: PCefCompletionCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
 	// Structure to implement for visiting cookie values. The functions of this
-	// structure will always be called on the IO thread
+	// structure will always be called on the IO thread.
 	TCefCookieVisitor = record
 		// Base structure.
 		base: TCefBase;
@@ -779,39 +910,74 @@ type
 		visit: function(self: PCefCookieVisitor; const cookie: PCefCookie; count: cint; total: cint; deleteCookie: pcint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_dialog_handler_capi
-	// Callback structure for asynchronous continuation of file dialog requests
+	// Structure to implement for visiting cookie values. The functions of this
+	// structure will always be called on the IO thread.
+	// Structure to implement to be notified of asynchronous completion via
+	// cef_cookie_manager_t::set_cookie().
+	TCefSetCookieCallback = record
+		// Base structure.
+		base: TCefBase;
+		// Method that will be called upon completion. |success| will be true (1) if
+		// the cookie was set successfully.
+		on_complete: procedure(self: PCefSetCookieCallback; success: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+	// Structure to implement for visiting cookie values. The functions of this
+	// structure will always be called on the IO thread.
+	// Structure to implement to be notified of asynchronous completion via
+	// cef_cookie_manager_t::set_cookie().
+	// Structure to implement to be notified of asynchronous completion via
+	// cef_cookie_manager_t::delete_cookies().
+	TCefDeleteCookiesCallback = record
+		// Base structure.
+		base: TCefBase;
+		// Method that will be called upon completion. |num_deleted| will be the
+		// number of cookies that were deleted or -1 if unknown.
+		on_complete: procedure(self: PCefDeleteCookiesCallback; num_deleted: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+
+	//..............................................................................cef_dialog_handler_capi.h
+	// Callback structure for asynchronous continuation of file dialog requests.
 	TCefFileDialogCallback = record
 		// Base structure.
 		base: TCefBase;
-		// Continue the file selection with the specified |file_paths|. This may be a
-		// single value or a list of values depending on the dialog mode. An NULL
+		// Continue the file selection. |selected_accept_filter| should be the 0-based
+		// index of the value selected from the accept filters array passed to
+		// cef_dialog_handler_t::OnFileDialog. |file_paths| should be a single value
+		// or a list of values depending on the dialog mode. An NULL |file_paths|
 		// value is treated the same as calling cancel().
-		cont: procedure(self: PCefFileDialogCallback; file_paths: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		cont: procedure(self: PCefFileDialogCallback; selected_accept_filter: cint; file_paths: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Cancel the file selection.
 		cancel: procedure(self: PCefFileDialogCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Callback structure for asynchronous continuation of file dialog requests.
 	// Implement this structure to handle dialog events. The functions of this
-	// structure will be called on the browser process UI thread
+	// structure will be called on the browser process UI thread.
 	TCefDialogHandler = record
 		// Base structure.
 		base: TCefBase;
 		// Called to run a file chooser dialog. |mode| represents the type of dialog
 		// to display. |title| to the title to be used for the dialog and may be NULL
 		// to show the default title ("Open" or "Save" depending on the mode).
-		// |default_file_name| is the default file name to select in the dialog.
-		// |accept_types| is a list of valid lower-cased MIME types or file extensions
-		// specified in an input element and is used to restrict selectable files to
-		// such types. To display a custom dialog return true (1) and execute
-		// |callback| either inline or at a later time. To display the default dialog
-		// return false (0).
-		on_file_dialog: function(self: PCefDialogHandler; browser: PCefBrowser; mode: TCefFileDialogMode; const title: PCefString; const default_file_name: PCefString; accept_types: TCefStringList; callback: PCefFileDialogCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// |default_file_path| is the path with optional directory and/or file name
+		// component that should be initially selected in the dialog. |accept_filters|
+		// are used to restrict the selectable file types and may any combination of
+		// (a) valid lower-cased MIME types (e.g. "text/*" or "image/*"), (b)
+		// individual file extensions (e.g. ".txt" or ".png"), or (c) combined
+		// description and file extension delimited using "|" and ";" (e.g. "Image
+		// Types|.png;.gif;.jpg"). |selected_accept_filter| is the 0-based index of
+		// the filter that should be selected by default. To display a custom dialog
+		// return true (1) and execute |callback| either inline or at a later time. To
+		// display the default dialog return false (0).
+		on_file_dialog: function(self: PCefDialogHandler; browser: PCefBrowser; mode: TCefFileDialogMode; const title: PCefString; const default_file_path: PCefString; accept_filters: TCefStringList; selected_accept_filter: cint; callback: PCefFileDialogCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_display_handler_capi
+
+	//..............................................................................cef_display_handler_capi.h
 	// Implement this structure to handle events related to browser display state.
-	// The functions of this structure will be called on the UI thread
+	// The functions of this structure will be called on the UI thread.
 	TCefDisplayHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -819,6 +985,8 @@ type
 		on_address_change: procedure(self: PCefDisplayHandler; browser: PCefBrowser; frame: PCefFrame; const url: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called when the page title changes.
 		on_title_change: procedure(self: PCefDisplayHandler; browser: PCefBrowser; const title: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called when the page icon changes.
+		on_favicon_urlchange: procedure(self: PCefDisplayHandler; browser: PCefBrowser; icon_urls: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called when the browser is about to display a tooltip. |text| contains the
 		// text that will be displayed in the tooltip. To handle the display of the
 		// tooltip yourself return true (1). Otherwise, you can optionally modify
@@ -834,9 +1002,10 @@ type
 		on_console_message: function(self: PCefDisplayHandler; browser: PCefBrowser; const message: PCefString; const source: PCefString; line: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_dom_capi
+
+	//..............................................................................cef_dom_capi.h
 	// Structure to implement for visiting the DOM. The functions of this structure
-	// will be called on the render process main thread
+	// will be called on the render process main thread.
 	TCefDomvisitor = record
 		// Base structure.
 		base: TCefBase;
@@ -848,8 +1017,10 @@ type
 		visit: procedure(self: PCefDomvisitor; document: PCefDomdocument); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Structure to implement for visiting the DOM. The functions of this structure
+	// will be called on the render process main thread.
 	// Structure used to represent a DOM document. The functions of this structure
-	// should only be called on the render process main thread thread
+	// should only be called on the render process main thread thread.
 	TCefDomdocument = record
 		// Base structure.
 		base: TCefBase;
@@ -870,12 +1041,8 @@ type
 		get_focused_node: function(self: PCefDomdocument): PCefDomnode; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if a portion of the document is selected.
 		has_selection: function(self: PCefDomdocument): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the selection start node.
-		get_selection_start_node: function(self: PCefDomdocument): PCefDomnode; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the selection offset within the start node.
 		get_selection_start_offset: function(self: PCefDomdocument): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the selection end node.
-		get_selection_end_node: function(self: PCefDomdocument): PCefDomnode; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the selection offset within the end node.
 		get_selection_end_offset: function(self: PCefDomdocument): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the contents of this selection as markup.
@@ -893,8 +1060,12 @@ type
 		get_complete_url: function(self: PCefDomdocument; const partialURL: PCefString): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Structure to implement for visiting the DOM. The functions of this structure
+	// will be called on the render process main thread.
+	// Structure used to represent a DOM document. The functions of this structure
+	// should only be called on the render process main thread thread.
 	// Structure used to represent a DOM node. The functions of this structure
-	// should only be called on the render process main thread
+	// should only be called on the render process main thread.
 	TCefDomnode = record
 		// Base structure.
 		base: TCefBase;
@@ -939,7 +1110,6 @@ type
 		get_first_child: function(self: PCefDomnode): PCefDomnode; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the last child node.
 		get_last_child: function(self: PCefDomnode): PCefDomnode; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// The following functions are valid only for element nodes.
 		// Returns the tag name of this element.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_element_tag_name: function(self: PCefDomnode): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -960,8 +1130,9 @@ type
 		get_element_inner_text: function(self: PCefDomnode): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_download_handler_capi
-	// Callback structure used to asynchronously continue a download
+
+	//..............................................................................cef_download_handler_capi.h
+	// Callback structure used to asynchronously continue a download.
 	TCefBeforeDownloadCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -972,16 +1143,23 @@ type
 		cont: procedure(self: PCefBeforeDownloadCallback; const download_path: PCefString; show_dialog: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	// Callback structure used to asynchronously cancel a download
+	// Callback structure used to asynchronously continue a download.
+	// Callback structure used to asynchronously cancel a download.
 	TCefDownloadItemCallback = record
 		// Base structure.
 		base: TCefBase;
 		// Call to cancel the download.
 		cancel: procedure(self: PCefDownloadItemCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Call to pause the download.
+		pause: procedure(self: PCefDownloadItemCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Call to resume the download.
+		resume: procedure(self: PCefDownloadItemCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Callback structure used to asynchronously continue a download.
+	// Callback structure used to asynchronously cancel a download.
 	// Structure used to handle file downloads. The functions of this structure will
-	// called on the browser process UI thread
+	// called on the browser process UI thread.
 	TCefDownloadHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -999,8 +1177,9 @@ type
 		on_download_updated: procedure(self: PCefDownloadHandler; browser: PCefBrowser; download_item: PCefDownloadItem; callback: PCefDownloadItemCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_download_item_capi
-	// Structure used to represent a download item
+
+	//..............................................................................cef_download_item_capi.h
+	// Structure used to represent a download item.
 	TCefDownloadItem = record
 		// Base structure.
 		base: TCefBase;
@@ -1034,6 +1213,9 @@ type
 		// Returns the URL.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_url: function(self: PCefDownloadItem): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the original URL before any redirections.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_original_url: function(self: PCefDownloadItem): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the suggested file name.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_suggested_file_name: function(self: PCefDownloadItem): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -1045,9 +1227,10 @@ type
 		get_mime_type: function(self: PCefDownloadItem): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_drag_data_capi
+
+	//..............................................................................cef_drag_data_capi.h
 	// Structure used to represent drag data. The functions of this structure may be
-	// called on any thread
+	// called on any thread.
 	TCefDragData = record
 		// Base structure.
 		base: TCefBase;
@@ -1111,9 +1294,10 @@ type
 		add_file: procedure(self: PCefDragData; const path: PCefString; const display_name: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_drag_handler_capi
+
+	//..............................................................................cef_drag_handler_capi.h
 	// Implement this structure to handle events related to dragging. The functions
-	// of this structure will be called on the UI thread
+	// of this structure will be called on the UI thread.
 	TCefDragHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1124,9 +1308,26 @@ type
 		on_drag_enter: function(self: PCefDragHandler; browser: PCefBrowser; dragData: PCefDragData; mask: TCefDragOperationsMask): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_focus_handler_capi
+
+	//..............................................................................cef_find_handler_capi.h
+	// Implement this structure to handle events related to find results. The
+	// functions of this structure will be called on the UI thread.
+	TCefFindHandler = record
+		// Base structure.
+		base: TCefBase;
+		// Called to report find results returned by cef_browser_host_t::find().
+		// |identifer| is the identifier passed to find(), |count| is the number of
+		// matches currently identified, |selectionRect| is the location of where the
+		// match was found (in window coordinates), |activeMatchOrdinal| is the
+		// current position in the search results, and |finalUpdate| is true (1) if
+		// this is the last find notification.
+		on_find_result: procedure(self: PCefFindHandler; browser: PCefBrowser; identifier: cint; count: cint; const selectionRect: PCefRect; activeMatchOrdinal: cint; finalUpdate: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+
+	//..............................................................................cef_focus_handler_capi.h
 	// Implement this structure to handle events related to focus. The functions of
-	// this structure will be called on the UI thread
+	// this structure will be called on the UI thread.
 	TCefFocusHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1143,11 +1344,12 @@ type
 		on_got_focus: procedure(self: PCefFocusHandler; browser: PCefBrowser); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_frame_capi
+
+	//..............................................................................cef_frame_capi.h
 	// Structure used to represent a frame in the browser window. When used in the
 	// browser process the functions of this structure may be called on any thread
 	// unless otherwise indicated in the comments. When used in the render process
-	// the functions of this structure may only be called on the main thread
+	// the functions of this structure may only be called on the main thread.
 	TCefFrame = record
 		// Base structure.
 		base: TCefBase;
@@ -1220,9 +1422,10 @@ type
 		visit_dom: procedure(self: PCefFrame; visitor: PCefDomvisitor); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_geolocation_capi
+
+	//..............................................................................cef_geolocation_capi.h
 	// Implement this structure to receive geolocation updates. The functions of
-	// this structure will be called on the browser process UI thread
+	// this structure will be called on the browser process UI thread.
 	TCefGetGeolocationCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -1231,9 +1434,10 @@ type
 		on_location_update: procedure(self: PCefGetGeolocationCallback; const position: PCefGeoposition); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_geolocation_handler_capi
+
+	//..............................................................................cef_geolocation_handler_capi.h
 	// Callback structure used for asynchronous continuation of geolocation
-	// permission requests
+	// permission requests.
 	TCefGeolocationCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -1241,9 +1445,11 @@ type
 		cont: procedure(self: PCefGeolocationCallback; allow: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Callback structure used for asynchronous continuation of geolocation
+	// permission requests.
 	// Implement this structure to handle events related to geolocation permission
 	// requests. The functions of this structure will be called on the browser
-	// process UI thread
+	// process UI thread.
 	TCefGeolocationHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1260,9 +1466,10 @@ type
 		on_cancel_geolocation_permission: procedure(self: PCefGeolocationHandler; browser: PCefBrowser; const requesting_url: PCefString; request_id: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_jsdialog_handler_capi
+
+	//..............................................................................cef_jsdialog_handler_capi.h
 	// Callback structure used for asynchronous continuation of JavaScript dialog
-	// requests
+	// requests.
 	TCefJsdialogCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -1271,8 +1478,10 @@ type
 		cont: procedure(self: PCefJsdialogCallback; success: cint; const user_input: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Callback structure used for asynchronous continuation of JavaScript dialog
+	// requests.
 	// Implement this structure to handle events related to JavaScript dialogs. The
-	// functions of this structure will be called on the UI thread
+	// functions of this structure will be called on the UI thread.
 	TCefJsdialogHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1305,9 +1514,10 @@ type
 		on_dialog_closed: procedure(self: PCefJsdialogHandler; browser: PCefBrowser); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_keyboard_handler_capi
+
+	//..............................................................................cef_keyboard_handler_capi.h
 	// Implement this structure to handle events related to keyboard input. The
-	// functions of this structure will be called on the UI thread
+	// functions of this structure will be called on the UI thread.
 	TCefKeyboardHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1324,25 +1534,31 @@ type
 		on_key_event: function(self: PCefKeyboardHandler; browser: PCefBrowser; const event: PCefKeyEvent; os_event: TCefEventHandle): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_life_span_handler_capi
+
+	//..............................................................................cef_life_span_handler_capi.h
 	// Implement this structure to handle events related to browser life span. The
 	// functions of this structure will be called on the UI thread unless otherwise
-	// indicated
+	// indicated.
 	TCefLifeSpanHandler = record
 		// Base structure.
 		base: TCefBase;
-		// Called on the IO thread before a new popup window is created. The |browser|
-		// and |frame| parameters represent the source of the popup request. The
-		// |target_url| and |target_frame_name| values may be NULL if none were
-		// specified with the request. The |popupFeatures| structure contains
-		// information about the requested popup window. To allow creation of the
-		// popup window optionally modify |windowInfo|, |client|, |settings| and
-		// |no_javascript_access| and return false (0). To cancel creation of the
-		// popup window return true (1). The |client| and |settings| values will
-		// default to the source browser's values. The |no_javascript_access| value
-		// indicates whether the new browser window should be scriptable and in the
-		// same process as the source browser.
-		on_before_popup: function(self: PCefLifeSpanHandler; browser: PCefBrowser; frame: PCefFrame; const target_url: PCefString; const target_frame_name: PCefString; const popupFeatures: PCefPopupFeatures; windowInfo: PCefWindowInfo; client: PCefClient; settings: PCefBrowserSettings; no_javascript_access: pcint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called on the IO thread before a new popup browser is created. The
+		// |browser| and |frame| values represent the source of the popup request. The
+		// |target_url| and |target_frame_name| values indicate where the popup
+		// browser should navigate and may be NULL if not specified with the request.
+		// The |target_disposition| value indicates where the user intended to open
+		// the popup (e.g. current tab, new tab, etc). The |user_gesture| value will
+		// be true (1) if the popup was opened via explicit user gesture (e.g.
+		// clicking a link) or false (0) if the popup opened automatically (e.g. via
+		// the DomContentLoaded event). The |popupFeatures| structure contains
+		// additional information about the requested popup window. To allow creation
+		// of the popup browser optionally modify |windowInfo|, |client|, |settings|
+		// and |no_javascript_access| and return false (0). To cancel creation of the
+		// popup browser return true (1). The |client| and |settings| values will
+		// default to the source browser's values. If the |no_javascript_access| value
+		// is set to false (0) the new browser will not be scriptable and may not be
+		// hosted in the same renderer process as the source browser.
+		on_before_popup: function(self: PCefLifeSpanHandler; browser: PCefBrowser; frame: PCefFrame; const target_url: PCefString; const target_frame_name: PCefString; target_disposition: TCefWindowOpenDisposition; user_gesture: cint; const popupFeatures: PCefPopupFeatures; windowInfo: PCefWindowInfo; var client: PCefClient; settings: PCefBrowserSettings; no_javascript_access: pcint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called after a new browser is created.
 		on_after_created: procedure(self: PCefLifeSpanHandler; browser: PCefBrowser); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called when a modal window is about to display and the modal loop should
@@ -1356,6 +1572,7 @@ type
 		// JavaScript 'onunload' event has been fired. It will not be called for
 		// browsers after the associated OS window has been destroyed (for those
 		// browsers it is no longer possible to cancel the close).
+		//
 		// If CEF created an OS window for the browser returning false (0) will send
 		// an OS close notification to the browser window's top-level owner (e.g.
 		// WM_CLOSE on Windows, performClose: on OS-X and "delete_event" on Linux). If
@@ -1363,18 +1580,22 @@ type
 		// cause the browser object to be destroyed immediately. Return true (1) if
 		// the browser is parented to another window and that other window needs to
 		// receive close notification via some non-standard technique.
+		//
 		// If an application provides its own top-level window it should handle OS
 		// close notifications by calling cef_browser_host_t::CloseBrowser(false (0))
 		// instead of immediately closing (see the example below). This gives CEF an
 		// opportunity to process the 'onbeforeunload' event and optionally cancel the
 		// close before do_close() is called.
+		//
 		// The cef_life_span_handler_t::on_before_close() function will be called
 		// immediately before the browser object is destroyed. The application should
 		// only exit after on_before_close() has been called for all existing
 		// browsers.
+		//
 		// If the browser represents a modal window and a custom modal loop
 		// implementation was provided in cef_life_span_handler_t::run_modal() this
 		// callback should be used to restore the opener window to a usable state.
+		//
 		// By way of example consider what should happen during window close when the
 		// browser is parented to an application-provided top-level OS window. 1.
 		// User clicks the window close button which sends an OS close
@@ -1409,10 +1630,11 @@ type
 		on_before_close: procedure(self: PCefLifeSpanHandler; browser: PCefBrowser); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_load_handler_capi
+
+	//..............................................................................cef_load_handler_capi.h
 	// Implement this structure to handle events related to browser load status. The
 	// functions of this structure will be called on the browser process UI thread
-	// or render process main thread (TID_RENDERER
+	// or render process main thread (TID_RENDERER).
 	TCefLoadHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1443,11 +1665,12 @@ type
 		on_load_error: procedure(self: PCefLoadHandler; browser: PCefBrowser; frame: PCefFrame; errorCode: TCefErrorcode; const errorText: PCefString; const failedUrl: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_menu_model_capi
+
+	//..............................................................................cef_menu_model_capi.h
 	// Supports creation and modification of menus. See cef_menu_id_t for the
 	// command ids that have default implementations. All user-defined command ids
 	// should be between MENU_ID_USER_FIRST and MENU_ID_USER_LAST. The functions of
-	// this structure can only be accessed on the browser process the UI thread
+	// this structure can only be accessed on the browser process the UI thread.
 	TCefMenuModel = record
 		// Base structure.
 		base: TCefBase;
@@ -1455,30 +1678,40 @@ type
 		clear: function(self: PCefMenuModel): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the number of items in this menu.
 		get_count: function(self: PCefMenuModel): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Add a separator to the menu. Returns true (1) on success.
 		add_separator: function(self: PCefMenuModel): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Add an item to the menu. Returns true (1) on success.
 		add_item: function(self: PCefMenuModel; command_id: cint; const _label: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Add a check item to the menu. Returns true (1) on success.
 		add_check_item: function(self: PCefMenuModel; command_id: cint; const _label: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Add a radio item to the menu. Only a single item with the specified
 		// |group_id| can be checked at a time. Returns true (1) on success.
 		add_radio_item: function(self: PCefMenuModel; command_id: cint; const _label: PCefString; group_id: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Add a sub-menu to the menu. The new sub-menu is returned.
 		add_sub_menu: function(self: PCefMenuModel; command_id: cint; const _label: PCefString): PCefMenuModel; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Insert a separator in the menu at the specified |index|. Returns true (1)
 		// on success.
 		insert_separator_at: function(self: PCefMenuModel; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Insert an item in the menu at the specified |index|. Returns true (1) on
 		// success.
 		insert_item_at: function(self: PCefMenuModel; index: cint; command_id: cint; const _label: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Insert a check item in the menu at the specified |index|. Returns true (1)
 		// on success.
 		insert_check_item_at: function(self: PCefMenuModel; index: cint; command_id: cint; const _label: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Insert a radio item in the menu at the specified |index|. Only a single
 		// item with the specified |group_id| can be checked at a time. Returns true
 		// (1) on success.
 		insert_radio_item_at: function(self: PCefMenuModel; index: cint; command_id: cint; const _label: PCefString; group_id: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Insert a sub-menu in the menu at the specified |index|. The new sub-menu is
 		// returned.
 		insert_sub_menu_at: function(self: PCefMenuModel; index: cint; command_id: cint; const _label: PCefString): PCefMenuModel; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -1523,66 +1756,134 @@ type
 		get_sub_menu: function(self: PCefMenuModel; command_id: cint): PCefMenuModel; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the submenu at the specified |index| or NULL if invalid.
 		get_sub_menu_at: function(self: PCefMenuModel; index: cint): PCefMenuModel; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |command_id| is visible.
 		is_visible: function(self: PCefMenuModel; command_id: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |index| is visible.
 		is_visible_at: function(self: PCefMenuModel; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Change the visibility of the specified |command_id|. Returns true (1) on
 		// success.
 		set_visible: function(self: PCefMenuModel; command_id: cint; visible: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Change the visibility at the specified |index|. Returns true (1) on
 		// success.
 		set_visible_at: function(self: PCefMenuModel; index: cint; visible: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |command_id| is enabled.
 		is_enabled: function(self: PCefMenuModel; command_id: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |index| is enabled.
 		is_enabled_at: function(self: PCefMenuModel; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Change the enabled status of the specified |command_id|. Returns true (1)
 		// on success.
 		set_enabled: function(self: PCefMenuModel; command_id: cint; enabled: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Change the enabled status at the specified |index|. Returns true (1) on
 		// success.
 		set_enabled_at: function(self: PCefMenuModel; index: cint; enabled: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |command_id| is checked. Only applies to
 		// check and radio items.
 		is_checked: function(self: PCefMenuModel; command_id: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |index| is checked. Only applies to check
 		// and radio items.
 		is_checked_at: function(self: PCefMenuModel; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Check the specified |command_id|. Only applies to check and radio items.
 		// Returns true (1) on success.
 		set_checked: function(self: PCefMenuModel; command_id: cint; checked: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Check the specified |index|. Only applies to check and radio items. Returns
 		// true (1) on success.
 		set_checked_at: function(self: PCefMenuModel; index: cint; checked: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |command_id| has a keyboard accelerator
 		// assigned.
 		has_accelerator: function(self: PCefMenuModel; command_id: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Returns true (1) if the specified |index| has a keyboard accelerator
 		// assigned.
 		has_accelerator_at: function(self: PCefMenuModel; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Set the keyboard accelerator for the specified |command_id|. |key_code| can
 		// be any virtual key or character value. Returns true (1) on success.
 		set_accelerator: function(self: PCefMenuModel; command_id: cint; key_code: cint; shift_pressed: cint; ctrl_pressed: cint; alt_pressed: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Set the keyboard accelerator at the specified |index|. |key_code| can be
 		// any virtual key or character value. Returns true (1) on success.
 		set_accelerator_at: function(self: PCefMenuModel; index: cint; key_code: cint; shift_pressed: cint; ctrl_pressed: cint; alt_pressed: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Remove the keyboard accelerator for the specified |command_id|. Returns
 		// true (1) on success.
 		remove_accelerator: function(self: PCefMenuModel; command_id: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Remove the keyboard accelerator at the specified |index|. Returns true (1)
 		// on success.
 		remove_accelerator_at: function(self: PCefMenuModel; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Retrieves the keyboard accelerator for the specified |command_id|. Returns
 		// true (1) on success.
 		get_accelerator: function(self: PCefMenuModel; command_id: cint; key_code: pcint; shift_pressed: pcint; ctrl_pressed: pcint; alt_pressed: pcint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		//
 		// Retrieves the keyboard accelerator for the specified |index|. Returns true
 		// (1) on success.
 		get_accelerator_at: function(self: PCefMenuModel; index: cint; key_code: pcint; shift_pressed: pcint; ctrl_pressed: pcint; alt_pressed: pcint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_print_handler_capi
-	// Callback structure for asynchronous continuation of print dialog requests
+
+	//..............................................................................cef_navigation_entry_capi.h
+	// Structure used to represent an entry in navigation history.
+	TCefNavigationEntry = record
+		// Base structure.
+		base: TCefBase;
+		// Returns true (1) if this object is valid. Do not call any other functions
+		// if this function returns false (0).
+		is_valid: function(self: PCefNavigationEntry): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the actual URL of the page. For some pages this may be data: URL or
+		// similar. Use get_display_url() to return a display-friendly version.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_url: function(self: PCefNavigationEntry): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns a display-friendly version of the URL.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_display_url: function(self: PCefNavigationEntry): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the original URL that was entered by the user before any redirects.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_original_url: function(self: PCefNavigationEntry): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the title set by the page. This value may be NULL.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_title: function(self: PCefNavigationEntry): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the transition type which indicates what the user did to move to
+		// this page from the previous page.
+		get_transition_type: function(self: PCefNavigationEntry): TCefTransitionType; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this navigation includes post data.
+		has_post_data: function(self: PCefNavigationEntry): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the name of the sub-frame that navigated or an NULL value if the
+		// main frame navigated.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_frame_name: function(self: PCefNavigationEntry): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the time for the last known successful navigation completion. A
+		// navigation may be completed more than once if the page is reloaded. May be
+		// 0 if the navigation has not yet completed.
+		get_completion_time: function(self: PCefNavigationEntry): TCefTime; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the HTTP status code for the last known successful navigation
+		// response. May be 0 if the response has not yet been received or if the
+		// navigation has not yet completed.
+		get_http_status_code: function(self: PCefNavigationEntry): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+
+	//..............................................................................cef_origin_whitelist_capi.h
+
+	//..............................................................................cef_parser_capi.h
+
+	//..............................................................................cef_path_util_capi.h
+
+	//..............................................................................cef_print_handler_capi.h
+	// Callback structure for asynchronous continuation of print dialog requests.
 	TCefPrintDialogCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -1592,7 +1893,8 @@ type
 		cancel: procedure(self: PCefPrintDialogCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	// Callback structure for asynchronous continuation of print job requests
+	// Callback structure for asynchronous continuation of print dialog requests.
+	// Callback structure for asynchronous continuation of print job requests.
 	TCefPrintJobCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -1600,8 +1902,10 @@ type
 		cont: procedure(self: PCefPrintJobCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Callback structure for asynchronous continuation of print dialog requests.
+	// Callback structure for asynchronous continuation of print job requests.
 	// Implement this structure to handle printing on Linux. The functions of this
-	// structure will be called on the browser process UI thread
+	// structure will be called on the browser process UI thread.
 	TCefPrintHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1621,8 +1925,9 @@ type
 		on_print_reset: procedure(self: PCefPrintHandler); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  //............................................................................cef_print_settings_capi
-  // Structure representing print settings
+
+	//..............................................................................cef_print_settings_capi.h
+	// Structure representing print settings.
 	TCefPrintSettings = record
 		// Base structure.
 		base: TCefBase;
@@ -1679,8 +1984,9 @@ type
 		get_duplex_mode: function(self: PCefPrintSettings): TCefDuplexMode; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_process_message_capi
-	// Structure representing a message. Can be used on any process and thread
+
+	//..............................................................................cef_process_message_capi.h
+	// Structure representing a message. Can be used on any process and thread.
 	TCefProcessMessage = record
 		// Base structure.
 		base: TCefBase;
@@ -1699,9 +2005,12 @@ type
 		get_argument_list: function(self: PCefProcessMessage): PCefListValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_render_handler_capi
-  // Implement this structure to handle events when window rendering is disabled.
-	// The functions of this structure will be called on the UI thread
+
+	//..............................................................................cef_process_util_capi.h
+
+	//..............................................................................cef_render_handler_capi.h
+	// Implement this structure to handle events when window rendering is disabled.
+	// The functions of this structure will be called on the UI thread.
 	TCefRenderHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1717,6 +2026,7 @@ type
 		// Called to allow the client to fill in the CefScreenInfo object with
 		// appropriate values. Return true (1) if the |screen_info| structure has been
 		// modified.
+		//
 		// If the screen info rectangle is left NULL the rectangle from GetViewRect
 		// will be used. If the rectangle is still NULL or invalid popups may not be
 		// drawn correctly.
@@ -1725,21 +2035,28 @@ type
 		// should be shown if |show| is true (1) and hidden if |show| is false (0).
 		on_popup_show: procedure(self: PCefRenderHandler; browser: PCefBrowser; show: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called when the browser wants to move or resize the popup widget. |rect|
-		// contains the new location and size.
+		// contains the new location and size in view coordinates.
 		on_popup_size: procedure(self: PCefRenderHandler; browser: PCefBrowser; const rect: PCefRect); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Called when an element should be painted. |type| indicates whether the
-		// element is the view or the popup widget. |buffer| contains the pixel data
-		// for the whole image. |dirtyRects| contains the set of rectangles that need
-		// to be repainted. On Windows |buffer| will be |width|*|height|*4 bytes in
-		// size and represents a BGRA image with an upper-left origin.
-		on_paint: procedure(self: PCefRenderHandler; browser: PCefBrowser; _type: TCefPaintElementType; dirtyRectsCount: csize_t; dirtyRects: PCefRectArray; const buffer: void; width: cint; height: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Called when the browser window's cursor has changed.
-		on_cursor_change: procedure(self: PCefRenderHandler; browser: PCefBrowser; cursor: TCefCursorHandle); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called when an element should be painted. Pixel values passed to this
+		// function are scaled relative to view coordinates based on the value of
+		// CefScreenInfo.device_scale_factor returned from GetScreenInfo. |type|
+		// indicates whether the element is the view or the popup widget. |buffer|
+		// contains the pixel data for the whole image. |dirtyRects| contains the set
+		// of rectangles in pixel coordinates that need to be repainted. |buffer| will
+		// be |width|*|height|*4 bytes in size and represents a BGRA image with an
+		// upper-left origin.
+		on_paint: procedure(self: PCefRenderHandler; browser: PCefBrowser; _type: TCefPaintElementType; dirtyRectsCount: csize_t; dirtyRects: PCefRectArray; const buffer: cvoid; width: cint; height: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called when the browser's cursor has changed. If |type| is CT_CUSTOM then
+		// |custom_cursor_info| will be populated with the custom cursor information.
+		on_cursor_change: procedure(self: PCefRenderHandler; browser: PCefBrowser; cursor: TCefCursorHandle; _type: TCefCursorType; const custom_cursor_info: PCefCursorInfo); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called when the user starts dragging content in the web view. Contextual
-		// information about the dragged content is supplied by |drag_data|. OS APIs
-		// that run a system message loop may be used within the StartDragging call.
+		// information about the dragged content is supplied by |drag_data|. (|x|,
+		// |y|) is the drag start location in screen coordinates. OS APIs that run a
+		// system message loop may be used within the StartDragging call.
+		//
 		// Return false (0) to abort the drag operation. Don't call any of
 		// cef_browser_host_t::DragSource*Ended* functions after returning false (0).
+		//
 		// Return true (1) to handle the drag operation. Call
 		// cef_browser_host_t::DragSourceEndedAt and DragSourceSystemDragEnded either
 		// synchronously or asynchronously to inform the web view that the drag
@@ -1750,13 +2067,14 @@ type
 		// copy, link).
 		update_drag_cursor: procedure(self: PCefRenderHandler; browser: PCefBrowser; operation: TCefDragOperationsMask); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called when the scroll offset has changed.
-		on_scroll_offset_changed: procedure(self: PCefRenderHandler; browser: PCefBrowser); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		on_scroll_offset_changed: procedure(self: PCefRenderHandler; browser: PCefBrowser; x: cdouble; y: cdouble); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_render_process_handler_capi
+
+	//..............................................................................cef_render_process_handler_capi.h
 	// Structure used to implement render process callbacks. The functions of this
 	// structure will be called on the render process main thread (TID_RENDERER)
-	// unless otherwise indicated
+	// unless otherwise indicated.
 	TCefRenderProcessHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1806,9 +2124,10 @@ type
 		on_process_message_received: function(self: PCefRenderProcessHandler; browser: PCefBrowser; source_process: TCefProcessId; message: PCefProcessMessage): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_request_capi
+
+	//..............................................................................cef_request_capi.h
 	// Structure used to represent a web request. The functions of this structure
-	// may be called on any thread
+	// may be called on any thread.
 	TCefRequest = record
 		// Base structure.
 		base: TCefBase;
@@ -1837,10 +2156,10 @@ type
 		_set: procedure(self: PCefRequest; const url: PCefString; const method: PCefString; postData: PCefPostData; headerMap: TCefStringMultimap); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Get the flags used in combination with cef_urlrequest_t. See
 		// cef_urlrequest_flags_t for supported values.
-		get_flags: function(self: PCefRequest): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_flags: function(self: PCefRequest): TCefURLrequestFlags; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Set the flags used in combination with cef_urlrequest_t.  See
 		// cef_urlrequest_flags_t for supported values.
-		set_flags: procedure(self: PCefRequest; flags: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		set_flags: procedure(self: PCefRequest; flags: TCefURLRequestFlags); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Set the URL to the first party for cookies used in combination with
 		// cef_urlrequest_t.
 		// The resulting string must be freed by calling cef_string_userfree_free().
@@ -1855,10 +2174,14 @@ type
 		// process and only applies to requests that represent a main frame or sub-
 		// frame navigation.
 		get_transition_type: function(self: PCefRequest): TCefTransitionType; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the globally unique identifier for this request or 0 if not
+		// specified. Can be used by cef_request_tHandler implementations in the
+		// browser process to track a single request across multiple callbacks.
+		get_identifier: function(self: PCefRequest): cuint64; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure used to represent post data for a web request. The functions of
-	// this structure may be called on any thread
+	// Structure used to represent post data for a web request. The functions of
+	// this structure may be called on any thread.
 	TCefPostData = record
 		// Base structure.
 		base: TCefBase;
@@ -1867,7 +2190,7 @@ type
 		// Returns the number of existing post data elements.
 		get_element_count: function(self: PCefPostData): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Retrieve the post data elements.
-		get_elements: procedure(self: PCefPostData; elementsCount: pcsize_t; elements: PCefPostDataElementArray); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_elements: procedure(self: PCefPostData; elementsCount: pcsize_t; var elements: PCefPostDataElementArray); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Remove the specified post data element.  Returns true (1) if the removal
 		// succeeds.
 		remove_element: function(self: PCefPostData; element: PCefPostDataElement): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -1877,8 +2200,8 @@ type
 		remove_elements: procedure(self: PCefPostData); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure used to represent a single element in the request post data. The
-	// functions of this structure may be called on any thread
+	// Structure used to represent a single element in the request post data. The
+	// functions of this structure may be called on any thread.
 	TCefPostDataElement = record
 		// Base structure.
 		base: TCefBase;
@@ -1890,7 +2213,7 @@ type
 		set_to_file: procedure(self: PCefPostDataElement; const fileName: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// The post data element will represent bytes.  The bytes passed in will be
 		// copied.
-		set_to_bytes: procedure(self: PCefPostDataElement; size: csize_t; const bytes: void); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		set_to_bytes: procedure(self: PCefPostDataElement; size: csize_t; const bytes: cvoid); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return the type of this post data element.
 		get_type: function(self: PCefPostDataElement): TCefPostdataelementType; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return the file name.
@@ -1900,69 +2223,98 @@ type
 		get_bytes_count: function(self: PCefPostDataElement): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Read up to |size| bytes into |bytes| and return the number of bytes
 		// actually read.
-		get_bytes: function(self: PCefPostDataElement; size: csize_t; bytes: void): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_bytes: function(self: PCefPostDataElement; size: csize_t; bytes: cvoid): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_request_context_capi
-	// A request context provides request handling for a set of related browser
-	// objects. A request context is specified when creating a new browser object
-	// via the cef_browser_host_t static factory functions. Browser objects with
-	// different request contexts will never be hosted in the same render process.
-	// Browser objects with the same request context may or may not be hosted in the
-	// same render process depending on the process model. Browser objects created
-	// indirectly via the JavaScript window.open function or targeted links will
-	// share the same render process and the same request context as the source
-	// browser. When running in single-process mode there is only a single render
-	// process (the main process) and so all browsers created in single-process mode
-	// will share the same request context. This will be the first request context
-	// passed into a cef_browser_host_t static factory function and all other
-	// request context objects will be ignored
+
+	//..............................................................................cef_request_context_capi.h
+	// A request context provides request handling for a set of related browser or
+	// URL request objects. A request context can be specified when creating a new
+	// browser via the cef_browser_host_t static factory functions or when creating
+	// a new URL request via the cef_urlrequest_t static factory functions. Browser
+	// objects with different request contexts will never be hosted in the same
+	// render process. Browser objects with the same request context may or may not
+	// be hosted in the same render process depending on the process model. Browser
+	// objects created indirectly via the JavaScript window.open function or
+	// targeted links will share the same render process and the same request
+	// context as the source browser. When running in single-process mode there is
+	// only a single render process (the main process) and so all browsers created
+	// in single-process mode will share the same request context. This will be the
+	// first request context passed into a cef_browser_host_t static factory
+	// function and all other request context objects will be ignored.
 	TCefRequestContext = record
 		// Base structure.
 		base: TCefBase;
 		// Returns true (1) if this object is pointing to the same context as |that|
 		// object.
 		is_same: function(self: PCefRequestContext; other: PCefRequestContext): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns true (1) if this object is the global context.
+		// Returns true (1) if this object is sharing the same storage as |that|
+		// object.
+		is_sharing_with: function(self: PCefRequestContext; other: PCefRequestContext): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object is the global context. The global context
+		// is used by default when creating a browser or URL request with a NULL
+		// context argument.
 		is_global: function(self: PCefRequestContext): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the handler for this context if any.
 		get_handler: function(self: PCefRequestContext): PCefRequestContextHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the cache path for this object. If NULL an "incognito mode" in-
+		// memory cache is being used.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_cache_path: function(self: PCefRequestContext): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the default cookie manager for this object. This will be the global
+		// cookie manager if this object is the global request context. Otherwise,
+		// this will be the default cookie manager used when this request context does
+		// not receive a value via cef_request_tContextHandler::get_cookie_manager().
+		// If |callback| is non-NULL it will be executed asnychronously on the IO
+		// thread after the manager's storage has been initialized.
+		get_default_cookie_manager: function(self: PCefRequestContext; callback: PCefCompletionCallback): PCefCookieManager; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Register a scheme handler factory for the specified |scheme_name| and
+		// optional |domain_name|. An NULL |domain_name| value for a standard scheme
+		// will cause the factory to match all domain names. The |domain_name| value
+		// will be ignored for non-standard schemes. If |scheme_name| is a built-in
+		// scheme and no handler is returned by |factory| then the built-in scheme
+		// handler factory will be called. If |scheme_name| is a custom scheme then
+		// you must also implement the cef_app_t::on_register_custom_schemes()
+		// function in all processes. This function may be called multiple times to
+		// change or remove the factory that matches the specified |scheme_name| and
+		// optional |domain_name|. Returns false (0) if an error occurs. This function
+		// may be called on any thread in the browser process.
+		register_scheme_handler_factory: function(self: PCefRequestContext; const scheme_name: PCefString; const domain_name: PCefString; factory: PCefSchemeHandlerFactory): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Clear all registered scheme handler factories. Returns false (0) on error.
+		// This function may be called on any thread in the browser process.
+		clear_scheme_handler_factories: function(self: PCefRequestContext): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_request_context_handler_capi
-	// Implement this structure to provide handler implementations
+
+	//..............................................................................cef_request_context_handler_capi.h
+	// Implement this structure to provide handler implementations. The handler
+	// instance will not be released until all objects related to the context have
+	// been destroyed.
 	TCefRequestContextHandler = record
 		// Base structure.
 		base: TCefBase;
-		// Called on the IO thread to retrieve the cookie manager. The global cookie
-		// manager will be used if this function returns NULL.
+		// Called on the IO thread to retrieve the cookie manager. If this function
+		// returns NULL the default cookie manager retrievable via
+		// cef_request_tContext::get_default_cookie_manager() will be used.
 		get_cookie_manager: function(self: PCefRequestContextHandler): PCefCookieManager; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_request_handler_capi
-	// Callback structure used for asynchronous continuation of quota requests
-	TCefQuotaCallback = record
-		// Base structure.
-		base: TCefBase;
-		// Continue the quota request. If |allow| is true (1) the request will be
-		// allowed. Otherwise, the request will be denied.
-		cont: procedure(self: PCefQuotaCallback; allow: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Cancel the quota request.
-		cancel: procedure(self: PCefQuotaCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-	end;
 
-	// Callback structure used for asynchronous continuation of url requests when
-	// invalid SSL certificates are encountered
-	TCefAllowCertificateErrorCallback = record
+	//..............................................................................cef_request_handler_capi.h
+	// Callback structure used for asynchronous continuation of url requests.
+	TCefRequestCallback = record
 		// Base structure.
 		base: TCefBase;
 		// Continue the url request. If |allow| is true (1) the request will be
 		// continued. Otherwise, the request will be canceled.
-		cont: procedure(self: PCefAllowCertificateErrorCallback; allow: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		cont: procedure(self: PCefRequestCallback; allow: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Cancel the url request.
+		cancel: procedure(self: PCefRequestCallback); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Callback structure used for asynchronous continuation of url requests.
 	// Implement this structure to handle events related to browser requests. The
-	// functions of this structure will be called on the thread indicated
+	// functions of this structure will be called on the thread indicated.
 	TCefRequestHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -1975,32 +2327,58 @@ type
 		// cef_load_handler_t::OnLoadError will be called with an |errorCode| value of
 		// ERR_ABORTED.
 		on_before_browse: function(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; request: PCefRequest; is_redirect: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called on the UI thread before OnBeforeBrowse in certain limited cases
+		// where navigating a new or different browser might be desirable. This
+		// includes user-initiated navigation that might open in a special way (e.g.
+		// links clicked via middle-click or ctrl + left-click) and certain types of
+		// cross-origin navigation initiated from the renderer process (e.g.
+		// navigating the top-level frame to/from a file URL). The |browser| and
+		// |frame| values represent the source of the navigation. The
+		// |target_disposition| value indicates where the user intended to navigate
+		// the browser based on standard Chromium behaviors (e.g. current tab, new
+		// tab, etc). The |user_gesture| value will be true (1) if the browser
+		// navigated via explicit user gesture (e.g. clicking a link) or false (0) if
+		// it navigated automatically (e.g. via the DomContentLoaded event). Return
+		// true (1) to cancel the navigation or false (0) to allow the navigation to
+		// proceed in the source browser's top-level frame.
+		on_open_urlfrom_tab: function(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; const target_url: PCefString; target_disposition: TCefWindowOpenDisposition; user_gesture: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the IO thread before a resource request is loaded. The |request|
-		// object may be modified. To cancel the request return true (1) otherwise
-		// return false (0).
-		on_before_resource_load: function(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; request: PCefRequest): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// object may be modified. Return RV_CONTINUE to continue the request
+		// immediately. Return RV_CONTINUE_ASYNC and call cef_request_tCallback::
+		// cont() at a later time to continue or cancel the request asynchronously.
+		// Return RV_CANCEL to cancel the request immediately.
+		//
+		on_before_resource_load: function(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; request: PCefRequest; callback: PCefRequestCallback): TCefReturnValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the IO thread before a resource is loaded. To allow the resource
 		// to load normally return NULL. To specify a handler for the resource return
 		// a cef_resource_handler_t object. The |request| object should not be
 		// modified in this callback.
 		get_resource_handler: function(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; request: PCefRequest): PCefResourceHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Called on the IO thread when a resource load is redirected. The |old_url|
-		// parameter will contain the old URL. The |new_url| parameter will contain
-		// the new URL and can be changed if desired.
-		on_resource_redirect: procedure(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; const old_url: PCefString; new_url: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called on the IO thread when a resource load is redirected. The |request|
+		// parameter will contain the old URL and other request-related information.
+		// The |new_url| parameter will contain the new URL and can be changed if
+		// desired. The |request| object cannot be modified in this callback.
+		on_resource_redirect: procedure(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; request: PCefRequest; new_url: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called on the IO thread when a resource response is received. To allow the
+		// resource to load normally return false (0). To redirect or retry the
+		// resource modify |request| (url, headers or post body) and return true (1).
+		// The |response| object cannot be modified in this callback.
+		on_resource_response: function(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; request: PCefRequest; response: PCefResponse): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the IO thread when the browser needs credentials from the user.
 		// |isProxy| indicates whether the host is a proxy server. |host| contains the
 		// hostname and |port| contains the port number. Return true (1) to continue
-		// the request and call cef_auth_callback_t::cont() when the authentication
-		// information is available. Return false (0) to cancel the request.
+		// the request and call cef_auth_callback_t::cont() either in this function or
+		// at a later time when the authentication information is available. Return
+		// false (0) to cancel the request immediately.
 		get_auth_credentials: function(self: PCefRequestHandler; browser: PCefBrowser; frame: PCefFrame; isProxy: cint; const host: PCefString; port: cint; const realm: PCefString; const scheme: PCefString; callback: PCefAuthCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the IO thread when JavaScript requests a specific storage quota
 		// size via the webkitStorageInfo.requestQuota function. |origin_url| is the
 		// origin of the page making the request. |new_size| is the requested quota
-		// size in bytes. Return true (1) and call cef_quota_callback_t::cont() either
-		// in this function or at a later time to grant or deny the request. Return
-		// false (0) to cancel the request.
-		on_quota_request: function(self: PCefRequestHandler; browser: PCefBrowser; const origin_url: PCefString; new_size: cint64; callback: PCefQuotaCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// size in bytes. Return true (1) to continue the request and call
+		// cef_request_tCallback::cont() either in this function or at a later time to
+		// grant or deny the request. Return false (0) to cancel the request
+		// immediately.
+		on_quota_request: function(self: PCefRequestHandler; browser: PCefBrowser; const origin_url: PCefString; new_size: cint64; callback: PCefRequestCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the UI thread to handle requests for URLs with an unknown
 		// protocol component. Set |allow_os_execution| to true (1) to attempt
 		// execution via the registered OS protocol handler, if any. SECURITY WARNING:
@@ -2008,28 +2386,32 @@ type
 		// OTHER URL ANALYSIS BEFORE ALLOWING OS EXECUTION.
 		on_protocol_execution: procedure(self: PCefRequestHandler; browser: PCefBrowser; const url: PCefString; allow_os_execution: pcint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the UI thread to handle requests for URLs with an invalid SSL
-		// certificate. Return true (1) and call
-		// cef_allow_certificate_error_callback_t:: cont() either in this function or
-		// at a later time to continue or cancel the request. Return false (0) to
-		// cancel the request immediately. If |callback| is NULL the error cannot be
-		// recovered from and the request will be canceled automatically. If
-		// CefSettings.ignore_certificate_errors is set all invalid certificates will
-		// be accepted without calling this function.
-		on_certificate_error: function(self: PCefRequestHandler; cert_error: TCefErrorcode; const request_url: PCefString; callback: PCefAllowCertificateErrorCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// certificate. Return true (1) and call cef_request_tCallback::cont() either
+		// in this function or at a later time to continue or cancel the request.
+		// Return false (0) to cancel the request immediately. If |callback| is NULL
+		// the error cannot be recovered from and the request will be canceled
+		// automatically. If CefSettings.ignore_certificate_errors is set all invalid
+		// certificates will be accepted without calling this function.
+		on_certificate_error: function(self: PCefRequestHandler; browser: PCefBrowser; cert_error: TCefErrorcode; const request_url: PCefString; ssl_info: PCefSslinfo; callback: PCefRequestCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the browser process IO thread before a plugin is loaded. Return
 		// true (1) to block loading of the plugin.
 		on_before_plugin_load: function(self: PCefRequestHandler; browser: PCefBrowser; const url: PCefString; const policy_url: PCefString; info: PCefWebPluginInfo): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the browser process UI thread when a plugin has crashed.
 		// |plugin_path| is the path of the plugin that crashed.
 		on_plugin_crashed: procedure(self: PCefRequestHandler; browser: PCefBrowser; const plugin_path: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Called on the browser process UI thread when the render view associated
+		// with |browser| is ready to receive/handle IPC messages in the render
+		// process.
+		on_render_view_ready: procedure(self: PCefRequestHandler; browser: PCefBrowser); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the browser process UI thread when the render process terminates
 		// unexpectedly. |status| indicates how the process terminated.
 		on_render_process_terminated: procedure(self: PCefRequestHandler; browser: PCefBrowser; status: TCefTerminationStatus); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_resource_bundle_handler_capi
+
+	//..............................................................................cef_resource_bundle_handler_capi.h
 	// Structure used to implement a custom resource bundle structure. The functions
-	// of this structure may be called on multiple threads
+	// of this structure may be called on multiple threads.
 	TCefResourceBundleHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -2044,12 +2426,13 @@ type
 		// return false (0). The resource data will not be copied and must remain
 		// resident in memory. Supported resource IDs are listed in
 		// cef_pack_resources.h.
-		get_data_resource: function(self: PCefResourceBundleHandler; resource_id: cint; data: void; data_size: pcsize_t): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_data_resource: function(self: PCefResourceBundleHandler; resource_id: cint; var data: cvoid; data_size: pcsize_t): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_resource_handler_capi
+
+	//..............................................................................cef_resource_handler_capi.h
 	// Structure used to implement a custom request handler structure. The functions
-	// of this structure will always be called on the IO thread
+	// of this structure will always be called on the IO thread.
 	TCefResourceHandler = record
 		// Base structure.
 		base: TCefBase;
@@ -2073,7 +2456,7 @@ type
 		// bytes copied, and return true (1). To read the data at a later time set
 		// |bytes_read| to 0, return true (1) and call cef_callback_t::cont() when the
 		// data is available. To indicate response completion return false (0).
-		read_response: function(self: PCefResourceHandler; data_out: void; bytes_to_read: cint; bytes_read: pcint; callback: PCefCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		read_response: function(self: PCefResourceHandler; data_out: cvoid; bytes_to_read: cint; bytes_read: pcint; callback: PCefCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return true (1) if the specified cookie can be sent with the request or
 		// false (0) otherwise. If false (0) is returned for any cookie then no
 		// cookies will be sent with the request.
@@ -2085,9 +2468,10 @@ type
 		cancel: procedure(self: PCefResourceHandler); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_response_capi
+
+	//..............................................................................cef_response_capi.h
 	// Structure used to represent a web response. The functions of this structure
-	// may be called on any thread
+	// may be called on any thread.
 	TCefResponse = record
 		// Base structure.
 		base: TCefBase;
@@ -2116,17 +2500,20 @@ type
 		set_header_map: procedure(self: PCefResponse; headerMap: TCefStringMultimap); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_scheme_capi
-	// Structure that manages custom scheme registrations
+
+	//..............................................................................cef_scheme_capi.h
+	// Structure that manages custom scheme registrations.
 	TCefSchemeRegistrar = record
 		// Base structure.
 		base: TCefBase;
 		// Register a custom scheme. This function should not be called for the built-
 		// in HTTP, HTTPS, FILE, FTP, ABOUT and DATA schemes.
+		//
 		// If |is_standard| is true (1) the scheme will be treated as a standard
 		// scheme. Standard schemes are subject to URL canonicalization and parsing
 		// rules as defined in the Common Internet Scheme Syntax RFC 1738 Section 3.1
 		// available at http://www.ietf.org/rfc/rfc1738.txt
+		//
 		// In particular, the syntax for standard scheme URLs must be of the form:
 		// <pre>
 		//  [scheme]://[username]:[password]@[host]:[port]/[url-path]
@@ -2139,10 +2526,12 @@ type
 		// canonicalized to "scheme://host/path". The origin of a standard scheme URL
 		// is the combination of scheme, host and port (i.e., "scheme://host:port" in
 		// the most explicit case).
+		//
 		// For non-standard scheme URLs only the "scheme:" component is parsed and
 		// canonicalized. The remainder of the URL will be passed to the handler as-
 		// is. For example, "scheme:///some%20text" will remain the same. Non-standard
 		// scheme URLs cannot be used as a target for form submission.
+		//
 		// If |is_local| is true (1) the scheme will be treated as local (i.e., with
 		// the same security rules as those applied to "file" URLs). Normal pages
 		// cannot link to or access local URLs. Also, by default, local URLs can only
@@ -2152,19 +2541,22 @@ type
 		// CefSettings.file_access_from_file_urls_allowed value to true (1). To allow
 		// XMLHttpRequest calls from a local URL to all origins set the
 		// CefSettings.universal_access_from_file_urls_allowed value to true (1).
+		//
 		// If |is_display_isolated| is true (1) the scheme will be treated as display-
 		// isolated. This means that pages cannot display these URLs unless they are
 		// from the same scheme. For example, pages in another origin cannot create
 		// iframes or hyperlinks to URLs with this scheme.
+		//
 		// This function may be called on any thread. It should only be called once
 		// per unique |scheme_name| value. If |scheme_name| is already registered or
 		// if an error occurs this function will return false (0).
 		add_custom_scheme: function(self: PCefSchemeRegistrar; const scheme_name: PCefString; is_standard: cint; is_local: cint; is_display_isolated: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Structure that manages custom scheme registrations.
 	// Structure that creates cef_resource_handler_t instances for handling scheme
 	// requests. The functions of this structure will always be called on the IO
-	// thread
+	// thread.
 	TCefSchemeHandlerFactory = record
 		// Base structure.
 		base: TCefBase;
@@ -2177,14 +2569,73 @@ type
 		create: function(self: PCefSchemeHandlerFactory; browser: PCefBrowser; frame: PCefFrame; const scheme_name: PCefString; request: PCefRequest): PCefResourceHandler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_stream_capi
+
+	//..............................................................................cef_ssl_info_capi.h
+	// Structure representing the issuer or subject field of an X.509 certificate.
+	TCefSslcertPrincipal = record
+		// Base structure.
+		base: TCefBase;
+		// Returns a name that can be used to represent the issuer.  It tries in this
+		// order: CN, O and OU and returns the first non-NULL one found.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_display_name: function(self: PCefSslcertPrincipal): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the common name.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_common_name: function(self: PCefSslcertPrincipal): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the locality name.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_locality_name: function(self: PCefSslcertPrincipal): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the state or province name.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_state_or_province_name: function(self: PCefSslcertPrincipal): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the country name.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_country_name: function(self: PCefSslcertPrincipal): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Retrieve the list of street addresses.
+		get_street_addresses: procedure(self: PCefSslcertPrincipal; addresses: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Retrieve the list of organization names.
+		get_organization_names: procedure(self: PCefSslcertPrincipal; names: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Retrieve the list of organization unit names.
+		get_organization_unit_names: procedure(self: PCefSslcertPrincipal; names: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Retrieve the list of domain components.
+		get_domain_components: procedure(self: PCefSslcertPrincipal; components: TCefStringList); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+	// Structure representing the issuer or subject field of an X.509 certificate.
+	// Structure representing SSL information.
+	TCefSslinfo = record
+		// Base structure.
+		base: TCefBase;
+		// Returns the subject of the X.509 certificate. For HTTPS server certificates
+		// this represents the web server.  The common name of the subject should
+		// match the host name of the web server.
+		get_subject: function(self: PCefSslinfo): PCefSslcertPrincipal; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the issuer of the X.509 certificate.
+		get_issuer: function(self: PCefSslinfo): PCefSslcertPrincipal; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the DER encoded serial number for the X.509 certificate. The value
+		// possibly includes a leading 00 byte.
+		get_serial_number: function(self: PCefSslinfo): PCefBinaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the date before which the X.509 certificate is invalid.
+		// CefTime.GetTimeT() will return 0 if no date was specified.
+		get_valid_start: function(self: PCefSslinfo): TCefTime; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the date after which the X.509 certificate is invalid.
+		// CefTime.GetTimeT() will return 0 if no date was specified.
+		get_valid_expiry: function(self: PCefSslinfo): TCefTime; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the DER encoded data for the X.509 certificate.
+		get_derencoded: function(self: PCefSslinfo): PCefBinaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the PEM encoded data for the X.509 certificate.
+		get_pemencoded: function(self: PCefSslinfo): PCefBinaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+
+	//..............................................................................cef_stream_capi.h
 	// Structure the client can implement to provide a custom stream reader. The
-	// functions of this structure may be called on any thread
+	// functions of this structure may be called on any thread.
 	TCefReadHandler = record
 		// Base structure.
 		base: TCefBase;
 		// Read raw binary data.
-		read: function(self: PCefReadHandler; ptr: void; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		read: function(self: PCefReadHandler; ptr: cvoid; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Seek to the specified offset position. |whence| may be any one of SEEK_CUR,
 		// SEEK_END or SEEK_SET. Return zero on success and non-zero on failure.
 		seek: function(self: PCefReadHandler; offset: cint64; whence: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -2198,13 +2649,15 @@ type
 		may_block: function(self: PCefReadHandler): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Structure the client can implement to provide a custom stream reader. The
+	// functions of this structure may be called on any thread.
 	// Structure used to read data from a stream. The functions of this structure
-	// may be called on any thread
+	// may be called on any thread.
 	TCefStreamReader = record
 		// Base structure.
 		base: TCefBase;
 		// Read raw binary data.
-		read: function(self: PCefStreamReader; ptr: void; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		read: function(self: PCefStreamReader; ptr: cvoid; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Seek to the specified offset position. |whence| may be any one of SEEK_CUR,
 		// SEEK_END or SEEK_SET. Returns zero on success and non-zero on failure.
 		seek: function(self: PCefStreamReader; offset: cint64; whence: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -2219,12 +2672,12 @@ type
 	end;
 
 	// Structure the client can implement to provide a custom stream writer. The
-	// functions of this structure may be called on any thread
+	// functions of this structure may be called on any thread.
 	TCefWriteHandler = record
 		// Base structure.
 		base: TCefBase;
 		// Write raw binary data.
-		write: function(self: PCefWriteHandler; const ptr: void; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		write: function(self: PCefWriteHandler; const ptr: cvoid; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Seek to the specified offset position. |whence| may be any one of SEEK_CUR,
 		// SEEK_END or SEEK_SET. Return zero on success and non-zero on failure.
 		seek: function(self: PCefWriteHandler; offset: cint64; whence: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -2238,13 +2691,15 @@ type
 		may_block: function(self: PCefWriteHandler): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Structure the client can implement to provide a custom stream writer. The
+	// functions of this structure may be called on any thread.
 	// Structure used to write data to a stream. The functions of this structure may
-	// be called on any thread
+	// be called on any thread.
 	TCefStreamWriter = record
 		// Base structure.
 		base: TCefBase;
 		// Write raw binary data.
-		write: function(self: PCefStreamWriter; const ptr: void; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		write: function(self: PCefStreamWriter; const ptr: cvoid; size: csize_t; n: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Seek to the specified offset position. |whence| may be any one of SEEK_CUR,
 		// SEEK_END or SEEK_SET. Returns zero on success and non-zero on failure.
 		seek: function(self: PCefStreamWriter; offset: cint64; whence: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -2258,8 +2713,9 @@ type
 		may_block: function(self: PCefStreamWriter): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_string_visitor_capi
-	// Implement this structure to receive string values asynchronously
+
+	//..............................................................................cef_string_visitor_capi.h
+	// Implement this structure to receive string values asynchronously.
 	TCefStringVisitor = record
 		// Base structure.
 		base: TCefBase;
@@ -2267,13 +2723,14 @@ type
 		visit: procedure(self: PCefStringVisitor; const _string: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_task_capi
+
+	//..............................................................................cef_task_capi.h
 	// Implement this structure for asynchronous task execution. If the task is
 	// posted successfully and if the associated message loop is still running then
 	// the execute() function will be called on the target thread. If the task fails
 	// to post then the task object may be destroyed on the source thread instead of
 	// the target thread. For this reason be cautious when performing work in the
-	// task object destructor
+	// task object destructor.
 	TCefTask = record
 		// Base structure.
 		base: TCefBase;
@@ -2281,13 +2738,19 @@ type
 		execute: procedure(self: PCefTask); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Implement this structure for asynchronous task execution. If the task is
+	// posted successfully and if the associated message loop is still running then
+	// the execute() function will be called on the target thread. If the task fails
+	// to post then the task object may be destroyed on the source thread instead of
+	// the target thread. For this reason be cautious when performing work in the
+	// task object destructor.
 	// Structure that asynchronously executes tasks on the associated thread. It is
 	// safe to call the functions of this structure on any thread.
 	//
 	// CEF maintains multiple internal threads that are used for handling different
 	// types of tasks in different processes. The cef_thread_id_t definitions in
 	// cef_types.h list the common CEF threads. Task runners are also available for
-	// other CEF threads as appropriate (for example, V8 WebWorker threads
+	// other CEF threads as appropriate (for example, V8 WebWorker threads).
 	TCefTaskRunner = record
 		// Base structure.
 		base: TCefBase;
@@ -2308,10 +2771,11 @@ type
 		post_delayed_task: function(self: PCefTaskRunner; task: PCefTask; delay_ms: cint64): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_trace_capi
+
+	//..............................................................................cef_trace_capi.h
 	// Implement this structure to receive notification when tracing has completed.
 	// The functions of this structure will be called on the browser process UI
-	// thread
+	// thread.
 	TCefEndTracingCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -2321,12 +2785,13 @@ type
 		on_end_tracing_complete: procedure(self: PCefEndTracingCallback; const tracing_file: PCefString); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_urlrequest_capi
+
+	//..............................................................................cef_urlrequest_capi.h
 	// Structure used to make a URL request. URL requests are not associated with a
 	// browser instance so no cef_client_t callbacks will be executed. URL requests
 	// can be created on any valid CEF thread in either the browser or render
 	// process. Once created the functions of the URL request object must be
-	// accessed on the same thread that created it
+	// accessed on the same thread that created it.
 	TCefUrlrequest = record
 		// Base structure.
 		base: TCefBase;
@@ -2350,7 +2815,7 @@ type
 
 	// Structure that should be implemented by the cef_urlrequest_t client. The
 	// functions of this structure will be called on the same thread that created
-	// the request unless otherwise documented
+	// the request unless otherwise documented.
 	TCefUrlrequestClient = record
 		// Base structure.
 		base: TCefBase;
@@ -2362,15 +2827,15 @@ type
 		// bytes sent so far and |total| is the total size of uploading data (or -1 if
 		// chunked upload is enabled). This function will only be called if the
 		// UR_FLAG_REPORT_UPLOAD_PROGRESS flag is set on the request.
-		on_upload_progress: procedure(self: PCefUrlrequestClient; request: PCefUrlrequest; current: cuint64; total: cuint64); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		on_upload_progress: procedure(self: PCefUrlrequestClient; request: PCefUrlrequest; current: cint64; total: cint64); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Notifies the client of download progress. |current| denotes the number of
 		// bytes received up to the call and |total| is the expected total size of the
 		// response (or -1 if not determined).
-		on_download_progress: procedure(self: PCefUrlrequestClient; request: PCefUrlrequest; current: cuint64; total: cuint64); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		on_download_progress: procedure(self: PCefUrlrequestClient; request: PCefUrlrequest; current: cint64; total: cint64); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called when some part of the response is read. |data| contains the current
 		// bytes received since the last call. This function will not be called if the
 		// UR_FLAG_NO_DOWNLOAD_DATA flag is set on the request.
-		on_download_data: procedure(self: PCefUrlrequestClient; request: PCefUrlrequest; const data: void; data_length: csize_t); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		on_download_data: procedure(self: PCefUrlrequestClient; request: PCefUrlrequest; const data: cvoid; data_length: csize_t); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Called on the IO thread when the browser needs credentials from the user.
 		// |isProxy| indicates whether the host is a proxy server. |host| contains the
 		// hostname and |port| contains the port number. Return true (1) to continue
@@ -2381,247 +2846,261 @@ type
 		get_auth_credentials: function(self: PCefUrlrequestClient; isProxy: cint; const host: PCefString; port: cint; const realm: PCefString; const scheme: PCefString; callback: PCefAuthCallback): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_v8_capi
+
+	//..............................................................................cef_v8_capi.h
 	// Structure representing a V8 context handle. V8 handles can only be accessed
 	// from the thread on which they are created. Valid threads for creating a V8
 	// handle include the render process main thread (TID_RENDERER) and WebWorker
 	// threads. A task runner for posting tasks on the associated thread can be
-	// retrieved via the cef_v8context_t::get_task_runner() function
-	TCefV8context=record
+	// retrieved via the cef_v8context_t::get_task_runner() function.
+	TCefV8context = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Returns the task runner associated with this context. V8 handles can only
 		// be accessed from the thread on which they are created. This function can be
 		// called on any render process thread.
-		get_task_runner:function(self:PCefV8context):PCefTaskRunner; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_task_runner: function(self: PCefV8context): PCefTaskRunner; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the underlying handle is valid and it can be accessed
 		// on the current thread. Do not call any other functions if this function
 		// returns false (0).
-		is_valid:function(self:PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_valid: function(self: PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the browser for this context. This function will return an NULL
 		// reference for WebWorker contexts.
-		get_browser:function(self:PCefV8context):PCefBrowser; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_browser: function(self: PCefV8context): PCefBrowser; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the frame for this context. This function will return an NULL
 		// reference for WebWorker contexts.
-		get_frame:function(self:PCefV8context):PCefFrame; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_frame: function(self: PCefV8context): PCefFrame; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the global object for this context. The context must be entered
 		// before calling this function.
-		get_global:function(self:PCefV8context):PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_global: function(self: PCefV8context): PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Enter this context. A context must be explicitly entered before creating a
 		// V8 Object, Array, Function or Date asynchronously. exit() must be called
 		// the same number of times as enter() before releasing this context. V8
 		// objects belong to the context in which they are created. Returns true (1)
 		// if the scope was entered successfully.
-		enter:function(self:PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		enter: function(self: PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Exit this context. Call this function only after calling enter(). Returns
 		// true (1) if the scope was exited successfully.
-		exit:function(self:PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		exit: function(self: PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if this object is pointing to the same handle as |that|
 		// object.
-		is_same:function(self:PCefV8context; that:PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_same: function(self: PCefV8context; that: PCefV8context): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Evaluates the specified JavaScript code using this context's global object.
 		// On success |retval| will be set to the return value, if any, and the
 		// function will return true (1). On failure |exception| will be set to the
 		// exception, if any, and the function will return false (0).
-		eval:function(self:PCefV8context; const code:PCefString; retval:PCefV8value; exception:PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		eval: function(self: PCefV8context; const code: PCefString; var retval: PCefV8value; var exception: PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure that should be implemented to handle V8 function calls. The
+	// Structure that should be implemented to handle V8 function calls. The
 	// functions of this structure will be called on the thread associated with the
-	// V8 function
-	TCefV8handler=record
+	// V8 function.
+	TCefV8handler = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Handle execution of the function identified by |name|. |object| is the
 		// receiver ('this' object) of the function. |arguments| is the list of
 		// arguments passed to the function. If execution succeeds set |retval| to the
 		// function return value. If execution fails set |exception| to the exception
 		// that will be thrown. Return true (1) if execution was handled.
-		execute: function(self: PCefv8Handler;
-        const name: PCefString; obj: PCefv8Value; argumentsCount: csize_t;
-        const arguments: PPCefV8Value; var retval: PCefV8Value;
-        var exception: TCefString): Integer; {$IFNDEF UNIX}{$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF}{$ELSE}cdecl{$ENDIF};
+		execute: function(self: PCefV8handler; const name: PCefString; _object: PCefV8value; argumentsCount: csize_t; arguments: PPCefV8value; var retval: PCefV8value; exception: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure that should be implemented to handle V8 accessor calls. Accessor
-	// identifiers are registered by calling cef_v8value_t::set_value_byaccessor().
-	// The functions of this structure will be called on the thread associated with
-	// the V8 accessor
-	TCefV8accessor=record
+	// Structure that should be implemented to handle V8 function calls. The
+	// functions of this structure will be called on the thread associated with the
+	// V8 function.
+	// Structure that should be implemented to handle V8 accessor calls. Accessor
+	// identifiers are registered by calling cef_v8value_t::set_value(). The
+	// functions of this structure will be called on the thread associated with the
+	// V8 accessor.
+	TCefV8accessor = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Handle retrieval the accessor value identified by |name|. |object| is the
 		// receiver ('this' object) of the accessor. If retrieval succeeds set
 		// |retval| to the return value. If retrieval fails set |exception| to the
 		// exception that will be thrown. Return true (1) if accessor retrieval was
 		// handled.
-		get:function(self:PCefV8accessor; const name:PCefString; _object:PCefV8value; out retval:PCefV8value; exception:PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get: function(self: PCefV8accessor; const name: PCefString; _object: PCefV8value; var retval: PCefV8value; exception: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Handle assignment of the accessor value identified by |name|. |object| is
 		// the receiver ('this' object) of the accessor. |value| is the new value
 		// being assigned to the accessor. If assignment fails set |exception| to the
 		// exception that will be thrown. Return true (1) if accessor assignment was
 		// handled.
-		_set:function(self:PCefV8accessor; const name:PCefString; _object:PCefV8value; value:PCefV8value; exception:PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		_set: function(self: PCefV8accessor; const name: PCefString; _object: PCefV8value; value: PCefV8value; exception: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure representing a V8 exception. The functions of this structure may be
-	// called on any render process thread
-	TCefV8exception=record
+	// Structure that should be implemented to handle V8 function calls. The
+	// functions of this structure will be called on the thread associated with the
+	// V8 function.
+	// Structure that should be implemented to handle V8 accessor calls. Accessor
+	// identifiers are registered by calling cef_v8value_t::set_value(). The
+	// functions of this structure will be called on the thread associated with the
+	// V8 accessor.
+	// Structure representing a V8 exception. The functions of this structure may be
+	// called on any render process thread.
+	TCefV8exception = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Returns the exception message.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_message:function(self:PCefV8exception):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_message: function(self: PCefV8exception): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the line of source code that the exception occurred within.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_source_line:function(self:PCefV8exception):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_source_line: function(self: PCefV8exception): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the resource name for the script from where the function causing
 		// the error originates.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_script_resource_name:function(self:PCefV8exception):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_script_resource_name: function(self: PCefV8exception): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the 1-based number of the line where the error occurred or 0 if the
 		// line number is unknown.
-		get_line_number:function(self:PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_line_number: function(self: PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the index within the script of the first character where the error
 		// occurred.
-		get_start_position:function(self:PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_start_position: function(self: PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the index within the script of the last character where the error
 		// occurred.
-		get_end_position:function(self:PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_end_position: function(self: PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the index within the line of the first character where the error
 		// occurred.
-		get_start_column:function(self:PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_start_column: function(self: PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the index within the line of the last character where the error
 		// occurred.
-		get_end_column:function(self:PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_end_column: function(self: PCefV8exception): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure representing a V8 value handle. V8 handles can only be accessed
+	// Structure that should be implemented to handle V8 function calls. The
+	// functions of this structure will be called on the thread associated with the
+	// V8 function.
+	// Structure that should be implemented to handle V8 accessor calls. Accessor
+	// identifiers are registered by calling cef_v8value_t::set_value(). The
+	// functions of this structure will be called on the thread associated with the
+	// V8 accessor.
+	// Structure representing a V8 exception. The functions of this structure may be
+	// called on any render process thread.
+	// Structure representing a V8 value handle. V8 handles can only be accessed
 	// from the thread on which they are created. Valid threads for creating a V8
 	// handle include the render process main thread (TID_RENDERER) and WebWorker
 	// threads. A task runner for posting tasks on the associated thread can be
-	// retrieved via the cef_v8context_t::get_task_runner() function
-	TCefV8value=record
+	// retrieved via the cef_v8context_t::get_task_runner() function.
+	TCefV8value = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Returns true (1) if the underlying handle is valid and it can be accessed
 		// on the current thread. Do not call any other functions if this function
 		// returns false (0).
-		is_valid:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_valid: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is undefined.
-		is_undefined:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_undefined: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is null.
-		is_null:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_null: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is bool.
-		is_bool:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_bool: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is int.
-		is_int:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_int: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is unsigned int.
-		is_uint:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_uint: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is double.
-		is_double:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_double: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is Date.
-		is_date:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_date: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is string.
-		is_string:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_string: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is object.
-		is_object:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_object: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is array.
-		is_array:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_array: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// True if the value type is function.
-		is_function:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_function: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if this object is pointing to the same handle as |that|
 		// object.
-		is_same:function(self:PCefV8value; that:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_same: function(self: PCefV8value; that: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return a bool value.  The underlying data will be converted to if
 		// necessary.
-		get_bool_value:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_bool_value: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return an int value.  The underlying data will be converted to if
 		// necessary.
-		get_int_value:function(self:PCefV8value): cint32; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_int_value: function(self: PCefV8value): cint32; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return an unisgned int value.  The underlying data will be converted to if
 		// necessary.
-		get_uint_value:function(self:PCefV8value): cuint32; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_uint_value: function(self: PCefV8value): cuint32; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return a double value.  The underlying data will be converted to if
 		// necessary.
-		get_double_value:function(self:PCefV8value): cdouble; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_double_value: function(self: PCefV8value): cdouble; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return a Date value.  The underlying data will be converted to if
 		// necessary.
-		get_date_value:function(self:PCefV8value):TCefTime; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_date_value: function(self: PCefV8value): TCefTime; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Return a string value.  The underlying data will be converted to if
 		// necessary.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_string_value:function(self:PCefV8value):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// OBJECT METHODS - These functions are only available on objects. Arrays and
-		// functions are also objects. String- and integer-based keys can be used
-		// interchangably with the framework converting between them as necessary.
+		get_string_value: function(self: PCefV8value): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if this is a user created object.
-		is_user_created:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_user_created: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the last function call resulted in an exception. This
 		// attribute exists only in the scope of the current CEF value object.
-		has_exception:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		has_exception: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the exception resulting from the last function call. This attribute
 		// exists only in the scope of the current CEF value object.
-		get_exception:function(self:PCefV8value):PCefV8exception; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_exception: function(self: PCefV8value): PCefV8exception; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Clears the last exception and returns true (1) on success.
-		clear_exception:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		clear_exception: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if this object will re-throw future exceptions. This
 		// attribute exists only in the scope of the current CEF value object.
-		will_rethrow_exceptions:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		will_rethrow_exceptions: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Set whether this object will re-throw future exceptions. By default
 		// exceptions are not re-thrown. If a exception is re-thrown the current
 		// context should not be accessed again until after the exception has been
 		// caught and not re-thrown. Returns true (1) on success. This attribute
 		// exists only in the scope of the current CEF value object.
-		set_rethrow_exceptions:function(self:PCefV8value; rethrow: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		set_rethrow_exceptions: function(self: PCefV8value; rethrow: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the object has a value with the specified identifier.
-		has_value_bykey:function(self:PCefV8value; const key:PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		has_value_bykey: function(self: PCefV8value; const key: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the object has a value with the specified identifier.
-		has_value_byindex:function(self:PCefV8value; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		has_value_byindex: function(self: PCefV8value; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Deletes the value with the specified identifier and returns true (1) on
 		// success. Returns false (0) if this function is called incorrectly or an
 		// exception is thrown. For read-only and don't-delete values this function
 		// will return true (1) even though deletion failed.
-		delete_value_bykey:function(self:PCefV8value; const key:PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		delete_value_bykey: function(self: PCefV8value; const key: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Deletes the value with the specified identifier and returns true (1) on
 		// success. Returns false (0) if this function is called incorrectly, deletion
 		// fails or an exception is thrown. For read-only and don't-delete values this
 		// function will return true (1) even though deletion failed.
-		delete_value_byindex:function(self:PCefV8value; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		delete_value_byindex: function(self: PCefV8value; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value with the specified identifier on success. Returns NULL if
 		// this function is called incorrectly or an exception is thrown.
-		get_value_bykey:function(self:PCefV8value; const key:PCefString):PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_value_bykey: function(self: PCefV8value; const key: PCefString): PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value with the specified identifier on success. Returns NULL if
 		// this function is called incorrectly or an exception is thrown.
-		get_value_byindex:function(self:PCefV8value; index: cint):PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_value_byindex: function(self: PCefV8value; index: cint): PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Associates a value with the specified identifier and returns true (1) on
 		// success. Returns false (0) if this function is called incorrectly or an
 		// exception is thrown. For read-only values this function will return true
 		// (1) even though assignment failed.
-		set_value_bykey:function(self:PCefV8value; const key:PCefString; value:PCefV8value; attribute:TCefV8Propertyattribute): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		set_value_bykey: function(self: PCefV8value; const key: PCefString; value: PCefV8value; attribute: TCefV8Propertyattribute): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Associates a value with the specified identifier and returns true (1) on
 		// success. Returns false (0) if this function is called incorrectly or an
 		// exception is thrown. For read-only values this function will return true
 		// (1) even though assignment failed.
-		set_value_byindex:function(self:PCefV8value; index: cint; value:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		set_value_byindex: function(self: PCefV8value; index: cint; value: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Registers an identifier and returns true (1) on success. Access to the
 		// identifier will be forwarded to the cef_v8accessor_t instance passed to
 		// cef_v8value_t::cef_v8value_create_object(). Returns false (0) if this
 		// function is called incorrectly or an exception is thrown. For read-only
 		// values this function will return true (1) even though assignment failed.
-		set_value_byaccessor:function(self:PCefV8value; const key:PCefString; settings:TCefV8Accesscontrol; attribute:TCefV8Propertyattribute): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		set_value_byaccessor: function(self: PCefV8value; const key: PCefString; settings: TCefV8Accesscontrol; attribute: TCefV8Propertyattribute): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Read the keys for the object's values into the specified vector. Integer-
 		// based keys will also be returned as strings.
-		get_keys:function(self:PCefV8value; keys:TCefStringList): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_keys: function(self: PCefV8value; keys: TCefStringList): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the user data for this object and returns true (1) on success. Returns
 		// false (0) if this function is called incorrectly. This function can only be
 		// called on user created objects.
-		set_user_data:function(self:PCefV8value; user_data:PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		set_user_data: function(self: PCefV8value; user_data: PCefBase): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the user data, if any, assigned to this object.
-		get_user_data:function(self:PCefV8value):PCefBase; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_user_data: function(self: PCefV8value): PCefBase; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the amount of externally allocated memory registered for the
 		// object.
-		get_externally_allocated_memory:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_externally_allocated_memory: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Adjusts the amount of registered external memory for the object. Used to
 		// give V8 an indication of the amount of externally allocated memory that is
 		// kept alive by JavaScript objects. V8 uses this information to decide when
@@ -2631,16 +3110,14 @@ type
 		// |change_in_bytes| specifies the number of bytes to adjust by. This function
 		// returns the number of bytes associated with the object after the
 		// adjustment. This function can only be called on user created objects.
-		adjust_externally_allocated_memory:function(self:PCefV8value; change_in_bytes: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// ARRAY METHODS - These functions are only available on arrays.
+		adjust_externally_allocated_memory: function(self: PCefV8value; change_in_bytes: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the number of elements in the array.
-		get_array_length:function(self:PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// FUNCTION METHODS - These functions are only available on functions.
+		get_array_length: function(self: PCefV8value): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the function name.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_function_name:function(self:PCefV8value):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_function_name: function(self: PCefV8value): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the function handler or NULL if not a CEF-created function.
-		get_function_handler:function(self:PCefV8value):PCefV8handler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_function_handler: function(self: PCefV8value): PCefV8handler; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Execute the function using the current V8 context. This function should
 		// only be called from within the scope of a cef_v8handler_t or
 		// cef_v8accessor_t callback, or in combination with calling enter() and
@@ -2650,100 +3127,206 @@ type
 		// be passed to the function. Returns the function return value on success.
 		// Returns NULL if this function is called incorrectly or an exception is
 		// thrown.
-		execute_function:function(self:PCefV8value; _object:PCefV8value; argumentsCount: csize_t; arguments:PPCefV8value):PCefV8value; {$IFNDEF UNIX}{$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF}{$ELSE}cdecl{$ENDIF};
+		execute_function: function(self: PCefV8value; _object: PCefV8value; argumentsCount: csize_t; arguments: PPCefV8value): PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Execute the function using the specified V8 context. |object| is the
 		// receiver ('this' object) of the function. If |object| is NULL the specified
 		// context's global object will be used. |arguments| is the list of arguments
 		// that will be passed to the function. Returns the function return value on
 		// success. Returns NULL if this function is called incorrectly or an
 		// exception is thrown.
-		execute_function_with_context:function(self:PCefV8value; context:PCefV8context; _object:PCefV8value; argumentsCount: csize_t; arguments:PPCefV8value):PCefV8value; {$IFNDEF UNIX}{$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF}{$ELSE}cdecl{$ENDIF};
+		execute_function_with_context: function(self: PCefV8value; context: PCefV8context; _object: PCefV8value; argumentsCount: csize_t; arguments: PPCefV8value): PCefV8value; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure representing a V8 stack trace handle. V8 handles can only be
+	// Structure representing a V8 stack trace handle. V8 handles can only be
 	// accessed from the thread on which they are created. Valid threads for
 	// creating a V8 handle include the render process main thread (TID_RENDERER)
 	// and WebWorker threads. A task runner for posting tasks on the associated
-	// thread can be retrieved via the cef_v8context_t::get_task_runner() function
-	TCefV8stackTrace=record
+	// thread can be retrieved via the cef_v8context_t::get_task_runner() function.
+	TCefV8stackTrace = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Returns true (1) if the underlying handle is valid and it can be accessed
 		// on the current thread. Do not call any other functions if this function
 		// returns false (0).
-		is_valid:function(self:PCefV8stackTrace): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_valid: function(self: PCefV8stackTrace): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the number of stack frames.
-		get_frame_count:function(self:PCefV8stackTrace): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_frame_count: function(self: PCefV8stackTrace): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the stack frame at the specified 0-based index.
-		get_frame:function(self:PCefV8stackTrace; index: cint):PCefV8stackFrame; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_frame: function(self: PCefV8stackTrace; index: cint): PCefV8stackFrame; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-  // Structure representing a V8 stack frame handle. V8 handles can only be
+	// Structure representing a V8 stack frame handle. V8 handles can only be
 	// accessed from the thread on which they are created. Valid threads for
 	// creating a V8 handle include the render process main thread (TID_RENDERER)
 	// and WebWorker threads. A task runner for posting tasks on the associated
-	// thread can be retrieved via the cef_v8context_t::get_task_runner() function
-	TCefV8stackFrame=record
+	// thread can be retrieved via the cef_v8context_t::get_task_runner() function.
+	TCefV8stackFrame = record
 		// Base structure.
-		base:TCefBase;
+		base: TCefBase;
 		// Returns true (1) if the underlying handle is valid and it can be accessed
 		// on the current thread. Do not call any other functions if this function
 		// returns false (0).
-		is_valid:function(self:PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_valid: function(self: PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the name of the resource script that contains the function.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_script_name:function(self:PCefV8stackFrame):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_script_name: function(self: PCefV8stackFrame): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the name of the resource script that contains the function or the
 		// sourceURL value if the script name is undefined and its source ends with a
 		// "//@ sourceURL=..." string.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_script_name_or_source_url:function(self:PCefV8stackFrame):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_script_name_or_source_url: function(self: PCefV8stackFrame): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the name of the function.
 		// The resulting string must be freed by calling cef_string_userfree_free().
-		get_function_name:function(self:PCefV8stackFrame):PCefStringUserfree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_function_name: function(self: PCefV8stackFrame): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the 1-based line number for the function call or 0 if unknown.
-		get_line_number:function(self:PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_line_number: function(self: PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the 1-based column offset on the line for the function call or 0 if
 		// unknown.
-		get_column:function(self:PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_column: function(self: PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the function was compiled using eval().
-		is_eval:function(self:PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_eval: function(self: PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the function was called as a constructor via "new".
-		is_constructor:function(self:PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		is_constructor: function(self: PCefV8stackFrame): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_values_capi
-	// Structure representing a binary value. Can be used on any process and thread
+
+	//..............................................................................cef_values_capi.h
+	// Structure that wraps other data value types. Complex types (binary,
+	// dictionary and list) will be referenced but not owned by this object. Can be
+	// used on any process and thread.
+	TCefValue = record
+		// Base structure.
+		base: TCefBase;
+		// Returns true (1) if the underlying data is valid. This will always be true
+		// (1) for simple types. For complex types (binary, dictionary and list) the
+		// underlying data may become invalid if owned by another object (e.g. list or
+		// dictionary) and that other object is then modified or destroyed. This value
+		// object can be re-used by calling Set*() even if the underlying data is
+		// invalid.
+		is_valid: function(self: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if the underlying data is owned by another object.
+		is_owned: function(self: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if the underlying data is read-only. Some APIs may expose
+		// read-only objects.
+		is_read_only: function(self: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have the same underlying
+		// data. If true (1) modifications to this object will also affect |that|
+		// object and vice-versa.
+		is_same: function(self: PCefValue; that: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have an equivalent
+		// underlying value but are not necessarily the same object.
+		is_equal: function(self: PCefValue; that: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns a copy of this object. The underlying data will also be copied.
+		copy: function(self: PCefValue): PCefValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value type.
+		get_type: function(self: PCefValue): TCefValueType; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value as type bool.
+		get_bool: function(self: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value as type int.
+		get_int: function(self: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value as type double.
+		get_double: function(self: PCefValue): cdouble; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value as type string.
+		// The resulting string must be freed by calling cef_string_userfree_free().
+		get_string: function(self: PCefValue): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value as type binary. The returned reference may
+		// become invalid if the value is owned by another object or if ownership is
+		// transferred to another object in the future. To maintain a reference to the
+		// value after assigning ownership to a dictionary or list pass this object to
+		// the set_value() function instead of passing the returned reference to
+		// set_binary().
+		get_binary: function(self: PCefValue): PCefBinaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value as type dictionary. The returned reference may
+		// become invalid if the value is owned by another object or if ownership is
+		// transferred to another object in the future. To maintain a reference to the
+		// value after assigning ownership to a dictionary or list pass this object to
+		// the set_value() function instead of passing the returned reference to
+		// set_dictionary().
+		get_dictionary: function(self: PCefValue): PCefDictionaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the underlying value as type list. The returned reference may
+		// become invalid if the value is owned by another object or if ownership is
+		// transferred to another object in the future. To maintain a reference to the
+		// value after assigning ownership to a dictionary or list pass this object to
+		// the set_value() function instead of passing the returned reference to
+		// set_list().
+		get_list: function(self: PCefValue): PCefListValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type null. Returns true (1) if the value was
+		// set successfully.
+		set_null: function(self: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type bool. Returns true (1) if the value was
+		// set successfully.
+		set_bool: function(self: PCefValue; value: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type int. Returns true (1) if the value was
+		// set successfully.
+		set_int: function(self: PCefValue; value: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type double. Returns true (1) if the value was
+		// set successfully.
+		set_double: function(self: PCefValue; value: cdouble): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type string. Returns true (1) if the value was
+		// set successfully.
+		set_string: function(self: PCefValue; const value: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type binary. Returns true (1) if the value was
+		// set successfully. This object keeps a reference to |value| and ownership of
+		// the underlying data remains unchanged.
+		set_binary: function(self: PCefValue; value: PCefBinaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type dict. Returns true (1) if the value was
+		// set successfully. This object keeps a reference to |value| and ownership of
+		// the underlying data remains unchanged.
+		set_dictionary: function(self: PCefValue; value: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the underlying value as type list. Returns true (1) if the value was
+		// set successfully. This object keeps a reference to |value| and ownership of
+		// the underlying data remains unchanged.
+		set_list: function(self: PCefValue; value: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+	end;
+
+	// Structure representing a binary value. Can be used on any process and thread.
 	TCefBinaryValue = record
 		// Base structure.
 		base: TCefBase;
-		// Returns true (1) if this object is valid. Do not call any other functions
-		// if this function returns false (0).
+		// Returns true (1) if this object is valid. This object may become invalid if
+		// the underlying data is owned by another object (e.g. list or dictionary)
+		// and that other object is then modified or destroyed. Do not call any other
+		// functions if this function returns false (0).
 		is_valid: function(self: PCefBinaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if this object is currently owned by another object.
 		is_owned: function(self: PCefBinaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have the same underlying
+		// data.
+		is_same: function(self: PCefBinaryValue; that: PCefBinaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have an equivalent
+		// underlying value but are not necessarily the same object.
+		is_equal: function(self: PCefBinaryValue; that: PCefBinaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns a copy of this object. The data in this object will also be copied.
 		copy: function(self: PCefBinaryValue): PCefBinaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the data size.
 		get_size: function(self: PCefBinaryValue): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Read up to |buffer_size| number of bytes into |buffer|. Reading begins at
 		// the specified byte |data_offset|. Returns the number of bytes read.
-		get_data: function(self: PCefBinaryValue; buffer: void; buffer_size: csize_t; data_offset: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_data: function(self: PCefBinaryValue; buffer: cvoid; buffer_size: csize_t; data_offset: csize_t): csize_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
 	// Structure representing a dictionary value. Can be used on any process and
-	// thread
+	// thread.
 	TCefDictionaryValue = record
 		// Base structure.
 		base: TCefBase;
-		// Returns true (1) if this object is valid. Do not call any other functions
-		// if this function returns false (0).
+		// Returns true (1) if this object is valid. This object may become invalid if
+		// the underlying data is owned by another object (e.g. list or dictionary)
+		// and that other object is then modified or destroyed. Do not call any other
+		// functions if this function returns false (0).
 		is_valid: function(self: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if this object is currently owned by another object.
 		is_owned: function(self: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the values of this object are read-only. Some APIs may
 		// expose read-only objects.
 		is_read_only: function(self: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have the same underlying
+		// data. If true (1) modifications to this object will also affect |that|
+		// object and vice-versa.
+		is_same: function(self: PCefDictionaryValue; that: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have an equivalent
+		// underlying value but are not necessarily the same object.
+		is_equal: function(self: PCefDictionaryValue; that: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns a writable copy of this object. If |exclude_NULL_children| is true
 		// (1) any NULL dictionaries or lists will be excluded from the copy.
 		copy: function(self: PCefDictionaryValue; exclude_empty_children: cint): PCefDictionaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -2760,6 +3343,12 @@ type
 		remove: function(self: PCefDictionaryValue; const key: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value type for the specified key.
 		get_type: function(self: PCefDictionaryValue; const key: PCefString): TCefValueType; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the value at the specified key. For simple types the returned value
+		// will copy existing data and modifications to the value will not modify this
+		// object. For complex types (binary, dictionary and list) the returned value
+		// will reference existing data and modifications to the value will modify
+		// this object.
+		get_value: function(self: PCefDictionaryValue; const key: PCefString): PCefValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value at the specified key as type bool.
 		get_bool: function(self: PCefDictionaryValue; const key: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value at the specified key as type int.
@@ -2769,12 +3358,24 @@ type
 		// Returns the value at the specified key as type string.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_string: function(self: PCefDictionaryValue; const key: PCefString): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the value at the specified key as type binary.
+		// Returns the value at the specified key as type binary. The returned value
+		// will reference existing data.
 		get_binary: function(self: PCefDictionaryValue; const key: PCefString): PCefBinaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the value at the specified key as type dictionary.
+		// Returns the value at the specified key as type dictionary. The returned
+		// value will reference existing data and modifications to the value will
+		// modify this object.
 		get_dictionary: function(self: PCefDictionaryValue; const key: PCefString): PCefDictionaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the value at the specified key as type list.
+		// Returns the value at the specified key as type list. The returned value
+		// will reference existing data and modifications to the value will modify
+		// this object.
 		get_list: function(self: PCefDictionaryValue; const key: PCefString): PCefListValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the value at the specified key. Returns true (1) if the value was set
+		// successfully. If |value| represents simple data then the underlying data
+		// will be copied and modifications to |value| will not modify this object. If
+		// |value| represents complex data (binary, dictionary or list) then the
+		// underlying data will be referenced and modifications to |value| will modify
+		// this object.
+		set_value: function(self: PCefDictionaryValue; const key: PCefString; value: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the value at the specified key as type null. Returns true (1) if the
 		// value was set successfully.
 		set_null: function(self: PCefDictionaryValue; const key: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -2797,33 +3398,40 @@ type
 		// reference will be invalidated.
 		set_binary: function(self: PCefDictionaryValue; const key: PCefString; value: PCefBinaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the value at the specified key as type dict. Returns true (1) if the
-		// value was set successfully. After calling this function the |value| object
-		// will no longer be valid. If |value| is currently owned by another object
+		// value was set successfully. If |value| is currently owned by another object
 		// then the value will be copied and the |value| reference will not change.
 		// Otherwise, ownership will be transferred to this object and the |value|
 		// reference will be invalidated.
 		set_dictionary: function(self: PCefDictionaryValue; const key: PCefString; value: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the value at the specified key as type list. Returns true (1) if the
-		// value was set successfully. After calling this function the |value| object
-		// will no longer be valid. If |value| is currently owned by another object
+		// value was set successfully. If |value| is currently owned by another object
 		// then the value will be copied and the |value| reference will not change.
 		// Otherwise, ownership will be transferred to this object and the |value|
 		// reference will be invalidated.
 		set_list: function(self: PCefDictionaryValue; const key: PCefString; value: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	// Structure representing a list value. Can be used on any process and thread
+	// Structure representing a list value. Can be used on any process and thread.
 	TCefListValue = record
 		// Base structure.
 		base: TCefBase;
-		// Returns true (1) if this object is valid. Do not call any other functions
-		// if this function returns false (0).
+		// Returns true (1) if this object is valid. This object may become invalid if
+		// the underlying data is owned by another object (e.g. list or dictionary)
+		// and that other object is then modified or destroyed. Do not call any other
+		// functions if this function returns false (0).
 		is_valid: function(self: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if this object is currently owned by another object.
 		is_owned: function(self: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if the values of this object are read-only. Some APIs may
 		// expose read-only objects.
 		is_read_only: function(self: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have the same underlying
+		// data. If true (1) modifications to this object will also affect |that|
+		// object and vice-versa.
+		is_same: function(self: PCefListValue; that: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns true (1) if this object and |that| object have an equivalent
+		// underlying value but are not necessarily the same object.
+		is_equal: function(self: PCefListValue; that: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns a writable copy of this object.
 		copy: function(self: PCefListValue): PCefListValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the number of values. If the number of values is expanded all new
@@ -2837,6 +3445,12 @@ type
 		remove: function(self: PCefListValue; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value type at the specified index.
 		get_type: function(self: PCefListValue; index: cint): TCefValueType; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Returns the value at the specified index. For simple types the returned
+		// value will copy existing data and modifications to the value will not
+		// modify this object. For complex types (binary, dictionary and list) the
+		// returned value will reference existing data and modifications to the value
+		// will modify this object.
+		get_value: function(self: PCefListValue; index: cint): PCefValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value at the specified index as type bool.
 		get_bool: function(self: PCefListValue; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the value at the specified index as type int.
@@ -2846,12 +3460,24 @@ type
 		// Returns the value at the specified index as type string.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_string: function(self: PCefListValue; index: cint): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the value at the specified index as type binary.
+		// Returns the value at the specified index as type binary. The returned value
+		// will reference existing data.
 		get_binary: function(self: PCefListValue; index: cint): PCefBinaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the value at the specified index as type dictionary.
+		// Returns the value at the specified index as type dictionary. The returned
+		// value will reference existing data and modifications to the value will
+		// modify this object.
 		get_dictionary: function(self: PCefListValue; index: cint): PCefDictionaryValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Returns the value at the specified index as type list.
+		// Returns the value at the specified index as type list. The returned value
+		// will reference existing data and modifications to the value will modify
+		// this object.
 		get_list: function(self: PCefListValue; index: cint): PCefListValue; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		// Sets the value at the specified index. Returns true (1) if the value was
+		// set successfully. If |value| represents simple data then the underlying
+		// data will be copied and modifications to |value| will not modify this
+		// object. If |value| represents complex data (binary, dictionary or list)
+		// then the underlying data will be referenced and modifications to |value|
+		// will modify this object.
+		set_value: function(self: PCefListValue; index: cint; value: PCefValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the value at the specified index as type null. Returns true (1) if the
 		// value was set successfully.
 		set_null: function(self: PCefListValue; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -2868,30 +3494,28 @@ type
 		// the value was set successfully.
 		set_string: function(self: PCefListValue; index: cint; const value: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the value at the specified index as type binary. Returns true (1) if
-		// the value was set successfully. After calling this function the |value|
-		// object will no longer be valid. If |value| is currently owned by another
+		// the value was set successfully. If |value| is currently owned by another
 		// object then the value will be copied and the |value| reference will not
 		// change. Otherwise, ownership will be transferred to this object and the
 		// |value| reference will be invalidated.
 		set_binary: function(self: PCefListValue; index: cint; value: PCefBinaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the value at the specified index as type dict. Returns true (1) if the
-		// value was set successfully. After calling this function the |value| object
-		// will no longer be valid. If |value| is currently owned by another object
+		// value was set successfully. If |value| is currently owned by another object
 		// then the value will be copied and the |value| reference will not change.
 		// Otherwise, ownership will be transferred to this object and the |value|
 		// reference will be invalidated.
 		set_dictionary: function(self: PCefListValue; index: cint; value: PCefDictionaryValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Sets the value at the specified index as type list. Returns true (1) if the
-		// value was set successfully. After calling this function the |value| object
-		// will no longer be valid. If |value| is currently owned by another object
+		// value was set successfully. If |value| is currently owned by another object
 		// then the value will be copied and the |value| reference will not change.
 		// Otherwise, ownership will be transferred to this object and the |value|
 		// reference will be invalidated.
 		set_list: function(self: PCefListValue; index: cint; value: PCefListValue): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_web_plugin_capi
-	// Information about a specific web plugin
+
+	//..............................................................................cef_web_plugin_capi.h
+	// Information about a specific web plugin.
 	TCefWebPluginInfo = record
 		// Base structure.
 		base: TCefBase;
@@ -2909,8 +3533,9 @@ type
 		get_description: function(self: PCefWebPluginInfo): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Information about a specific web plugin.
 	// Structure to implement for visiting web plugin information. The functions of
-	// this structure will be called on the browser process UI thread
+	// this structure will be called on the browser process UI thread.
 	TCefWebPluginInfoVisitor = record
 		// Base structure.
 		base: TCefBase;
@@ -2921,8 +3546,11 @@ type
 		visit: function(self: PCefWebPluginInfoVisitor; info: PCefWebPluginInfo; count: cint; total: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
+	// Information about a specific web plugin.
+	// Structure to implement for visiting web plugin information. The functions of
+	// this structure will be called on the browser process UI thread.
 	// Structure to implement for receiving unstable plugin information. The
-	// functions of this structure will be called on the browser process IO thread
+	// functions of this structure will be called on the browser process IO thread.
 	TCefWebPluginUnstableCallback = record
 		// Base structure.
 		base: TCefBase;
@@ -2932,10 +3560,11 @@ type
 		is_unstable: procedure(self: PCefWebPluginUnstableCallback; const path: PCefString; unstable: cint); {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_xml_reader_capi
+
+	//..............................................................................cef_xml_reader_capi.h
 	// Structure that supports the reading of XML data via the libxml streaming API.
 	// The functions of this structure should only be called on the thread that
-	// creates the object
+	// creates the object.
 	TCefXmlReader = record
 		// Base structure.
 		base: TCefBase;
@@ -2951,8 +3580,6 @@ type
 		// Returns the error string.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_error: function(self: PCefXmlReader): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// The below functions retrieve data for the node at the current cursor
-		// position.
 		// Returns the node type.
 		get_type: function(self: PCefXmlReader): TCefXmlNodeType; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the node depth. Depth starts at 0 for the root node.
@@ -3011,10 +3638,6 @@ type
 		get_outer_xml: function(self: PCefXmlReader): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the line number for the current node.
 		get_line_number: function(self: PCefXmlReader): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// Attribute nodes are not traversed by default. The below functions can be
-		// used to move the cursor to an attribute node. move_to_carrying_element()
-		// can be called afterwards to return the cursor to the carrying element. The
-		// depth of an attribute node will be 1 + the depth of the carrying element.
 		// Moves the cursor to the attribute at the specified 0-based index. Returns
 		// true (1) if the cursor position was set successfully.
 		move_to_attribute_byindex: function(self: PCefXmlReader; index: cint): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -3036,10 +3659,11 @@ type
 		move_to_carrying_element: function(self: PCefXmlReader): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 	end;
 
-	//............................................................................cef_zip_reader_capi
+
+	//..............................................................................cef_zip_reader_capi.h
 	// Structure that supports the reading of zip archives via the zlib unzip API.
 	// The functions of this structure should only be called on the thread that
-	// creates the object
+	// creates the object.
 	TCefZipReader = record
 		// Base structure.
 		base: TCefBase;
@@ -3056,14 +3680,13 @@ type
 		// Closes the archive. This should be called directly to ensure that cleanup
 		// occurs on the correct thread.
 		close: function(self: PCefZipReader): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
-		// The below functions act on the file at the current cursor position.
 		// Returns the name of the file.
 		// The resulting string must be freed by calling cef_string_userfree_free().
 		get_file_name: function(self: PCefZipReader): PCefStringUserFree; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the uncompressed size of the file.
 		get_file_size: function(self: PCefZipReader): cint64; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the last modified timestamp for the file.
-		get_file_last_modified: function(self: PCefZipReader): time_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		get_file_last_modified: function(self: PCefZipReader): ctime_t; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Opens the file for reading of uncompressed data. A read password may
 		// optionally be specified.
 		open_file: function(self: PCefZipReader; const password: PCefString): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
@@ -3071,7 +3694,7 @@ type
 		close_file: function(self: PCefZipReader): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Read uncompressed file contents into the specified buffer. Returns < 0 if
 		// an error occurred, 0 if at the end of file, or the number of bytes read.
-		read_file: function(self: PCefZipReader; buffer: void; bufferSize: csize_t): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
+		read_file: function(self: PCefZipReader; buffer: cvoid; bufferSize: csize_t): cint; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns the current offset in the uncompressed file contents.
 		tell: function(self: PCefZipReader): cint64; {$IFNDEF UNIX}stdcall{$ELSE}cdecl{$ENDIF};
 		// Returns true (1) if at end of the file contents.

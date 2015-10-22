@@ -62,11 +62,9 @@ type
     class function CefTimeToDateTime(const dt: TCefTime): TDateTime;
     class function DateTimeToCefTime(dt: TDateTime): TCefTime;
     {---------------------------------CefAppCApi---------------------------------}
-    {$IFNDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
     class procedure DoMessageLoopWork;
     class procedure RunMessageLoop;
     class procedure QuitMessageLoop;
-    {$ENDIF}
     {-------------------------------CefBrowserCApi-------------------------------}
     class function BrowserHostCreateSync(windowInfo:PCefWindowInfo; const client:ICefClient;
       const url:ustring; const settings:PCefBrowserSettings; const requestContext:ICefRequestContext): ICefBrowser;
@@ -110,11 +108,11 @@ type
   end;
 
 var
-  CefSingleProcess: Boolean = false;
+  CefSingleProcess: Boolean = False;
   CefBrowserSubprocessPath: ustring = '';
-  CefCommandLineArgsDisabled: Boolean = false;
+  CefCommandLineArgsDisabled: Boolean = False;
   CefCachePath: ustring = '';
-  CefPersistSessionCookies: Boolean = false;
+  CefPersistSessionCookies: Boolean = true;
   CefUserAgent: ustring = '';
   CefProductVersion: ustring = '';
   CefLocale: ustring = '';
@@ -123,12 +121,13 @@ var
   CefJavaScriptFlags: ustring = '';
   CefResourcesDirPath: ustring = '';
   CefLocalesDirPath: ustring = '';
-  CefPackLoadingDisabled: Boolean = false;
+  CefPackLoadingDisabled: Boolean = False;
   CefRemoteDebuggingPort: Integer = 9000;
   CefUncaughtExceptionStackSize: cint = 0;
-  CefContextSafetyImplementation: Boolean = false;
-  CefIgnoreCertificateErrors: Boolean = false;
+  CefContextSafetyImplementation: Boolean = False;
+  CefIgnoreCertificateErrors: Boolean = False;
   CefBackgroundColor: TCefColor = High(TCefColor);
+  CefMultithreadedMessageLoop: Boolean = False;
 
   CefGetDataResource: TGetDataResource;
   CefGetLocalizedString: TGetLocalizedString;
@@ -178,82 +177,59 @@ begin
       WaitFor;
       Free;
     end;
-
-    result := false;
+    Result := False;
     FLibHandle := LoadLibrary(PChar(ExtractFilePath(ParamStr(0)) + CefLibrary));
     If FLibHandle = 0 then
       Exit;
     {$IFDEF FPC}
       cef_execute_process                     := GetProcAddress(FLibHandle, 'cef_execute_process');
-
       cef_initialize                          := GetProcAddress(FLibHandle, 'cef_initialize');
       cef_shutdown                            := GetProcAddress(FLibHandle, 'cef_shutdown');
       cef_do_message_loop_work                := GetProcAddress(FLibHandle, 'cef_do_message_loop_work');
       cef_run_message_loop                    := GetProcAddress(FLibHandle, 'cef_run_message_loop');
       cef_quit_message_loop                   := GetProcAddress(FLibHandle, 'cef_quit_message_loop');
       cef_set_osmodal_loop                    := GetProcAddress(FLibHandle, 'cef_set_osmodal_loop');
-
       cef_browser_host_create_browser         := GetProcAddress(FLibHandle, 'cef_browser_host_create_browser');
       cef_browser_host_create_browser_sync    := GetProcAddress(FLibHandle, 'cef_browser_host_create_browser_sync');
-
       cef_command_line_create                 := GetProcAddress(FLibHandle, 'cef_command_line_create');
       cef_command_line_get_global             := GetProcAddress(FLibHandle, 'cef_command_line_get_global');
-
       cef_cookie_manager_get_global_manager   := GetProcAddress(FLibHandle, 'cef_cookie_manager_get_global_manager');
       cef_cookie_manager_create_manager       := GetProcAddress(FLibHandle, 'cef_cookie_manager_create_manager');
-
       cef_drag_data_create                    := GetProcAddress(FLibHandle, 'cef_drag_data_create');
-
       cef_get_geolocation                     := GetProcAddress(FLibHandle, 'cef_get_geolocation');
-
       cef_add_cross_origin_whitelist_entry    := GetProcAddress(FLibHandle, 'cef_add_cross_origin_whitelist_entry');
       cef_remove_cross_origin_whitelist_entry := GetProcAddress(FLibHandle, 'cef_remove_cross_origin_whitelist_entry');
       cef_clear_cross_origin_whitelist        := GetProcAddress(FLibHandle, 'cef_clear_cross_origin_whitelist');
-
       cef_get_path                            := GetProcAddress(FLibHandle, 'cef_get_path');
-
       cef_print_settings_create               := GetProcAddress(FLibHandle, 'cef_print_settings_create');
-
       cef_process_message_create              := GetProcAddress(FLibHandle, 'cef_process_message_create');
-
       cef_launch_process                      := GetProcAddress(FLibHandle, 'cef_launch_process');
-
       cef_request_create                      := GetProcAddress(FLibHandle, 'cef_request_create');
       cef_post_data_create                    := GetProcAddress(FLibHandle, 'cef_post_data_create');
       cef_post_data_element_create            := GetProcAddress(FLibHandle, 'cef_post_data_element_create');
-
       cef_request_context_get_global_context  := GetProcAddress(FLibHandle, 'cef_request_context_get_global_context');
       cef_request_context_create_context      := GetProcAddress(FLibHandle, 'cef_request_context_create_context');
-
       cef_response_create                     := GetProcAddress(FLibHandle, 'cef_response_create');
-
       cef_register_scheme_handler_factory     := GetProcAddress(FLibHandle, 'cef_register_scheme_handler_factory');
       cef_clear_scheme_handler_factories      := GetProcAddress(FLibHandle, 'cef_clear_scheme_handler_factories');
-
       cef_stream_reader_create_for_file       := GetProcAddress(FLibHandle, 'cef_stream_reader_create_for_file');
       cef_stream_reader_create_for_data       := GetProcAddress(FLibHandle, 'cef_stream_reader_create_for_data');
       cef_stream_reader_create_for_handler    := GetProcAddress(FLibHandle, 'cef_stream_reader_create_for_handler');
       cef_stream_writer_create_for_file       := GetProcAddress(FLibHandle, 'cef_stream_writer_create_for_file');
       cef_stream_writer_create_for_handler    := GetProcAddress(FLibHandle, 'cef_stream_writer_create_for_handler');
-
       cef_task_runner_get_for_current_thread  := GetProcAddress(FLibHandle, 'cef_task_runner_get_for_current_thread');
       cef_task_runner_get_for_thread          := GetProcAddress(FLibHandle, 'cef_task_runner_get_for_thread');
-
       cef_currently_on                        := GetProcAddress(FLibHandle, 'cef_currently_on');
       cef_post_task                           := GetProcAddress(FLibHandle, 'cef_post_task');
       cef_post_delayed_task                   := GetProcAddress(FLibHandle, 'cef_post_delayed_task');
-
       cef_begin_tracing                       := GetProcAddress(FLibHandle, 'cef_begin_tracing');
       cef_end_tracing                         := GetProcAddress(FLibHandle, 'cef_end_tracing');
       cef_now_from_system_trace_time          := GetProcAddress(FLibHandle, 'cef_now_from_system_trace_time');
-
       cef_urlrequest_create                   := GetProcAddress(FLibHandle, 'cef_urlrequest_create');
-
       cef_parse_url                           := GetProcAddress(FLibHandle, 'cef_parse_url');
       cef_create_url                          := GetProcAddress(FLibHandle, 'cef_create_url');
       cef_get_mime_type                       := GetProcAddress(FLibHandle, 'cef_get_mime_type');
       cef_get_extensions_for_mime_type        := GetProcAddress(FLibHandle, 'cef_get_extensions_for_mime_type');
-
       cef_register_extension                  := GetProcAddress(FLibHandle, 'cef_register_extension');
       cef_v8context_get_current_context       := GetProcAddress(FLibHandle, 'cef_v8context_get_current_context');
       cef_v8context_get_entered_context       := GetProcAddress(FLibHandle, 'cef_v8context_get_entered_context');
@@ -270,11 +246,9 @@ begin
       cef_v8value_create_array                := GetProcAddress(FLibHandle, 'cef_v8value_create_array');
       cef_v8value_create_function             := GetProcAddress(FLibHandle, 'cef_v8value_create_function');
       cef_v8stack_trace_get_current           := GetProcAddress(FLibHandle, 'cef_v8stack_trace_get_current');
-
       cef_binary_value_create                 := GetProcAddress(FLibHandle, 'cef_binary_value_create');
       cef_dictionary_value_create             := GetProcAddress(FLibHandle, 'cef_dictionary_value_create');
       cef_list_value_create                   := GetProcAddress(FLibHandle, 'cef_list_value_create');
-
       cef_visit_web_plugin_info               := GetProcAddress(FLibHandle, 'cef_visit_web_plugin_info');
       cef_refresh_web_plugins                 := GetProcAddress(FLibHandle, 'cef_refresh_web_plugins');
       cef_add_web_plugin_path                 := GetProcAddress(FLibHandle, 'cef_add_web_plugin_path');
@@ -284,105 +258,8 @@ begin
       cef_force_web_plugin_shutdown           := GetProcAddress(FLibHandle, 'cef_force_web_plugin_shutdown');
       cef_register_web_plugin_crash           := GetProcAddress(FLibHandle, 'cef_register_web_plugin_crash');
       cef_is_web_plugin_unstable              := GetProcAddress(FLibHandle, 'cef_is_web_plugin_unstable');
-
       cef_xml_reader_create                   := GetProcAddress(FLibHandle, 'cef_xml_reader_create');
-
       cef_zip_reader_create                   := GetProcAddress(FLibHandle, 'cef_zip_reader_create');
-
-      cef_string_map_alloc                    := GetProcAddress(FLibHandle, 'cef_string_map_alloc');
-      cef_string_map_size                     := GetProcAddress(FLibHandle, 'cef_string_map_size');
-      cef_string_map_find                     := GetProcAddress(FLibHandle, 'cef_string_map_find');
-      cef_string_map_key                      := GetProcAddress(FLibHandle, 'cef_string_map_key');
-      cef_string_map_value                    := GetProcAddress(FLibHandle, 'cef_string_map_value');
-      cef_string_map_append                   := GetProcAddress(FLibHandle, 'cef_string_map_append');
-      cef_string_map_clear                    := GetProcAddress(FLibHandle, 'cef_string_map_clear');
-      cef_string_map_free                     := GetProcAddress(FLibHandle, 'cef_string_map_free');
-
-      cef_string_list_alloc                   := GetProcAddress(FLibHandle, 'cef_string_list_alloc');
-      cef_string_list_size                    := GetProcAddress(FLibHandle, 'cef_string_list_size');
-      cef_string_list_value                   := GetProcAddress(FLibHandle, 'cef_string_list_value');
-      cef_string_list_append                  := GetProcAddress(FLibHandle, 'cef_string_list_append');
-      cef_string_list_clear                   := GetProcAddress(FLibHandle, 'cef_string_list_clear');
-      cef_string_list_free                    := GetProcAddress(FLibHandle, 'cef_string_list_free');
-      cef_string_list_copy                    := GetProcAddress(FLibHandle, 'cef_string_list_copy');
-
-      cef_string_multimap_alloc               := GetProcAddress(FLibHandle, 'cef_string_multimap_alloc');
-      cef_string_multimap_size                := GetProcAddress(FLibHandle, 'cef_string_multimap_size');
-      cef_string_multimap_find_count          := GetProcAddress(FLibHandle, 'cef_string_multimap_find_count');
-      cef_string_multimap_enumerate           := GetProcAddress(FLibHandle, 'cef_string_multimap_enumerate');
-      cef_string_multimap_key                 := GetProcAddress(FLibHandle, 'cef_string_multimap_key');
-      cef_string_multimap_value               := GetProcAddress(FLibHandle, 'cef_string_multimap_value');
-      cef_string_multimap_append              := GetProcAddress(FLibHandle, 'cef_string_multimap_append');
-      cef_string_multimap_clear               := GetProcAddress(FLibHandle, 'cef_string_multimap_clear');
-      cef_string_multimap_free                := GetProcAddress(FLibHandle, 'cef_string_multimap_free');
-
-      cef_build_revision                      := GetProcAddress(FLibHandle, 'cef_build_revision');
-
-      cef_string_wide_set             := GetProcAddress(FLibHandle, 'cef_string_wide_set');
-      cef_string_utf8_set             := GetProcAddress(FLibHandle, 'cef_string_utf8_set');
-      cef_string_utf16_set            := GetProcAddress(FLibHandle, 'cef_string_utf16_set');
-      cef_string_wide_clear           := GetProcAddress(FLibHandle, 'cef_string_wide_clear');
-      cef_string_utf8_clear           := GetProcAddress(FLibHandle, 'cef_string_utf8_clear');
-      cef_string_utf16_clear          := GetProcAddress(FLibHandle, 'cef_string_utf16_clear');
-      cef_string_wide_cmp             := GetProcAddress(FLibHandle, 'cef_string_wide_cmp');
-      cef_string_utf8_cmp             := GetProcAddress(FLibHandle, 'cef_string_utf8_cmp');
-      cef_string_utf16_cmp            := GetProcAddress(FLibHandle, 'cef_string_utf16_cmp');
-      cef_string_wide_to_utf8         := GetProcAddress(FLibHandle, 'cef_string_wide_to_utf8');
-      cef_string_utf8_to_wide         := GetProcAddress(FLibHandle, 'cef_string_utf8_to_wide');
-      cef_string_wide_to_utf16        := GetProcAddress(FLibHandle, 'cef_string_wide_to_utf16');
-      cef_string_utf16_to_wide        := GetProcAddress(FLibHandle, 'cef_string_utf16_to_wide');
-      cef_string_utf8_to_utf16        := GetProcAddress(FLibHandle, 'cef_string_utf8_to_utf16');
-      cef_string_utf16_to_utf8        := GetProcAddress(FLibHandle, 'cef_string_utf16_to_utf8');
-      cef_string_ascii_to_wide        := GetProcAddress(FLibHandle, 'cef_string_ascii_to_wide');
-      cef_string_ascii_to_utf16       := GetProcAddress(FLibHandle, 'cef_string_ascii_to_utf16');
-      cef_string_userfree_wide_alloc  := GetProcAddress(FLibHandle, 'cef_string_userfree_wide_alloc');
-      cef_string_userfree_utf8_alloc  := GetProcAddress(FLibHandle, 'cef_string_userfree_utf8_alloc');
-      cef_string_userfree_utf16_alloc := GetProcAddress(FLibHandle, 'cef_string_userfree_utf16_alloc');
-      cef_string_userfree_wide_free   := GetProcAddress(FLibHandle, 'cef_string_userfree_wide_free');
-      cef_string_userfree_utf8_free   := GetProcAddress(FLibHandle, 'cef_string_userfree_utf8_free');
-      cef_string_userfree_utf16_free  := GetProcAddress(FLibHandle, 'cef_string_userfree_utf16_free');
-
-      {$IFDEF CEF_STRING_TYPE_UTF8}
-      cef_string_set            := cef_string_utf8_set;
-      cef_string_clear          := cef_string_utf8_clear;
-      cef_string_userfree_alloc := cef_string_userfree_utf8_alloc;
-      cef_string_userfree_free  := cef_string_userfree_utf8_free;
-      cef_string_from_ascii     := cef_string_utf8_copy;
-      cef_string_to_utf8        := cef_string_utf8_copy;
-      cef_string_from_utf8      := cef_string_utf8_copy;
-      cef_string_to_utf16       := cef_string_utf8_to_utf16;
-      cef_string_from_utf16     := cef_string_utf16_to_utf8;
-      cef_string_to_wide        := cef_string_utf8_to_wide;
-      cef_string_from_wide      := cef_string_wide_to_utf8;
-      {$ENDIF}
-
-      {$IFDEF CEF_STRING_TYPE_UTF16}
-      cef_string_set            := cef_string_utf16_set;
-      cef_string_clear          := cef_string_utf16_clear;
-      cef_string_userfree_alloc := cef_string_userfree_utf16_alloc;
-      cef_string_userfree_free  := cef_string_userfree_utf16_free;
-      cef_string_from_ascii     := cef_string_ascii_to_utf16;
-      cef_string_to_utf8        := cef_string_utf16_to_utf8;
-      cef_string_from_utf8      := cef_string_utf8_to_utf16;
-      cef_string_to_utf16       := @cef_string_utf16_copy;
-      cef_string_from_utf16     := @cef_string_utf16_copy;
-      cef_string_to_wide        := cef_string_utf16_to_wide;
-      cef_string_from_wide      := cef_string_wide_to_utf16;
-      {$ENDIF}
-
-      {$IFDEF CEF_STRING_TYPE_WIDE}
-      cef_string_set            := cef_string_wide_set;
-      cef_string_clear          := cef_string_wide_clear;
-      cef_string_userfree_alloc := cef_string_userfree_wide_alloc;
-      cef_string_userfree_free  := cef_string_userfree_wide_free;
-      cef_string_from_ascii     := cef_string_ascii_to_wide;
-      cef_string_to_utf8        := cef_string_wide_to_utf8;
-      cef_string_from_utf8      := cef_string_utf8_to_wide;
-      cef_string_to_utf16       := cef_string_wide_to_utf16;
-      cef_string_from_utf16     := cef_string_utf16_to_wide;
-      cef_string_to_wide        := cef_string_wide_copy;
-      cef_string_from_wide      := cef_string_wide_copy;
-      {$ENDIF}
     {$ENDIF}
     Result:= true;
   end
@@ -424,15 +301,11 @@ begin
     SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision]);
     if not LoadLib then
       Exit;
-    FillChar(settings, SizeOf(settings), 0);
-    settings.size := SizeOf(settings);
+    FillChar(settings, SizeOf(TCefSettings), 0);
+    settings.size := SizeOf(TCefSettings);
     settings.single_process := Ord(CefSingleProcess);
     settings.browser_subprocess_path := ToCefString(CefBrowserSubprocessPath);
-    {$IFDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
-    settings.multi_threaded_message_loop := True;
-    {$ELSE}
-    settings.multi_threaded_message_loop := Ord(False);
-    {$ENDIF}
+    settings.multi_threaded_message_loop := Ord(CefMultiThreadedMessageLoop);
     settings.command_line_args_disabled := Ord(CefCommandLineArgsDisabled);
     settings.cache_path := ToCefString(CefCachePath);
     settings.persist_session_cookies := Ord(CefPersistSessionCookies);
@@ -463,13 +336,11 @@ class procedure TWACef.Finalize;
 begin
   If FInitialized then
   begin
-    {$IFNDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
     if FIsMainProcess then
       cef_shutdown;
-    {$ENDIF}
     FreeLibrary(FLibHandle);
     FLibHandle := 0;
-    FInitialized := false;
+    FInitialized := False;
   end;
 end;
 
@@ -482,7 +353,8 @@ end;
 class function TWACef.GetData(const i: ICefBase): Pointer;
 begin
   if i <> nil then
-    Result := i.Wrap else
+    Result := i.Wrap
+  else
     Result := nil;
 end;
 
@@ -664,7 +536,6 @@ begin
 end;
 {$ENDIF}
 //..............................................................................Message loop
-{$IFNDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
 class procedure TWACef.DoMessageLoopWork;
 begin
   cef_do_message_loop_work();
@@ -679,7 +550,6 @@ class procedure TWACef.QuitMessageLoop;
 begin
   cef_quit_message_loop();
 end;
-{$ENDIF}
 
 class function TWACef.BrowserHostCreateSync(windowInfo: PCefWindowInfo; const client: ICefClient;
   const url: ustring; const settings: PCefBrowserSettings; const requestContext:ICefRequestContext): ICefBrowser;
@@ -930,7 +800,7 @@ end;
 
 initialization
 
-TWACef.FAppStarted := false;
+TWACef.FAppStarted := False;
 TWACef.FLibHandle := 0;
 TWACef.FIsMainProcess := False;
 TWACef.FInitialized := False;
