@@ -314,41 +314,6 @@ type
     destructor Destroy; override;
   end;
 
-  TSandcatV8Extension = class(TCefv8HandlerOwn)
-  private
-    fV8MsgHandle: integer;
-  protected
-    function Execute(const name: ustring; const obj: ICefv8Value;
-      ArgumentsCount: csize_t; const arguments: TCefv8ValueArray;
-      var retval: ICefv8Value; var exception: ustring): Boolean; override;
-  public
-    constructor Create; override;
-  end;
-
-  TCustomRenderProcessHandler = class(TCefRenderProcessHandlerOwn)
-  private
-    fSandcatV8Extension: TSandcatV8Extension;
-  protected
-    function OnProcessMessageReceived(const Browser: ICefBrowser;
-      sourceProcess: TCefProcessId; const message: ICefProcessMessage)
-      : Boolean; override;
-    procedure OnWebKitInitialized; override;
-  end;
-
-type
-  TCatChromiumXHR = record
-    Details: string;
-    Method: string;
-    url: string;
-    Headers: string;
-    PostData: string;
-    Filters: string;
-    Username: string;
-    Password: string;
-    Callback: string;
-    Tab: string;
-  end;
-
 const
   cABOUTBLANK = 'about:blank';
   cHOMEURL = 'sandcat:home';
@@ -382,14 +347,8 @@ const // Chromium settings
 
 const // Messages from the Chromium renderer to the Sandcat Tab object
   CRM_LOG_REQUEST_JSON = 1;
-  CRM_CONSOLE_ENDEXTERNALOUTPUT = 2;
   CRM_RENDER_PROCESSTERMINATED = 3;
   CRM_NEWTAB = 4;
-  CRM_XHR_LOG = 5;
-  CRM_JS_RUN_WHITELISTED_LUA = 6;
-  CRM_JS_WRITELN = 7;
-  CRM_JS_WRITE = 8;
-  CRM_JS_WRITEVALUE = 9;
   CRM_JS_ALERT = 10;
   CRM_NEWPAGERESOURCE = 11;
   CRM_SAVECACHEDRESOURCE = 12;
@@ -420,8 +379,8 @@ function CEFV8ValueToStr(v: ICefv8Value): string;
 function BuildRequest(Method, url: string; PostData: string = '')
   : TCatChromiumRequest;
 procedure CatCEFShutdown(mode: integer);
+function SaveResponseToFile(s: string): string;
 procedure SendCDMessage(desthandle, msgid: integer; l: string);
-procedure Send_WriteValue(desthandle: integer; key, value: string);
 
 implementation
 
@@ -553,17 +512,6 @@ begin
   finally
     Dispose(pData);
   end;
-end;
-
-procedure Send_WriteValue(desthandle: integer; key, value: string);
-var
-  j: TCatJSON;
-begin
-  j := TCatJSON.Create;
-  j['k'] := key;
-  j['v'] := value;
-  SendCDMessage(desthandle, CRM_JS_WRITEVALUE, j.text);
-  j.free;
 end;
 
 function TSpecialCEFReq.CEF_GetRcvdHeader(Response: ICefResponse): string;
@@ -749,11 +697,6 @@ begin
   end;
 end;
 
-constructor TSandcatV8Extension.Create;
-begin
-  inherited Create;
-end;
-
 function CEFV8ValueToStr(v: ICefv8Value): string;
 begin
   Result := emptystr;
@@ -786,158 +729,6 @@ begin
       Result := '[array]'
     else if v.IsFunction then
       Result := '[function ' + v.GetFunctionName + ']';
-  end;
-end;
-
-function TSandcatV8Extension.Execute(const name: ustring;
-  const obj: ICefv8Value; ArgumentsCount: csize_t;
-  const arguments: TCefv8ValueArray; var retval: ICefv8Value;
-  var exception: ustring): Boolean;
-  procedure LogRequest(Details, rid, Method, url, rcvdheader, Response: string);
-  var
-    j: tjinilist;
-  begin
-    j := tjinilist.Create;
-    j.values['ReqID'] := rid;
-    j.values['Details'] := Details;
-    j.values['ResponseHeaders'] := rcvdheader;
-    j.values['Method'] := Method;
-    j.values['URL'] := url;
-    j.values['ResponseFilename'] := SaveResponseToFile(Response);
-    SendCDMessage(fV8MsgHandle, CRM_XHR_LOG, j.text);
-    j.free;
-  end;
-
-begin
-  Result := false;
-  if (name = 'base64encode') then
-  begin
-    if (Length(arguments) <> 1) or (not arguments[0].IsString) then
-    begin
-      Result := false;
-      exit;
-    end;
-    retval := TCefv8ValueRef.CreateString
-      (base64encode(arguments[0].GetStringValue));
-    Result := true;
-  end
-  else if (name = 'base64decode') then
-  begin
-    if (Length(arguments) <> 1) or (not arguments[0].IsString) then
-    begin
-      Result := false;
-      exit;
-    end;
-    retval := TCefv8ValueRef.CreateString
-      (base64decode(arguments[0].GetStringValue));
-    Result := true;
-  end
-  else if (name = 'consoleoutput') then
-  begin
-    if (Length(arguments) = 0) or (not arguments[0].IsBool) then
-    begin
-      Result := false;
-      exit;
-    end;
-    if arguments[0].GetBoolValue = false then
-      SendCDMessage(fV8MsgHandle, CRM_CONSOLE_ENDEXTERNALOUTPUT, emptystr);
-    Result := true;
-  end
-  else if (name = 'logrequest') then
-  begin
-    if (Length(arguments) <> 6) or (not arguments[0].IsString) or
-      (not arguments[1].IsString) or (not arguments[2].IsString) or
-      (not arguments[3].IsString) or (not arguments[4].IsString) or
-      (not arguments[5].IsString) then
-    begin
-      Result := false;
-      exit;
-    end;
-    LogRequest(arguments[0].GetStringValue, arguments[1].GetStringValue,
-      arguments[2].GetStringValue, arguments[3].GetStringValue,
-      arguments[4].GetStringValue, arguments[5].GetStringValue);
-    Result := true;
-  end
-  else if (name = 'callwl') then
-  begin
-    if (Length(arguments) <> 1) or (not arguments[0].IsString) then
-    begin
-      Result := false;
-      exit;
-    end;
-    SendCDMessage(fV8MsgHandle, CRM_JS_RUN_WHITELISTED_LUA,
-      arguments[0].GetStringValue);
-    Result := true;
-  end
-  else if (name = 'writevalue') then
-  begin
-    if (Length(arguments) <> 2) or (not arguments[0].IsString) or
-      (not arguments[1].IsString) then
-    begin
-      Result := false;
-      exit;
-    end;
-    Send_WriteValue(fV8MsgHandle, arguments[0].GetStringValue,
-      CEFV8ValueToStr(arguments[1]));
-    Result := true;
-  end
-  else if (name = 'writeln') then
-  begin
-    if (Length(arguments) <> 1) then
-    begin
-      Result := false;
-      exit;
-    end;
-    SendCDMessage(fV8MsgHandle, CRM_JS_WRITELN, CEFV8ValueToStr(arguments[0]));
-    Result := true;
-  end
-  else if (name = 'write') then
-  begin
-    if (Length(arguments) <> 1) then
-    begin
-      Result := false;
-      exit;
-    end;
-    SendCDMessage(fV8MsgHandle, CRM_JS_WRITE, CEFV8ValueToStr(arguments[0]));
-    Result := true;
-  end;
-end;
-
-procedure TCustomRenderProcessHandler.OnWebKitInitialized;
-const
-  v8extension = '' + 'var Sandcat;' + 'if (!Sandcat) Sandcat = {};' +
-    '(function() {' +
-    'Sandcat.Base64Encode = function(s) { native function base64encode(); return base64encode(s); };'
-    + 'Sandcat.Base64Decode = function(s) { native function base64decode(); return base64decode(s); };'
-    + 'Sandcat.LogRequest = function(details,rid,method,url,rcvdhead,response) { native function logrequest(); logrequest(details,rid,method,url,rcvdhead,response); };'
-    + 'Sandcat.CallWL = function(s) { native function callwl(); callwl(s); };' +
-    'Sandcat.ConsoleOutput = function(b) { native function consoleoutput(); consoleoutput(b); };'
-    + 'Sandcat.WriteLn = function(s) { native function writeln(); writeln(s); };'
-    + 'Sandcat.WriteValue = function(key,value) { native function writevalue(); writevalue(key,value); };'
-    + 'Sandcat.Write = function(s) { native function write(); write(s); };'
-    + '})();';
-begin
-  fSandcatV8Extension := TSandcatV8Extension.Create;
-{$IFDEF USEWACEF}TWACef.RegisterExtension{$ELSE}CefRegisterExtension{$ENDIF}('v8/browser', v8extension, fSandcatV8Extension as ICefV8Handler);
-end;
-
-function TCustomRenderProcessHandler.OnProcessMessageReceived
-  (const Browser: ICefBrowser; sourceProcess: TCefProcessId;
-  const message: ICefProcessMessage): Boolean;
-begin
-  Result := false;
-  if (message.getName = 'msg') then
-  begin
-    Result := true;
-    case message.getArgumentList.GetInt(0) of
-      SCTM_SET_V8_MSGHANDLE:
-        fSandcatV8Extension.fV8MsgHandle := message.getArgumentList.GetInt(1);
-      SCTM_V8_REGISTEREXTENSION:
-        begin // CefRegisterExtension not working from here
-          // CefRegisterExtension('v8/browserx',message.getArgumentList.GetString(1), SandcatV8Extension as ICefV8Handler);
-        end;
-    end;
-    // browser.SendProcessMessage(PID_BROWSER,message);  // is crashing the renderer, review later
   end;
 end;
 
@@ -1575,7 +1366,6 @@ out Result: Boolean);
 begin
   if fLogJavaScriptErrors = false then
     exit;
-  fLogJavaScriptErrors := false;
   if assigned(OnConsoleMessage) then
     OnConsoleMessage(Sender, message, source, line);
 end;
@@ -1760,8 +1550,6 @@ end;
 procedure TCatChromium.crmRenderProcessTerminated(Sender: TObject;
 const Browser: ICefBrowser; status: TCefTerminationStatus);
 begin
-  if assigned(OnBrowserMessage) then
-    OnBrowserMessage(CRM_CONSOLE_ENDEXTERNALOUTPUT, emptystr);
   if assigned(OnLoadEnd) then
     OnLoadEnd(Sender, 0);
 end;
@@ -2145,7 +1933,6 @@ end;
 
 initialization
 
-CefRenderProcessHandler := TCustomRenderProcessHandler.Create;
 CefRemoteDebuggingPort := 8000;
 
 end.
