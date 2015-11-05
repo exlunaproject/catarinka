@@ -12,6 +12,4 @@
  {$IFEND}
 {$ENDIF}
 
-{$DEFINE USEWACEF}
-// If USECEFBETA is defined, WACEF for CEF v3.2357 will be required
-// {$DEFINE USECEFBETA}
+//{$DEFINE USEWACEF}

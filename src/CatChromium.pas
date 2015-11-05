@@ -63,17 +63,10 @@ type
   TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode:
 {$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
     const errorText, failedUrl: string) of object;
-{$IFDEF USECEFBETA}
   TCatChromiumOnCertificateError = procedure(Sender: TObject;
     aCertError: TCefErrorCode; const aRequestUrl: ustring;
     const aSslInfo: ICefSslinfo; const aCallback: ICefRequestCallback;
     out Result: Boolean) of object;
-{$ELSE}
-  TCatChromiumOnCertificateError = procedure(Sender: TObject;
-    aCertError: TCefErrorCode; const aRequestUrl: ustring;
-    aCallback: ICefAllowCertificateErrorCallback; out Result: Boolean)
-    of object;
-{$ENDIF}
 
 type
   TCatSourceVisitorOwn = class(TCefStringVisitorOwn)
@@ -113,6 +106,9 @@ type
     fAutoGetSource: Boolean;
     fCriticalSection: TCriticalSection;
     fCrm: TChromium;
+{$IFNDEF USEWACEF}
+    fDevTools: TChromiumDevTools;
+{$ENDIF}
     fEnableDownloads: Boolean;
     fHeaders: TCatRequestHeaders;
     fInterceptRequests: Boolean;
@@ -198,18 +194,29 @@ type
     function GetURLShort: string;
     procedure StopLoadBlank;
     procedure WMCopyData(var message: TMessage);
-{$IFDEF USECEFBETA}
+{$IFDEF USEWACEF}
     procedure crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
       const aOriginUrl: ustring; const aAcceptLang: ustring;
       aDialogType: TCefJsdialogType; const aMessageText: ustring;
       const aDefaultPromptText: ustring; const aCallback: ICefJsdialogCallback;
       var aSuppressMessage: Boolean; out Result: Boolean);
+{$ELSE}
+    procedure crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
+      const aOriginUrl, aAcceptLang: ustring; aDialogType: TCefJsdialogType;
+      const aMessageText, aDefaultPromptText: ustring;
+      aCallback: ICefJsdialogCallback; out aSuppressMessage: Boolean;
+      out Result: Boolean);
+{$ENDIF}
     procedure crmBeforeResourceLoad(Sender: TObject; const Browser: ICefBrowser;
       const frame: ICefFrame; const request: ICefRequest;
       const Callback: ICefRequestCallback; out Result: TCefReturnValue);
     procedure crmBeforePopup(Sender: TObject; const aBrowser: ICefBrowser;
-      const aFrame: ICefFrame; var aTargetUrl: ustring;
-      const aTargetFrameName: ustring;
+      const aFrame: ICefFrame;
+{$IFDEF USEWACEF}
+      var aTargetUrl: ustring; const aTargetFrameName: ustring;
+{$ELSE}
+      const aTargetUrl, aTargetFrameName: ustring;
+{$ENDIF}
       aTargetDisposition: TCefWindowOpenDisposition; aUserGesture: Boolean;
       var aPopupFeatures: TCefPopupFeatures; var aWindowInfo: TCefWindowInfo;
       var aClient: ICefClient; var aSettings: TCefBrowserSettings;
@@ -218,22 +225,6 @@ type
       aCertError: TCefErrorCode; const aRequestUrl: ustring;
       const aSslInfo: ICefSslinfo; const aCallback: ICefRequestCallback;
       out Result: Boolean);
-{$ELSE}
-    procedure crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
-      const aOriginUrl, aAcceptLang: ustring; aDialogType: TCefJsdialogType;
-      const aMessageText, aDefaultPromptText: ustring;
-      aCallback: ICefJsdialogCallback; out aSuppressMessage, Result: Boolean);
-    procedure crmBeforeResourceLoad(Sender: TObject; const Browser: ICefBrowser;
-      const frame: ICefFrame; const request: ICefRequest; out Result: Boolean);
-    procedure crmBeforePopup(Sender: TObject; const aBrowser: ICefBrowser;
-      const aFrame: ICefFrame; const aTargetUrl, aTargetFrameName: ustring;
-      var aPopupFeatures: TCefPopupFeatures; var aWindowInfo: TCefWindowInfo;
-      var aClient: ICefClient; var aSettings: TCefBrowserSettings;
-      var aNoJavascriptAccess: Boolean; out Result: Boolean);
-    procedure crmCertificateError(Sender: TObject; aCertError: TCefErrorCode;
-      const aRequestUrl: ustring; aCallback: ICefAllowCertificateErrorCallback;
-      out Result: Boolean);
-{$ENDIF}
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -329,13 +320,9 @@ type
     function CEF_GetRcvdHeader(Response: ICefResponse): string;
   protected
     procedure OnRequestComplete(const request: ICefUrlRequest); override;
-{$IFDEF USECEFBETA}
-    procedure OnDownloadData(const request: ICefUrlRequest; const data: cvoid;
-      dataLength: csize_t); override;
-{$ELSE}
-    procedure OnDownloadData(const request: ICefUrlRequest; data: Pointer;
-      dataLength: NativeUInt); override;
-{$ENDIF}
+    procedure OnDownloadData(const request: ICefUrlRequest;
+{$IFDEF USEWACEF}const
+{$ENDIF} data: Pointer; dataLength: NativeUInt); override;
   public
     MsgHandle: HWND;
     Details: string;
@@ -619,7 +606,7 @@ var
   postElement: ICefPostDataElement;
   PostData: ICefPostData;
   list: IInterfaceList;
-  elcount: csize_t;
+  elcount: NativeUInt;
 begin
   ansi := '';
   PostData := request.getPostData;
@@ -663,15 +650,8 @@ begin
   inherited;
 end;
 
-{$IFDEF USECEFBETA}
-
 procedure TSpecialCEFReq.OnDownloadData(const request: ICefUrlRequest;
-  const data: cvoid; dataLength: csize_t);
-{$ELSE}
-
-procedure TSpecialCEFReq.OnDownloadData(const request: ICefUrlRequest;
-  data: Pointer; dataLength: NativeUInt);
-{$ENDIF}
+{$IFDEF USEWACEF}const {$ENDIF} data: Pointer; dataLength: NativeUInt);
 begin
 {$IFDEF DXE3_OR_UP}
   fResponseStream.WriteData(data, dataLength);
@@ -1315,21 +1295,12 @@ begin
   // sendmessagetotab(fmsghandle,CRM_LOGWRITELN,'getresourcehandler:'+request.getUrl);
   reqown := TSpecialCEFReq.Create;
   reqown.MsgHandle := self.fMsgHandle;
-  req := TCefUrlRequestRef.New(request, reqown
-  {$IFDEF USECEFBETA}, reqctx{$ENDIF}) as ICefUrlRequest;
+  req := TCefUrlRequestRef.New(request, reqown, reqctx) as ICefUrlRequest;
 end;
-
-{$IFDEF USECEFBETA}
 
 procedure TCatChromium.crmBeforeResourceLoad(Sender: TObject;
 const Browser: ICefBrowser; const frame: ICefFrame; const request: ICefRequest;
 const Callback: ICefRequestCallback; out Result: TCefReturnValue);
-{$ELSE}
-
-procedure TCatChromium.crmBeforeResourceLoad(Sender: TObject;
-const Browser: ICefBrowser; const frame: ICefFrame; const request: ICefRequest;
-out Result: Boolean);
-{$ENDIF}
 begin
   // result:=false; // unnecessary
   // This would avoid a weird crash during navigation with past CEF3 releases
@@ -1340,24 +1311,17 @@ begin
   SendCDMessage(fMsgHandle, id, s);
 end;
 
-{$IFDEF USECEFBETA}
-
-procedure TCatChromium.crmBeforePopup(Sender: TObject;
-const aBrowser: ICefBrowser; const aFrame: ICefFrame; var aTargetUrl: ustring;
-const aTargetFrameName: ustring; aTargetDisposition: TCefWindowOpenDisposition;
-aUserGesture: Boolean; var aPopupFeatures: TCefPopupFeatures;
-var aWindowInfo: TCefWindowInfo; var aClient: ICefClient;
-var aSettings: TCefBrowserSettings; var aNoJavascriptAccess: Boolean;
-out Result: Boolean);
-{$ELSE}
-
 procedure TCatChromium.crmBeforePopup(Sender: TObject;
 const aBrowser: ICefBrowser; const aFrame: ICefFrame;
+{$IFDEF USEWACEF}
+var aTargetUrl: ustring; const aTargetFrameName: ustring;
+{$ELSE}
 const aTargetUrl, aTargetFrameName: ustring;
+{$ENDIF}
+aTargetDisposition: TCefWindowOpenDisposition; aUserGesture: Boolean;
 var aPopupFeatures: TCefPopupFeatures; var aWindowInfo: TCefWindowInfo;
 var aClient: ICefClient; var aSettings: TCefBrowserSettings;
 var aNoJavascriptAccess: Boolean; out Result: Boolean);
-{$ENDIF}
 var
   u: string;
 begin
@@ -1392,26 +1356,17 @@ begin
   end;
 end;
 
-{$IFDEF USECEFBETA}
-
 procedure TCatChromium.crmCertificateError(Sender: TObject;
 const aBrowser: ICefBrowser; aCertError: TCefErrorCode;
 const aRequestUrl: ustring; const aSslInfo: ICefSslinfo;
 const aCallback: ICefRequestCallback; out Result: Boolean);
-{$ELSE}
-
-procedure TCatChromium.crmCertificateError(Sender: TObject;
-aCertError: TCefErrorCode; const aRequestUrl: ustring;
-aCallback: ICefAllowCertificateErrorCallback; out Result: Boolean);
-{$ENDIF}
 var
   button: integer;
   msg, caption: string;
 begin
   if assigned(OnCertificateError) then
-    OnCertificateError(Sender, aCertError, aRequestUrl,
-    {$IFDEF USECEFBETA}aSslInfo, {$ENDIF}
-    aCallback, Result);
+    OnCertificateError(Sender, aCertError, aRequestUrl, aSslInfo,
+      aCallback, Result);
   msg := format('Warning: %s Proceed anyway?',
     [CertErrorCodeToErrorName(aCertError)]);
   caption := aRequestUrl;
@@ -1435,7 +1390,7 @@ begin
     OnConsoleMessage(Sender, message, source, line);
 end;
 
-{$IFDEF USECEFBETA}
+{$IFDEF USEWACEF}
 
 procedure TCatChromium.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
 const aOriginUrl: ustring; const aAcceptLang: ustring;
@@ -1447,7 +1402,8 @@ var aSuppressMessage: Boolean; out Result: Boolean);
 procedure TCatChromium.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
 const aOriginUrl, aAcceptLang: ustring; aDialogType: TCefJsdialogType;
 const aMessageText, aDefaultPromptText: ustring;
-aCallback: ICefJsdialogCallback; out aSuppressMessage, Result: Boolean);
+aCallback: ICefJsdialogCallback; out aSuppressMessage: Boolean;
+out Result: Boolean);
 {$ENDIF}
 begin
   case aDialogType of
@@ -1462,9 +1418,11 @@ begin
 end;
 
 procedure TCatChromium.ViewDevTools;
+{$IFDEF USEWACEF}
 var
   info: TCefWindowInfo;
   settings: TCefBrowserSettings;
+{$ENDIF}
 begin
   if fCrm.Browser = nil then
     exit;
@@ -1479,13 +1437,19 @@ begin
   info.y := CW_USEDEFAULT;
   info.width := CW_USEDEFAULT;
   info.height := CW_USEDEFAULT;
-  info.window_name := TWACef.ToCefString('DevTools - ' + GetURL);
+  info.window_name :=
+{$IFDEF USEWACEF}TWACef.ToCefString{$ELSE}CefString{$ENDIF}('DevTools - ' + GetURL);
   FillChar(settings, SizeOf(TCefBrowserSettings), 0);
   settings.Size := SizeOf(TCefBrowserSettings);
   fCrm.Browser.GetHost.ShowDevTools(info, fCrm.Browser.GetHost.GetClient,
     settings);
 {$ELSE}
-  SendMessageToTab(CRM_NEWTAB, fCrm.Browser.GetHost.GetDevToolsURL(true));
+  if fDevTools = nil then
+    fDevTools := TChromiumDevTools.Create(self);
+  fDevTools.Parent := self;
+  fDevTools.Align := AlBottom;
+  fDevTools.height := 300;
+  fDevTools.ShowDevTools(fCrm.Browser);
 {$ENDIF}
 end;
 
@@ -1672,11 +1636,8 @@ procedure TCatChromium.LoadSettings(settings, DefaultSettings: TCatJSON);
 begin
   // LoadCustomCSS;
   fNeedRecreate := false;
-{$IFNDEF USEWACEF}
-  fCrm.Options.AcceleratedCompositing := GetState(CRMO_ACCELERATED_COMPOSITING);
-{$ENDIF}
   fCrm.Options.ApplicationCache := GetState(CRMO_APPLICATION_CACHE);
-  fCrm.Options.AuthorAndUserStyles := GetState(CRMO_AUTHOR_AND_USER_STYLES);
+  // fCrm.Options.AuthorAndUserStyles := GetState(CRMO_AUTHOR_AND_USER_STYLES);
   fCrm.Options.CaretBrowsing := GetState(CRMO_CARET_BROWSING);
   fCrm.Options.Databases := GetState(CRMO_DATABASES);
   // fCrm.Options.DeveloperTools := GetState(CRMO_DEVELOPER_TOOLS);
@@ -1713,7 +1674,8 @@ begin
     fNeedRecreate := false;
     fCrm.ReCreateBrowser(GetURL);
     end;
-    end; }
+    end;
+  }
 end;
 
 constructor TCatChromium.Create(AOwner: TComponent);
@@ -1831,10 +1793,11 @@ begin
   r.Method := req.Method;
   if req.Method = emptystr then
     r.Method := 'GET';
+
   if req.IgnoreCache then
     r.Flags := r.Flags + [UR_FLAG_SKIP_CACHE];
-  if req.UseCookies then
-    r.Flags := r.Flags + [UR_FLAG_ALLOW_COOKIES];
+  // if req.UseCookies then
+  // r.Flags := r.Flags + [UR_FLAG_ALLOW_COOKIES];
   if req.UseCachedCredentials then
     r.Flags := r.Flags + [UR_FLAG_ALLOW_CACHED_CREDENTIALS];
   if req.PostData <> emptystr then
@@ -1873,8 +1836,7 @@ begin
     reqown := TSpecialCEFReq.Create;
     reqown.MsgHandle := self.fMsgHandle;
     reqown.Details := req.Details;
-    urlreq := TCefUrlRequestRef.New(r, reqown{$IFDEF USECEFBETA},
-      reqctx{$ENDIF}) as ICefUrlRequest;
+    urlreq := TCefUrlRequestRef.New(r, reqown, reqctx) as ICefUrlRequest;
   end;
 end;
 
@@ -1943,12 +1905,7 @@ begin
   if waitstop = false then
     exit;
   while isLoading do
-  begin
     application.ProcessMessages;
-{$IFNDEF USEWACEF}
-    catdelay(1000);
-{$ENDIF}
-  end;
 end;
 
 // Stop loading and load a blank page - helps avoid some AV cases when
@@ -1969,6 +1926,10 @@ begin
   fInterceptRequests := false;
   ClearEvents;
   StopLoadBlank;
+{$IFNDEF USEWACEF}
+  if fDevTools <> nil then
+    fDevTools.free;
+{$ENDIF}
   fCrm.free;
   fURLLog.free;
   fResourceList.free;
