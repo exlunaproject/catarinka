@@ -20,10 +20,10 @@ uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, Vcl.Forms, Vcl.Menus, Vcl.ExtCtrls, System.SysUtils,
   System.Classes, Vcl.Controls, Vcl.ComCtrls, Winapi.CommCtrl, Winapi.Messages,
-  Winapi.ShlObj;
+  Winapi.ShlObj, System.TypInfo;
 {$ELSE}
   Windows, Forms, Menus, ExtCtrls, SysUtils, Classes, Controls, ComCtrls,
-  CommCtrl, Messages, ShlObj;
+  CommCtrl, Messages, ShlObj, TypInfo;
 {$ENDIF}
 function AskYN(const question: string): Boolean;
 function GetWindowState: integer;
@@ -51,6 +51,7 @@ procedure DisableLVToolTips(H: THandle);
 procedure ExpandTreeViewItems(tv: ttreeview);
 procedure FlashUI(const times: integer = 2; const delay: integer = 500);
 procedure LoadListviewStrings(listview: TListview; const filename: string);
+procedure NilComponentMethods(Component: TComponent);
 procedure QuickSortTreeViewItems(tv: ttreeview);
 procedure ShowPopupMenu(PopupMenu: TPopupMenu; const AppHandle: integer);
 procedure SaveListviewStrings(listview: TListview; const filename: string);
@@ -402,6 +403,31 @@ function MakeNotifyEvent(forObject: TObject; const procname: String)
 begin
   TMethod(Result).data := forObject;
   TMethod(Result).code := forObject.methodAddress(procname);
+end;
+
+procedure NilComponentMethods(Component: TComponent);
+var
+  Count, Size, I: Integer;
+  List: PPropList;
+  PropInfo: PPropInfo;
+  NilMethod: TMethod;
+begin
+  Count := GetPropList(Component.ClassInfo, tkAny, nil);
+  Size  := Count * SizeOf(Pointer);
+  GetMem(List, Size);
+  NilMethod.Data := nil;
+  NilMethod.Code := nil;
+  try
+    Count := GetPropList(Component.ClassInfo, tkAny, List);
+    for I := 0 to Count - 1 do
+    begin
+      PropInfo := List^[I];
+      if PropInfo^.PropType^.Kind in tkMethods then
+      SetMethodProp(Component,string(PropInfo.Name),NilMethod);
+    end;
+  finally
+    FreeMem(List);
+  end;
 end;
 
 procedure QuickSortTreeViewItems(tv: ttreeview);

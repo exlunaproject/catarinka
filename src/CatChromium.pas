@@ -25,7 +25,7 @@ uses
 {$ELSE}
   cefvcl, ceflib,
 {$ENDIF}
-  superobject, CatJSON;
+  superobject, CatJSON, CatMsg;
 
 {$IFDEF USEWACEF}
 
@@ -102,13 +102,13 @@ type
 type
   TCatChromium = class(TCustomControl)
   private
+{$IFNDEF USEWACEF}
+    fDevTools: TChromiumDevTools;
+{$ENDIF}
     fAdjustSourceDisplayMethod: Boolean;
     fAutoGetSource: Boolean;
     fCriticalSection: TCriticalSection;
     fCrm: TChromium;
-{$IFNDEF USEWACEF}
-    fDevTools: TChromiumDevTools;
-{$ENDIF}
     fEnableDownloads: Boolean;
     fHeaders: TCatRequestHeaders;
     fInterceptRequests: Boolean;
@@ -116,7 +116,7 @@ type
     fLastTitle: string;
     fLogJavaScriptErrors: Boolean;
     fLogURLs: Boolean;
-    fMsgHandle: HWND;
+    fMsg: TCatMsg;
     fNeedRecreate: Boolean;
     fOnBrowserMessage: TCatChromiumOnBrowserMessage;
     fOnAfterSetSource: TCatChromiumOnAfterSetSource;
@@ -141,7 +141,6 @@ type
     fSourceVisitor: TCatSourceVisitorOwn;
     fURLLog: TStringList;
     procedure ClearRequestData;
-    procedure ClearEvents;
     procedure crmTitleChange(Sender: TObject; const Browser: ICefBrowser;
       const title: ustring);
     procedure crmLoadEnd(Sender: TObject; const Browser: ICefBrowser;
@@ -184,7 +183,6 @@ type
       const frame: ICefFrame; isProxy: Boolean; const host: ustring;
       port: integer; const realm, scheme: ustring;
       const Callback: ICefAuthCallback; out Result: Boolean);
-    procedure crmMessage(var AMsg: TMessage);
     procedure crmRenderProcessTerminated(Sender: TObject;
       const Browser: ICefBrowser; status: TCefTerminationStatus);
     procedure LogURL(const url: string);
@@ -193,7 +191,7 @@ type
     function GetZoomLevel: double;
     function GetURLShort: string;
     procedure StopLoadBlank;
-    procedure WMCopyData(var message: TMessage);
+    procedure WMCopyData(const msgid: integer; const str: string);
 {$IFDEF USEWACEF}
     procedure crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
       const aOriginUrl: ustring; const aAcceptLang: ustring;
@@ -331,8 +329,8 @@ type
   end;
 
 const
-  cABOUTBLANK = 'about:blank';
-  cHOMEURL = 'sandcat:home';
+  cURL_ABOUTBLANK = 'about:blank';
+  cURL_HOME = 'sandcat:home';
 
 const // Chromium settings
   cOptions = 'chrome.options.';
@@ -392,17 +390,16 @@ const // Shutdown modes
 function GetCEFUserAgent: string;
 function GetCEFDefaults(settings: TCatJSON): string;
 function CEFV8ValueToStr(v: ICefv8Value): string;
+function StrToCEFV8Value(const s: string): ICefv8Value;
 function BuildRequest(Method, url: string; PostData: string = '')
   : TCatChromiumRequest;
 procedure CatCEFShutdown(mode: integer);
 function SaveResponseToFile(s: string): string;
-procedure SendCDMessage(desthandle, msgid: integer; l: string);
 
 implementation
 
 uses uAuthentication, CatJINI, CatStringLoop, CatTasks, CatUI, CatFiles,
-  CatStrings,
-  CatHTTP, CatUtils, CatTime, CatPointer;
+  CatStrings, CatHTTP, CatUtils, CatTime, CatPointer;
 
 var
   TempFileCount: integer = 0;
@@ -436,6 +433,88 @@ begin
 {$ENDIF}
         ExitProcess(0);
       end;
+  end;
+end;
+
+function CertErrorCodeToErrorName(c: TCefErrorCode): string;
+begin
+  case c of
+    ERR_CERT_COMMON_NAME_INVALID:
+      Result := 'Certificate common name invalid.';
+    ERR_CERT_DATE_INVALID:
+      Result := 'Certificate date invalid.';
+    ERR_CERT_AUTHORITY_INVALID:
+      Result := 'Certificate authority invalid.';
+    ERR_CERT_CONTAINS_ERRORS:
+      Result := 'Certificate contains errors.';
+    ERR_CERT_NO_REVOCATION_MECHANISM:
+      Result := 'No certificate revocation mechanism.';
+    ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
+      Result := 'Unable to check certificate revocation.';
+    ERR_CERT_REVOKED:
+      Result := 'Certificate revoked.';
+    ERR_CERT_INVALID:
+      Result := 'Invalid certificate.';
+    ERR_CERT_END:
+      Result := 'Certificate end.';
+  end;
+end;
+
+function StrToCefString(s: ustring): TCefString;
+begin
+  Result := {$IFDEF USEWACEF}TWACef.ToCefString{$ELSE}CefString{$ENDIF}(s);
+end;
+
+function StrToCEFV8Value(const s: string): ICefv8Value;
+begin
+  Result := TCefv8ValueRef.{$IFDEF USEWACEF}CreateString{$ELSE}NewString{$ENDIF}(s);
+end;
+
+function CEFV8ValueToStr(v: ICefv8Value): string;
+begin
+  Result := emptystr;
+  if v.IsString then
+    Result := v.GetStringValue
+  else
+  begin
+    if v.IsUndefined then
+      Result := 'undefined'
+    else if v.IsNull then
+      Result := 'null'
+    else if v.IsBool then
+    begin
+      if v.GetBoolValue = true then
+        Result := 'true'
+      else
+        Result := 'false';
+    end
+    else if v.IsInt then
+      Result := inttostr(v.GetIntValue)
+    else if v.IsUInt then
+      Result := inttostr(v.GetUIntValue)
+    else if v.IsDouble then
+      Result := floattostr(v.GetDoubleValue)
+      // else if v.IsDate then
+      // Result := datetimetostr(v.GetDateValue)
+    else if v.IsObject then
+      Result := '[object]'
+    else if v.IsArray then
+      Result := '[array]'
+    else if v.IsFunction then
+      Result := '[function ' + v.GetFunctionName + ']';
+  end;
+end;
+
+function CEFStateToStr(s: TCefState): string;
+begin
+  Result := emptystr;
+  case s of
+    STATE_ENABLED:
+      Result := 'Enabled';
+    STATE_DISABLED:
+      Result := 'Disabled';
+    STATE_DEFAULT:
+      Result := 'Default';
   end;
 end;
 
@@ -514,239 +593,9 @@ begin
   sl.free;
 end;
 
-procedure SendCDMessage(desthandle, msgid: integer; l: string);
-var
-  pData: PCopyDataStruct;
-begin
-  pData := nil;
-  try
-    New(pData);
-    pData^.dwData := msgid;
-    pData^.cbData := Length(l) + 1;
-    pData^.lpData := PAnsiChar(AnsiString(l));
-    SendMessage(desthandle, WM_COPYDATA, application.handle, integer(pData));
-  finally
-    Dispose(pData);
-  end;
-end;
-
-function TSpecialCEFReq.CEF_GetRcvdHeader(Response: ICefResponse): string;
-var
-  i: integer;
-  s, kv, lastkv: string;
-  Map: ICefStringMultimap;
-  procedure Add(key, value: string);
-  begin
-    kv := key + ': ' + value;
-    if kv <> lastkv then
-      s := s + crlf + kv; // Workaround: CEF3 sometimes returns repeated headers
-    lastkv := kv;
-  end;
-
-begin
-  Map := TCefStringMultiMapOwn.Create;
-  Response.GetHeaderMap(Map);
-  s := 'HTTP/1.1 ' + inttostr(Response.getStatus) + ' ' +
-    Response.GetStatusText;
-  with Map do
-  begin
-    for i := 0 to GetSize do
-    begin
-      if i < GetSize then
-        Add(GetKey(i), GetValue(i));
-    end;
-  end;
-  Result := s;
-end;
-
-function TSpecialCEFReq.CEF_GetSentHeader(request: ICefRequest;
-  IncludePostData: Boolean = true): string;
-var
-  i: integer;
-  s, PostData, kv, lastkv: string;
-  Map: ICefStringMultimap;
-  procedure Add(key, value: string);
-  begin
-    kv := key + ': ' + value;
-    if kv <> lastkv then
-      s := s + crlf + kv; // Workaround: CEF3 sometimes returns repeated headers
-    lastkv := kv;
-  end;
-
-begin
-  Map := TCefStringMultiMapOwn.Create;
-  request.GetHeaderMap(Map);
-  s := request.getMethod + ' /' + ExtractUrlPath(request.GetURL) + ' HTTP/1.1';
-  with Map do
-  begin
-    if FindCount('Host') = 0 then
-      Add('Host', ExtractURLHost(request.GetURL));
-    for i := 0 to GetSize do
-    begin
-      if i < GetSize then
-        Add(GetKey(i), GetValue(i));
-    end;
-  end;
-  if (IncludePostData) and (request.getMethod = 'POST') then
-  begin
-    PostData := CEF_GetPostData(request);
-    if PostData <> emptystr then
-    begin
-      s := s + crlf;
-      s := s + crlf + PostData;
-    end;
-  end;
-  Result := s + crlf;
-end;
-
-function TSpecialCEFReq.CEF_GetPostData(request: ICefRequest): string;
-var
-  i: integer;
-  ansi, datastr: AnsiString;
-  postElement: ICefPostDataElement;
-  PostData: ICefPostData;
-  list: IInterfaceList;
-  elcount: NativeUInt;
-begin
-  ansi := '';
-  PostData := request.getPostData;
-  if PostData <> nil then
-  begin
-    elcount := PostData.{$IFDEF USEWACEF}GetElementCount{$ELSE}GetCount{$ENDIF};
-    list := PostData.GetElements(elcount);
-    for i := 0 to list.Count - 1 do
-    begin
-      postElement := list[i] as ICefPostDataElement;
-      case postElement.GetType of
-        PDE_TYPE_BYTES:
-          begin
-            SetLength(datastr, postElement.GetBytesCount);
-            postElement.GetBytes(postElement.GetBytesCount, PAnsiChar(datastr));
-            ansi := ansi + datastr;
-          end;
-        PDE_TYPE_FILE:
-          ;
-        PDE_TYPE_EMPTY:
-          ;
-      end;
-    end;
-  end;
-  Result := string(ansi);
-end;
-
-constructor TSpecialCEFReq.Create;
-begin
-  inherited Create;
-  fCriticalSection := TCriticalSection.Create;
-  fCriticalSection.Enter;
-  fResponseStream := TMemoryStream.Create;
-  fLogged := false;
-end;
-
-destructor TSpecialCEFReq.Destroy;
-begin
-  fResponseStream.free;
-  fCriticalSection.free;
-  inherited;
-end;
-
-procedure TSpecialCEFReq.OnDownloadData(const request: ICefUrlRequest;
-{$IFDEF USEWACEF}const {$ENDIF} data: Pointer; dataLength: NativeUInt);
-begin
-{$IFDEF DXE3_OR_UP}
-  fResponseStream.WriteData(data, dataLength);
-{$ELSE}
-  fResponseStream.Write(data, dataLength);
-{$ENDIF}
-  inherited;
-end;
-
-procedure TSpecialCEFReq.OnRequestComplete(const request: ICefUrlRequest);
-var
-  req: ICefRequest;
-  resp: ICefResponse;
-var
-  SentHead, RcvdHead, referrer, respfilename: string;
-begin
-  inherited;
-  fCriticalSection.Enter;
-  try
-    fr := TSuperObject.Create(stObject);
-    req := request.getrequest;
-    resp := request.getresponse;
-    SentHead := CEF_GetSentHeader(req);
-    RcvdHead := CEF_GetRcvdHeader(resp);
-    fr.s['method'] := req.getMethod;
-    fr.s['url'] := req.GetURL;
-    if pos('Referer', SentHead) <> 0 then
-      referrer := trim(getfield('Referer', SentHead));
-    if req.getMethod = 'POST' then
-      fr.s['postdata'] := CEF_GetPostData(req)
-    else
-      fr.s['postdata'] := emptystr;
-    fr.s['status'] := inttostr(resp.getStatus);
-    fr.s['mimetype'] := resp.GetMimeType;
-    if Details <> emptystr then // user specified
-      fr.s['details'] := Details
-    else
-    begin
-      if lowercase(extracturlfileext(referrer)) = '.swf' then
-        fr.s['details'] := 'Flash Plugin Request'
-      else
-        fr.s['details'] := 'Browser Request';
-    end;
-    fr.s['reqid'] := emptystr;
-    fr.s['response'] := emptystr;
-    respfilename := GetTempFile;
-    fr.s['responsefilename'] := respfilename;
-    fResponseStream.SaveToFile(respfilename);
-    fr.s['length'] := inttostr(fResponseStream.Size);
-    fr.b['isredir'] := false;
-    fr.b['islow'] := false;
-    fr.s['headers'] := SentHead;
-    fr.s['responseheaders'] := RcvdHead;
-    if MsgHandle <> 0 then
-      SendCDMessage(MsgHandle, CRM_LOG_REQUEST_JSON, fr.AsJson(true));
-    fr := nil;
-  finally
-    fCriticalSection.Leave;
-  end;
-end;
-
-function CEFV8ValueToStr(v: ICefv8Value): string;
-begin
-  Result := emptystr;
-  if v.IsString then
-    Result := v.GetStringValue
-  else
-  begin
-    if v.IsUndefined then
-      Result := 'undefined'
-    else if v.IsNull then
-      Result := 'null'
-    else if v.IsBool then
-    begin
-      if v.GetBoolValue = true then
-        Result := 'true'
-      else
-        Result := 'false';
-    end
-    else if v.IsInt then
-      Result := inttostr(v.GetIntValue)
-    else if v.IsUInt then
-      Result := inttostr(v.GetUIntValue)
-    else if v.IsDouble then
-      Result := floattostr(v.GetDoubleValue)
-      // else if v.IsDate then
-      // Result := datetimetostr(v.GetDateValue)
-    else if v.IsObject then
-      Result := '[object]'
-    else if v.IsArray then
-      Result := '[array]'
-    else if v.IsFunction then
-      Result := '[function ' + v.GetFunctionName + ']';
-  end;
-end;
+// ------------------------------------------------------------------------//
+// TCatChromium                                                            //
+// ------------------------------------------------------------------------//
 
 procedure TCatChromium.SendMessage(const msg: integer; const msgstr: string);
 var
@@ -897,7 +746,7 @@ var
   u: string;
 begin
   u := GetURL;
-  if u = cHOMEURL then
+  if u = cURL_HOME then
   begin
     Result := emptystr;
   end
@@ -1292,9 +1141,9 @@ begin
   if Browser = nil then
     exit;
   fSentRequests := fSentRequests + 1;
-  // sendmessagetotab(fmsghandle,CRM_LOGWRITELN,'getresourcehandler:'+request.getUrl);
+  // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'getresourcehandler:'+request.getUrl);
   reqown := TSpecialCEFReq.Create;
-  reqown.MsgHandle := self.fMsgHandle;
+  reqown.MsgHandle := self.fMsg.MsgHandle;
   req := TCefUrlRequestRef.New(request, reqown, reqctx) as ICefUrlRequest;
 end;
 
@@ -1308,7 +1157,7 @@ end;
 
 procedure TCatChromium.SendMessageToTab(const id: integer; const s: string);
 begin
-  SendCDMessage(fMsgHandle, id, s);
+  SendCDMessage(fMsg.MsgHandle, id, s);
 end;
 
 procedure TCatChromium.crmBeforePopup(Sender: TObject;
@@ -1329,31 +1178,6 @@ begin
   u := aTargetUrl;
   SendMessageToTab(CRM_NEWTAB, u);
   // if assigned(OnBeforePopup) then onBeforePopup(sender,u,result);
-  // targetUrl:=u; // ToDo: CEF3 latest returns a constant
-end;
-
-function CertErrorCodeToErrorName(c: TCefErrorCode): string;
-begin
-  case c of
-    ERR_CERT_COMMON_NAME_INVALID:
-      Result := 'Certificate common name invalid.';
-    ERR_CERT_DATE_INVALID:
-      Result := 'Certificate date invalid.';
-    ERR_CERT_AUTHORITY_INVALID:
-      Result := 'Certificate authority invalid.';
-    ERR_CERT_CONTAINS_ERRORS:
-      Result := 'Certificate contains errors.';
-    ERR_CERT_NO_REVOCATION_MECHANISM:
-      Result := 'No certificate revocation mechanism.';
-    ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
-      Result := 'Unable to check certificate revocation.';
-    ERR_CERT_REVOKED:
-      Result := 'Certificate revoked.';
-    ERR_CERT_INVALID:
-      Result := 'Invalid certificate.';
-    ERR_CERT_END:
-      Result := 'Certificate end.';
-  end;
 end;
 
 procedure TCatChromium.crmCertificateError(Sender: TObject;
@@ -1437,8 +1261,7 @@ begin
   info.y := CW_USEDEFAULT;
   info.width := CW_USEDEFAULT;
   info.height := CW_USEDEFAULT;
-  info.window_name :=
-{$IFDEF USEWACEF}TWACef.ToCefString{$ELSE}CefString{$ENDIF}('DevTools - ' + GetURL);
+  info.window_name := StrToCefString('DevTools - ' + GetURL);
   FillChar(settings, SizeOf(TCefBrowserSettings), 0);
   settings.Size := SizeOf(TCefBrowserSettings);
   fCrm.Browser.GetHost.ShowDevTools(info, fCrm.Browser.GetHost.GetClient,
@@ -1473,7 +1296,7 @@ begin
     exit;
   s := suggestedName;
   // debug
-  // sendmessagetotab(msghandle,CRM_LOGWRITELN,'beforedownload:'+inttostr(downloaditem.getid));
+  // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'beforedownload:'+inttostr(downloaditem.getid));
   fn := GetSpecialFolderPath(CSIDL_PERSONAL, false) + '\' + suggestedName;
   Callback.Cont(fn, true);
   if assigned(OnBeforeDownload) then
@@ -1516,7 +1339,7 @@ begin
     state := SCD_CANCELED;
   end;
   // debug
-  // sendmessagetotab(msghandle,CRM_LOGWRITELN,'downloadupdated: '+statetostr(state)+downloaditem.getfullpath);
+  // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'downloadupdated: '+statetostr(state)+downloaditem.getfullpath);
   if assigned(OnDownloadUpdated) then
     OnDownloadUpdated(Sender, cancel, downloadItem.getid, state,
       downloadItem.getPercentComplete, downloadItem.getfullpath);
@@ -1532,11 +1355,8 @@ begin
     fURLLog.Add(url);
 end;
 
-procedure TCatChromium.WMCopyData(var message: TMessage);
+procedure TCatChromium.WMCopyData(const msgid: integer; const str: string);
 var
-  pData: PCopyDataStruct;
-  msgid: integer;
-  str: string;
   j: TCatJSON;
   procedure HandleResponse(json: string);
   begin
@@ -1559,30 +1379,12 @@ var
   end;
 
 begin
-  message.Result := 0;
-  pData := PCopyDataStruct(message.LParam);
-  if (pData = nil) then
-    exit;
-  str := string(StrPas(PAnsiChar(pData^.lpData)));
-  msgid := pData^.dwData;
   case msgid of
     CRM_LOG_REQUEST_JSON:
       HandleResponse(str);
   end;
   if assigned(OnBrowserMessage) then
     OnBrowserMessage(msgid, str);
-  message.Result := 1;
-end;
-
-procedure TCatChromium.crmMessage(var AMsg: TMessage);
-begin
-  try
-    case AMsg.msg of
-      WM_COPYDATA:
-        WMCopyData(AMsg);
-    end;
-  except
-  end;
 end;
 
 procedure TCatChromium.crmRenderProcessTerminated(Sender: TObject;
@@ -1594,26 +1396,13 @@ end;
 
 { procedure TCatChromium.LoadCustomCSS;
   begin
-  needrecreate:=true;
+  fneedrecreate:=true;
   FChrome.crm.options.UserStyleSheetEnabled :=true;
   FChrome.crm.UserStyleSheetLocation:=UserScript.CSS_UserStyleSheet;
   //FChrome.crm.Options.UniversalAccessFromFileUrlsAllowed:=true;
   //FChrome.Crm.Options.FileAccessFromFileUrlsAllowed:=true;
   end;
 }
-
-function CEFStateToStr(s: TCefState): string;
-begin
-  Result := emptystr;
-  case s of
-    STATE_ENABLED:
-      Result := 'Enabled';
-    STATE_DISABLED:
-      Result := 'Disabled';
-    STATE_DEFAULT:
-      Result := 'Default';
-  end;
-end;
 
 procedure TCatChromium.LoadSettings(settings, DefaultSettings: TCatJSON);
   function GetState(CID: string): TCefState;
@@ -1683,8 +1472,8 @@ begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls];
   Color := clWindow;
-  fMsgHandle :=
-{$IFDEF DXE2_OR_UP}System.{$ENDIF}Classes.AllocateHWnd(crmMessage);
+  fMsg := TCatMsg.Create;
+  fMsg.OnCopyDataMessage := WMCopyData;
   fCriticalSection := TCriticalSection.Create;
   fPreventPopup := true;
   fInterceptRequests := true;
@@ -1710,9 +1499,7 @@ begin
   fCrm.OnBeforeResourceLoad := crmBeforeResourceLoad;
   fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
   fCrm.OnBeforePopup := crmBeforePopup;
-{$IFDEF USEWACEF}
   fCrm.OnCertificateError := crmCertificateError;
-{$ENDIF}
   fCrm.OnConsoleMessage := crmConsoleMessage;
   fCrm.OnJsdialog := crmJsdialog;
   fCrm.OnBeforeDownload := crmBeforeDownload;
@@ -1724,36 +1511,6 @@ begin
   fCrm.OnPluginCrashed := crmPluginCrashed;
   fCrm.OnRenderProcessTerminated := crmRenderProcessTerminated;
   fCrm.OnContextMenuCommand := crmContextMenuCommand;
-end;
-
-procedure TCatChromium.ClearEvents;
-begin
-  OnAfterSetSource := nil;
-  OnBrowserMessage := nil;
-  with fCrm do
-  begin
-    OnContextMenuCommand := nil;
-    OnAddressChange := nil;
-    OnBeforeContextMenu := nil;
-    OnBeforeDownload := nil;
-    OnBeforePopup := nil;
-    OnBeforeResourceLoad := nil;
-    OnConsoleMessage := nil;
-    OnCertificateError := nil;
-    OnDownloadUpdated := nil;
-    OnGetAuthCredentials := nil;
-    OnGetResourceHandler := nil;
-    OnJsdialog := nil;
-    OnLoadEnd := nil;
-    OnLoadError := nil;
-    OnLoadingStateChange := nil;
-    OnLoadStart := nil;
-    OnPluginCrashed := nil;
-    OnProcessMessageReceived := nil;
-    OnRenderProcessTerminated := nil;
-    OnStatusMessage := nil;
-    OnTitleChange := nil;
-  end;
 end;
 
 procedure TCatChromium.ClearRequestData;
@@ -1834,7 +1591,7 @@ begin
   else
   begin
     reqown := TSpecialCEFReq.Create;
-    reqown.MsgHandle := self.fMsgHandle;
+    reqown.MsgHandle := self.fMsg.MsgHandle;
     reqown.Details := req.Details;
     urlreq := TCefUrlRequestRef.New(r, reqown, reqctx) as ICefUrlRequest;
   end;
@@ -1869,7 +1626,7 @@ end;
 procedure TCatChromium.LoadBlank(const WaitLoad: Boolean = false);
 begin
   ClearRequestData;
-  fCrm.Load(cHOMEURL);
+  fCrm.Load(cURL_HOME);
   fCrm.Visible := true;
   if WaitLoad then
     exit;
@@ -1922,9 +1679,11 @@ end;
 
 destructor TCatChromium.Destroy;
 begin
-{$IFDEF DXE2_OR_UP}System.{$ENDIF}Classes.DeallocateHWnd(fMsgHandle);
+  fMsg.free;
   fInterceptRequests := false;
-  ClearEvents;
+  OnAfterSetSource := nil;
+  OnBrowserMessage := nil;
+  NilComponentMethods(fCrm);
   StopLoadBlank;
 {$IFNDEF USEWACEF}
   if fDevTools <> nil then
@@ -1936,6 +1695,193 @@ begin
   fCriticalSection.free;
   inherited Destroy;
 end;
+
+// ------------------------------------------------------------------------//
+// TSpecialCEFReq                                                          //
+// ------------------------------------------------------------------------//
+
+function TSpecialCEFReq.CEF_GetRcvdHeader(Response: ICefResponse): string;
+var
+  i: integer;
+  s, kv, lastkv: string;
+  Map: ICefStringMultimap;
+  procedure Add(key, value: string);
+  begin
+    kv := key + ': ' + value;
+    if kv <> lastkv then
+      s := s + crlf + kv; // Workaround: CEF3 sometimes returns repeated headers
+    lastkv := kv;
+  end;
+
+begin
+  Map := TCefStringMultiMapOwn.Create;
+  Response.GetHeaderMap(Map);
+  s := 'HTTP/1.1 ' + inttostr(Response.getStatus) + ' ' +
+    Response.GetStatusText;
+  with Map do
+  begin
+    for i := 0 to GetSize do
+    begin
+      if i < GetSize then
+        Add(GetKey(i), GetValue(i));
+    end;
+  end;
+  Result := s;
+end;
+
+function TSpecialCEFReq.CEF_GetSentHeader(request: ICefRequest;
+IncludePostData: Boolean = true): string;
+var
+  i: integer;
+  s, PostData, kv, lastkv: string;
+  Map: ICefStringMultimap;
+  procedure Add(key, value: string);
+  begin
+    kv := key + ': ' + value;
+    if kv <> lastkv then
+      s := s + crlf + kv; // Workaround: CEF3 sometimes returns repeated headers
+    lastkv := kv;
+  end;
+
+begin
+  Map := TCefStringMultiMapOwn.Create;
+  request.GetHeaderMap(Map);
+  s := request.getMethod + ' /' + ExtractUrlPath(request.GetURL) + ' HTTP/1.1';
+  with Map do
+  begin
+    if FindCount('Host') = 0 then
+      Add('Host', ExtractURLHost(request.GetURL));
+    for i := 0 to GetSize do
+    begin
+      if i < GetSize then
+        Add(GetKey(i), GetValue(i));
+    end;
+  end;
+  if (IncludePostData) and (request.getMethod = 'POST') then
+  begin
+    PostData := CEF_GetPostData(request);
+    if PostData <> emptystr then
+    begin
+      s := s + crlf;
+      s := s + crlf + PostData;
+    end;
+  end;
+  Result := s + crlf;
+end;
+
+function TSpecialCEFReq.CEF_GetPostData(request: ICefRequest): string;
+var
+  i: integer;
+  ansi, datastr: AnsiString;
+  postElement: ICefPostDataElement;
+  PostData: ICefPostData;
+  list: IInterfaceList;
+  elcount: NativeUInt;
+begin
+  ansi := '';
+  PostData := request.getPostData;
+  if PostData <> nil then
+  begin
+    elcount := PostData.{$IFDEF USEWACEF}GetElementCount{$ELSE}GetCount{$ENDIF};
+    list := PostData.GetElements(elcount);
+    for i := 0 to list.Count - 1 do
+    begin
+      postElement := list[i] as ICefPostDataElement;
+      case postElement.GetType of
+        PDE_TYPE_BYTES: // ToDo: handle PDE_TYPE_FILE and PDE_TYPE_EMPTY
+          begin
+            SetLength(datastr, postElement.GetBytesCount);
+            postElement.GetBytes(postElement.GetBytesCount, PAnsiChar(datastr));
+            ansi := ansi + datastr;
+          end;
+      end;
+    end;
+  end;
+  Result := string(ansi);
+end;
+
+constructor TSpecialCEFReq.Create;
+begin
+  inherited Create;
+  fCriticalSection := TCriticalSection.Create;
+  fCriticalSection.Enter;
+  fResponseStream := TMemoryStream.Create;
+  fLogged := false;
+end;
+
+destructor TSpecialCEFReq.Destroy;
+begin
+  fResponseStream.free;
+  fCriticalSection.free;
+  inherited;
+end;
+
+procedure TSpecialCEFReq.OnDownloadData(const request: ICefUrlRequest;
+{$IFDEF USEWACEF}const {$ENDIF} data: Pointer; dataLength: NativeUInt);
+begin
+{$IFDEF DXE3_OR_UP}
+  fResponseStream.WriteData(data, dataLength);
+{$ELSE}
+  fResponseStream.Write(data, dataLength);
+{$ENDIF}
+  inherited;
+end;
+
+procedure TSpecialCEFReq.OnRequestComplete(const request: ICefUrlRequest);
+var
+  req: ICefRequest;
+  resp: ICefResponse;
+var
+  SentHead, RcvdHead, referrer, respfilename: string;
+begin
+  inherited;
+  fCriticalSection.Enter;
+  try
+    fr := TSuperObject.Create(stObject);
+    req := request.getrequest;
+    resp := request.getresponse;
+    SentHead := CEF_GetSentHeader(req);
+    RcvdHead := CEF_GetRcvdHeader(resp);
+    fr.s['method'] := req.getMethod;
+    fr.s['url'] := req.GetURL;
+    if pos('Referer', SentHead) <> 0 then
+      referrer := trim(getfield('Referer', SentHead));
+    if req.getMethod = 'POST' then
+      fr.s['postdata'] := CEF_GetPostData(req)
+    else
+      fr.s['postdata'] := emptystr;
+    fr.s['status'] := inttostr(resp.getStatus);
+    fr.s['mimetype'] := resp.GetMimeType;
+    if Details <> emptystr then // user specified
+      fr.s['details'] := Details
+    else
+    begin
+      if lowercase(extracturlfileext(referrer)) = '.swf' then
+        fr.s['details'] := 'Flash Plugin Request'
+      else
+        fr.s['details'] := 'Browser Request';
+    end;
+    fr.s['reqid'] := emptystr;
+    fr.s['response'] := emptystr;
+    respfilename := GetTempFile;
+    fr.s['responsefilename'] := respfilename;
+    fResponseStream.SaveToFile(respfilename);
+    fr.s['length'] := inttostr(fResponseStream.Size);
+    fr.b['isredir'] := false;
+    fr.b['islow'] := false;
+    fr.s['headers'] := SentHead;
+    fr.s['responseheaders'] := RcvdHead;
+    if MsgHandle <> 0 then
+      SendCDMessage(MsgHandle, CRM_LOG_REQUEST_JSON, fr.AsJson(true));
+    fr := nil;
+  finally
+    fCriticalSection.Leave;
+  end;
+end;
+
+// ------------------------------------------------------------------------//
+// TCatSourceVisitorOwn                                                    //
+// ------------------------------------------------------------------------//
 
 constructor TCatSourceVisitorOwn.Create;
 begin
