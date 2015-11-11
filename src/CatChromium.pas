@@ -1665,8 +1665,7 @@ begin
     application.ProcessMessages;
 end;
 
-// Stop loading and load a blank page - helps avoid some AV cases when
-// closing an active tab
+// Stop loading and load a blank page
 procedure TCatChromium.StopLoadBlank;
 begin
   if isLoading then
@@ -1684,7 +1683,10 @@ begin
   OnAfterSetSource := nil;
   OnBrowserMessage := nil;
   NilComponentMethods(fCrm);
-  StopLoadBlank;
+{$IFDEF USEWACEF}
+  StopLoadBlank; // helps avoid some AV cases when closing an active tab
+  // TODO: check if this is still needed for the latest WACEF
+{$ENDIF}
 {$IFNDEF USEWACEF}
   if fDevTools <> nil then
     fDevTools.free;
