@@ -15,15 +15,16 @@ uses
 {$IFDEF DXE2_OR_UP}
   System.Classes, Winapi.Windows, Winapi.Messages, Vcl.Controls, Vcl.Graphics,
   Vcl.Forms, System.SysUtils, System.SyncObjs, Vcl.Dialogs, Vcl.Clipbrd,
+  System.TypInfo,
 {$ELSE}
   Classes, Windows, Messages, Controls, Graphics, Forms, SysUtils, SyncObjs,
-  Dialogs, Clipbrd,
+  Dialogs, Clipbrd, TypInfo,
 {$ENDIF}
 {$IFDEF USEWACEF}
   WACefComponent, WACefInterfaces, WACefTypes, WACefOwns, WACefCExports,
   WACefLib, WACefRefs,
 {$ELSE}
-  cefvcl, ceflib,
+  cefgui, cefvcl, ceflib,
 {$ENDIF}
   superobject, CatJSON, CatMsg;
 
@@ -187,9 +188,12 @@ type
       const Browser: ICefBrowser; status: TCefTerminationStatus);
     procedure LogURL(const url: string);
     procedure SendMessageToTab(const id: integer; const s: string);
+    procedure SetOptionState(settings, DefaultSettings: TCatJSON;
+      const curstate: TCefState; const propname: string);
     procedure SetZoomLevel(const zl: double);
     function GetZoomLevel: double;
     function GetURLShort: string;
+    procedure ReCreateBrowser(const aURL: string);
     procedure StopLoadBlank;
     procedure WMCopyData(const msgid: integer; const str: string);
 {$IFDEF USEWACEF}
@@ -331,33 +335,7 @@ type
 const
   cURL_ABOUTBLANK = 'about:blank';
   cURL_HOME = 'sandcat:home';
-
-const // Chromium settings
   cOptions = 'chrome.options.';
-  CRMO_ACCELERATED_COMPOSITING = cOptions + 'accelerated_compositing';
-  CRMO_APPLICATION_CACHE = cOptions + 'application_cache';
-  CRMO_AUTHOR_AND_USER_STYLES = cOptions + 'author_and_user_styles';
-  CRMO_CARET_BROWSING = cOptions + 'caret_browsing';
-  CRMO_DATABASES = cOptions + 'databases';
-  CRMO_DEVELOPER_TOOLS = cOptions + 'developer_tools';
-  CRMO_FILE_ACCESS_FROM_FILE_URLS = cOptions + 'fileurl.access';
-  CRMO_IMAGE_LOADING = cOptions + 'image.loading';
-  CRMO_IMAGE_SHRINK_STANDALONE_TO_FIT = cOptions +
-    'image.shrink_stand_alone_to_fit';
-  CRMO_JAVA = cOptions + 'java';
-  CRMO_JAVASCRIPT = cOptions + 'javascript.enabled';
-  CRMO_JAVASCRIPT_ACCESS_CLIPBOARD = cOptions + 'javascript.access_clipboard';
-  CRMO_JAVASCRIPT_CLOSE_WINDOWS = cOptions + 'javascript.close_windows';
-  CRMO_JAVASCRIPT_DOM_PASTE = cOptions + 'javascript.dom_paste';
-  CRMO_JAVASCRIPT_OPEN_WINDOWS = cOptions + 'javascript.open_windows';
-  CRMO_LOCAL_STORAGE = cOptions + 'local_storage';
-  CRMO_PAGE_CACHE = cOptions + 'page_cache';
-  CRMO_PLUGINS = cOptions + 'plugins';
-  CRMO_TAB_TO_LINKS = cOptions + 'tab_to_links';
-  CRMO_TEXT_AREA_RESIZE = cOptions + 'text_area_resize';
-  CRMO_UNIVERSAL_ACCESS_FROM_FILE_URLS = cOptions + 'fileurl.universal_access';
-  CRMO_WEBGL = cOptions + 'webgl';
-  CRMO_WEBSECURITY = cOptions + 'websecurity';
 
 const // Messages from the Chromium renderer to the Sandcat Tab object
   CRM_LOG_REQUEST_JSON = 1;
@@ -518,42 +496,52 @@ begin
   end;
 end;
 
+function CEFStateToBool(s: TCefState): Boolean;
+begin
+  Result := true;
+  case s of
+    STATE_ENABLED:
+      Result := true;
+    STATE_DISABLED:
+      Result := false;
+    STATE_DEFAULT:
+      Result := true; // currently all Chromium options are true by default
+  end;
+end;
+
 function GetCEFDefaults(settings: TCatJSON): string;
 var
-  list: TStringList;
-  procedure s(CID: string; DefaultValue: Boolean);
-  begin
-    settings[CID] := DefaultValue;
-    list.Add(CID);
-  end;
-
+  sl: TStringList;
+  Count, Size, I: integer;
+  List: PPropList;
+  PropInfo: PPropInfo;
+  CID: string;
+  opt: TChromiumOptions;
 begin
-  list := TStringList.Create;
-  s(CRMO_ACCELERATED_COMPOSITING, true);
-  s(CRMO_APPLICATION_CACHE, true);
-  s(CRMO_AUTHOR_AND_USER_STYLES, true);
-  s(CRMO_CARET_BROWSING, true);
-  s(CRMO_DATABASES, true);
-  s(CRMO_DEVELOPER_TOOLS, true);
-  s(CRMO_FILE_ACCESS_FROM_FILE_URLS, true);
-  s(CRMO_IMAGE_LOADING, true);
-  s(CRMO_IMAGE_SHRINK_STANDALONE_TO_FIT, true);
-  s(CRMO_JAVA, true);
-  s(CRMO_JAVASCRIPT, true);
-  s(CRMO_JAVASCRIPT_ACCESS_CLIPBOARD, true);
-  s(CRMO_JAVASCRIPT_CLOSE_WINDOWS, true);
-  s(CRMO_JAVASCRIPT_DOM_PASTE, true);
-  s(CRMO_JAVASCRIPT_OPEN_WINDOWS, true);
-  s(CRMO_LOCAL_STORAGE, true);
-  s(CRMO_PAGE_CACHE, true);
-  s(CRMO_PLUGINS, true);
-  s(CRMO_TAB_TO_LINKS, true);
-  s(CRMO_TEXT_AREA_RESIZE, true);
-  s(CRMO_UNIVERSAL_ACCESS_FROM_FILE_URLS, true);
-  s(CRMO_WEBGL, true);
-  s(CRMO_WEBSECURITY, true);
-  Result := list.text;
-  list.free;
+  sl := TStringList.Create;
+  opt := TChromiumOptions.Create;
+  Count := GetPropList(opt.ClassInfo, tkAny, nil);
+  Size := Count * SizeOf(Pointer);
+  GetMem(List, Size);
+  try
+    Count := GetPropList(opt.ClassInfo, tkAny, List);
+    for I := 0 to Count - 1 do
+    begin
+      PropInfo := List^[I];
+      if PropInfo^.PropType^.Name = 'TCefState' then
+      begin
+        CID := cOptions + lowercase(string(PropInfo^.Name));
+        // currently all Chromium options are true by default
+        settings[CID] := true;
+        sl.Add(CID);
+      end;
+    end;
+  finally
+    FreeMem(List);
+  end;
+  opt.Free;
+  Result := sl.text;
+  sl.Free;
 end;
 
 function GetCEFCacheDir: string;
@@ -590,7 +578,7 @@ begin
   sl := TStringList.Create;
   sl.text := s;
   sl.SaveToFile(Result);
-  sl.free;
+  sl.Free;
 end;
 
 // ------------------------------------------------------------------------//
@@ -836,7 +824,7 @@ begin
           else
             r := false;
         finally
-          free;
+          Free;
         end
     end);
 
@@ -871,7 +859,7 @@ begin
       else
         r := false;
     finally
-      free;
+      Free;
     end;
   if r = true then
   begin
@@ -1114,15 +1102,22 @@ begin
 end;
 
 procedure TCatChromium.AddToResourceList(const url: string);
+  function ResourceAllowed: Boolean;
+  begin
+    Result := true;
+    if fResourceList.Count > 2000 then
+      Result := false;
+    if fResourceList.IndexOf(url) <> -1 then
+      Result := false;
+    if url = GetURL then
+      Result := false;
+    if pos('?', url) <> 0 then
+      Result := false; // url with params, most likely not an object
+  end;
+
 begin
-  if fResourceList.Count > 2000 then
+  if ResourceAllowed = false then
     exit;
-  if fResourceList.IndexOf(url) <> -1 then
-    exit;
-  if url = GetURL then
-    exit;
-  if pos('?', url) <> 0 then
-    exit; // url with params, most likely not an object
   fResourceList.Add(url);
   if assigned(OnBrowserMessage) then
     OnBrowserMessage(CRM_NEWPAGERESOURCE, url);
@@ -1375,7 +1370,7 @@ var
         fHeaders.StatusCode := j['status'];
       end;
     end;
-    j.free;
+    j.Free;
   end;
 
 begin
@@ -1394,7 +1389,9 @@ begin
     OnLoadEnd(Sender, 0);
 end;
 
-{ procedure TCatChromium.LoadCustomCSS;
+{
+  // No longer supported in DCEF
+  procedure TCatChromium.LoadCustomCSS;
   begin
   fneedrecreate:=true;
   FChrome.crm.options.UserStyleSheetEnabled :=true;
@@ -1404,67 +1401,74 @@ end;
   end;
 }
 
-procedure TCatChromium.LoadSettings(settings, DefaultSettings: TCatJSON);
-  function GetState(CID: string): TCefState;
-  var
-    value, DefaultValue: Boolean;
+procedure TCatChromium.SetOptionState(settings, DefaultSettings: TCatJSON;
+const curstate: TCefState; const propname: string);
+var
+  CID: string;
+  value, DefaultValue: Boolean;
+begin
+  CID := cOptions + lowercase(propname);
+  DefaultValue := DefaultSettings[CID];
+  value := settings.GetValue(CID, DefaultValue);
+  // GetPropValue(fCrm.Options,'ApplicationCache');
+  if value <> CEFStateToBool(curstate) then
   begin
-    Result := STATE_DEFAULT;
-    DefaultValue := DefaultSettings[CID];
-    value := settings.GetValue(CID, DefaultValue);
-    if value <> DefaultValue then
-    begin
-      fNeedRecreate := true;
-      if value = true then
-        Result := STATE_ENABLED
-      else
-        Result := STATE_DISABLED;
-    end;
+    fNeedRecreate := true;
+    if value = true then
+      SetPropValue(fCrm.Options, propname, STATE_ENABLED)
+    else
+      SetPropValue(fCrm.Options, propname, STATE_DISABLED);
+  end;
+end;
+
+procedure TCatChromium.LoadSettings(settings, DefaultSettings: TCatJSON);
+  procedure SetState(const curstate: TCefState; const propname: string);
+  begin
+    SetOptionState(settings, DefaultSettings, curstate, propname);
   end;
 
 begin
   // LoadCustomCSS;
   fNeedRecreate := false;
-  fCrm.Options.ApplicationCache := GetState(CRMO_APPLICATION_CACHE);
-  // fCrm.Options.AuthorAndUserStyles := GetState(CRMO_AUTHOR_AND_USER_STYLES);
-  fCrm.Options.CaretBrowsing := GetState(CRMO_CARET_BROWSING);
-  fCrm.Options.Databases := GetState(CRMO_DATABASES);
-  // fCrm.Options.DeveloperTools := GetState(CRMO_DEVELOPER_TOOLS);
-  fCrm.Options.FileAccessFromFileUrls :=
-    GetState(CRMO_FILE_ACCESS_FROM_FILE_URLS);
-  fCrm.Options.ImageLoading := GetState(CRMO_IMAGE_LOADING);
-  fCrm.Options.ImageShrinkStandaloneToFit :=
-    GetState(CRMO_IMAGE_SHRINK_STANDALONE_TO_FIT);
-  fCrm.Options.Java := GetState(CRMO_JAVA);
-  fCrm.Options.Javascript := GetState(CRMO_JAVASCRIPT);
-  fCrm.Options.JavascriptAccessClipboard :=
-    GetState(CRMO_JAVASCRIPT_ACCESS_CLIPBOARD);
-  fCrm.Options.JavascriptCloseWindows :=
-    GetState(CRMO_JAVASCRIPT_CLOSE_WINDOWS);
-  fCrm.Options.JavascriptDomPaste := GetState(CRMO_JAVASCRIPT_DOM_PASTE);
-  fCrm.Options.JavascriptOpenWindows := GetState(CRMO_JAVASCRIPT_OPEN_WINDOWS);
-  fCrm.Options.LocalStorage := GetState(CRMO_LOCAL_STORAGE);
-  // fCrm.Options.PageCache := GetState(CRMO_PAGE_CACHE);
-  fCrm.Options.Plugins := GetState(CRMO_PLUGINS);
-  fCrm.Options.TabToLinks := GetState(CRMO_TAB_TO_LINKS);
-  fCrm.Options.TextAreaResize := GetState(CRMO_TEXT_AREA_RESIZE);
-  fCrm.Options.UniversalAccessFromFileUrls :=
-    GetState(CRMO_UNIVERSAL_ACCESS_FROM_FILE_URLS);
-  fCrm.Options.Webgl := GetState(CRMO_WEBGL);
-  fCrm.Options.WebSecurity := GetState(CRMO_WEBSECURITY);
-  {
-    // Recreating the browser causing a crash with the latest CEF
-    // (investigate later)
-    if fNeedRecreate then
-    begin
+  SetState(fCrm.Options.ApplicationCache, 'ApplicationCache');
+  SetState(fCrm.Options.CaretBrowsing, 'CaretBrowsing');
+  SetState(fCrm.Options.Databases, 'Databases');
+  SetState(fCrm.Options.FileAccessFromFileUrls, 'FileAccessFromFileUrls');
+  SetState(fCrm.Options.ImageLoading, 'ImageLoading');
+  SetState(fCrm.Options.ImageShrinkStandaloneToFit,
+    'ImageShrinkStandaloneToFit');
+  SetState(fCrm.Options.Java, 'Java');
+  SetState(fCrm.Options.Javascript, 'Javascript');
+  SetState(fCrm.Options.JavascriptAccessClipboard, 'JavascriptAccessClipboard');
+  SetState(fCrm.Options.JavascriptCloseWindows, 'JavascriptCloseWindows');
+  SetState(fCrm.Options.JavascriptDomPaste, 'JavascriptDomPaste');
+  SetState(fCrm.Options.JavascriptOpenWindows, 'JavascriptOpenWindows');
+  SetState(fCrm.Options.LocalStorage, 'LocalStorage');
+  SetState(fCrm.Options.Plugins, 'Plugins');
+  SetState(fCrm.Options.TabToLinks, 'TabToLinks');
+  SetState(fCrm.Options.TextAreaResize, 'TextAreaResize');
+  SetState(fCrm.Options.UniversalAccessFromFileUrls,
+    'UniversalAccessFromFileUrls');
+  SetState(fCrm.Options.Webgl, 'Webgl');
+  SetState(fCrm.Options.WebSecurity, 'WebSecurity');
+
+  if fNeedRecreate then
+  begin
     // showmessage(CEFStateToStr(crm.Options.Javascript));
     if fCrm.Browser <> nil then
     begin
-    fNeedRecreate := false;
-    fCrm.ReCreateBrowser(GetURL);
+      fNeedRecreate := false;
+      ReCreateBrowser(GetURL);
     end;
-    end;
-  }
+  end;
+
+end;
+
+procedure TCatChromium.ReCreateBrowser(const aURL: string);
+begin
+{$IFNDEF USEWACEF}
+  fCrm.ReCreateBrowser(aURL);
+{$ENDIF}
 end;
 
 constructor TCatChromium.Create(AOwner: TComponent);
@@ -1582,7 +1586,7 @@ begin
         Map.Append(rheader, rvalue);
       end;
     end;
-    slp.free;
+    slp.Free;
     // map.Append('Authorization','Basic '+base64encode(u+':'+p));
     r.SetHeaderMap(Map);
   end;
@@ -1616,10 +1620,8 @@ begin
   // Better to use crm.Load() instead of:
   // if crm.Browser.GetMainFrame<>nil then crm.Browser.GetMainFrame.LoadURL(url);
   fCrm.Load(url);
-{$IFNDEF USEWACEF}
   if fNeedRecreate then
-    fCrm.ReCreateBrowser(url);
-{$ENDIF}
+    ReCreateBrowser(url);
   fCrm.Visible := true;
 end;
 
@@ -1678,7 +1680,7 @@ end;
 
 destructor TCatChromium.Destroy;
 begin
-  fMsg.free;
+  fMsg.Free;
   fInterceptRequests := false;
   OnAfterSetSource := nil;
   OnBrowserMessage := nil;
@@ -1689,12 +1691,12 @@ begin
 {$ENDIF}
 {$IFNDEF USEWACEF}
   if fDevTools <> nil then
-    fDevTools.free;
+    fDevTools.Free;
 {$ENDIF}
-  fCrm.free;
-  fURLLog.free;
-  fResourceList.free;
-  fCriticalSection.free;
+  fCrm.Free;
+  fURLLog.Free;
+  fResourceList.Free;
+  fCriticalSection.Free;
   inherited Destroy;
 end;
 
@@ -1704,7 +1706,7 @@ end;
 
 function TSpecialCEFReq.CEF_GetRcvdHeader(Response: ICefResponse): string;
 var
-  i: integer;
+  I: integer;
   s, kv, lastkv: string;
   Map: ICefStringMultimap;
   procedure Add(key, value: string);
@@ -1722,10 +1724,10 @@ begin
     Response.GetStatusText;
   with Map do
   begin
-    for i := 0 to GetSize do
+    for I := 0 to GetSize do
     begin
-      if i < GetSize then
-        Add(GetKey(i), GetValue(i));
+      if I < GetSize then
+        Add(GetKey(I), GetValue(I));
     end;
   end;
   Result := s;
@@ -1734,7 +1736,7 @@ end;
 function TSpecialCEFReq.CEF_GetSentHeader(request: ICefRequest;
 IncludePostData: Boolean = true): string;
 var
-  i: integer;
+  I: integer;
   s, PostData, kv, lastkv: string;
   Map: ICefStringMultimap;
   procedure Add(key, value: string);
@@ -1753,10 +1755,10 @@ begin
   begin
     if FindCount('Host') = 0 then
       Add('Host', ExtractURLHost(request.GetURL));
-    for i := 0 to GetSize do
+    for I := 0 to GetSize do
     begin
-      if i < GetSize then
-        Add(GetKey(i), GetValue(i));
+      if I < GetSize then
+        Add(GetKey(I), GetValue(I));
     end;
   end;
   if (IncludePostData) and (request.getMethod = 'POST') then
@@ -1773,11 +1775,11 @@ end;
 
 function TSpecialCEFReq.CEF_GetPostData(request: ICefRequest): string;
 var
-  i: integer;
+  I: integer;
   ansi, datastr: AnsiString;
   postElement: ICefPostDataElement;
   PostData: ICefPostData;
-  list: IInterfaceList;
+  List: IInterfaceList;
   elcount: NativeUInt;
 begin
   ansi := '';
@@ -1785,10 +1787,10 @@ begin
   if PostData <> nil then
   begin
     elcount := PostData.{$IFDEF USEWACEF}GetElementCount{$ELSE}GetCount{$ENDIF};
-    list := PostData.GetElements(elcount);
-    for i := 0 to list.Count - 1 do
+    List := PostData.GetElements(elcount);
+    for I := 0 to List.Count - 1 do
     begin
-      postElement := list[i] as ICefPostDataElement;
+      postElement := List[I] as ICefPostDataElement;
       case postElement.GetType of
         PDE_TYPE_BYTES: // ToDo: handle PDE_TYPE_FILE and PDE_TYPE_EMPTY
           begin
@@ -1813,8 +1815,8 @@ end;
 
 destructor TSpecialCEFReq.Destroy;
 begin
-  fResponseStream.free;
-  fCriticalSection.free;
+  fResponseStream.Free;
+  fCriticalSection.Free;
   inherited;
 end;
 
@@ -1893,7 +1895,7 @@ end;
 
 destructor TCatSourceVisitorOwn.Destroy;
 begin
-  fCriticalSection.free;
+  fCriticalSection.Free;
   inherited;
 end;
 

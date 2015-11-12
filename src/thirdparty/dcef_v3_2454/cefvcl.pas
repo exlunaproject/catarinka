@@ -882,7 +882,8 @@ begin
   if FBrowser <> nil then
   begin
     FBrowser.StopLoad;
-   // Felipe: temp. workaround for free issue
+   // Felipe: temporary fix for free issue
+   // Comparing with WACEF, they commented this line out in their 2357 branch
    // FBrowser.Host.CloseBrowser(False);
   end;
 
@@ -964,8 +965,9 @@ procedure TCustomChromium.ReCreateBrowser(const url: string);
 begin
   if (FBrowser <> nil) and (FBrowserId <> 0) then
   begin
-    SendMessage(FBrowser.Host.WindowHandle, WM_CLOSE, 0, 0);
-    SendMessage(FBrowser.Host.WindowHandle, WM_DESTROY, 0, 0);
+    //Felipe: no longer needed just as FBrowser.Host.CloseBrowser(False)
+    //SendMessage(FBrowser.Host.WindowHandle, WM_CLOSE, 0, 0);
+    //SendMessage(FBrowser.Host.WindowHandle, WM_DESTROY, 0, 0);
     FBrowserId := 0;
     FBrowser := nil;
 
