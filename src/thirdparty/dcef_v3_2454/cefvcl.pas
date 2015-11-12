@@ -882,7 +882,8 @@ begin
   if FBrowser <> nil then
   begin
     FBrowser.StopLoad;
-    FBrowser.Host.CloseBrowser(False);
+   // Felipe: temp. workaround for free issue
+   // FBrowser.Host.CloseBrowser(False);
   end;
 
   if FHandler <> nil then
