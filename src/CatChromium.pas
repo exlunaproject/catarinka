@@ -126,6 +126,7 @@ type
       const Callback: ICefAuthCallback; out Result: Boolean);
     procedure crmRenderProcessTerminated(Sender: TObject;
       const Browser: ICefBrowser; status: TCefTerminationStatus);
+    procedure LogRequest(const json: string);
     procedure LogURL(const url: string);
     procedure SendMessageToTab(const id: integer; const s: string);
     procedure SetOptionState(settings, DefaultSettings: TCatJSON;
@@ -134,7 +135,6 @@ type
     function GetZoomLevel: double;
     function GetURLShort: string;
     procedure ReCreateBrowser(const aURL: string);
-    procedure StopLoadBlank;
     procedure WMCopyData(const msgid: integer; const str: string);
 {$IFDEF USEWACEF}
     procedure crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
@@ -270,15 +270,8 @@ begin
 end;
 
 procedure TCatChromium.RegisterNewV8Extension(const v8js: string);
-var
-  m: ICefProcessMessage;
 begin
-  if fCrm.Browser = nil then
-    exit;
-  m := TCefProcessMessageRef.New('msg');
-  m.getArgumentList.SetInt(0, SCTM_V8_REGISTEREXTENSION);
-  m.getArgumentList.SetString(1, v8js);
-  fCrm.Browser.SendProcessMessage(PID_RENDERER, m);
+  SendMessage(SCTM_V8_REGISTEREXTENSION, v8js);
 end;
 
 procedure TCatChromium.SetV8MsgHandle(const handle: integer);
@@ -502,9 +495,7 @@ begin
 
   Result := r;
   if r = true then
-  begin
     Callback.Cont(u, p);
-  end;
 end;
 
 procedure TCatChromium.ShowAuthDialog(const Username: string = '';
@@ -953,18 +944,6 @@ const Callback: ICefDownloadItemCallback);
 var
   cancel: Boolean;
   state: integer;
-  function statetostr(s: integer): string;
-  begin
-    case s of
-      SCD_INPROGRESS:
-        Result := 'inprogress';
-      SCD_CANCELED:
-        Result := 'canceled';
-      SCD_COMPLETE:
-        Result := 'complete';
-    end;
-  end;
-
 begin
   if fEnableDownloads = false then
     exit;
@@ -979,11 +958,9 @@ begin
   if downloadItem.IsComplete then
     state := SCD_COMPLETE;
   if downloadItem.IsCanceled then
-  begin
     state := SCD_CANCELED;
-  end;
   // debug
-  // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'downloadupdated: '+statetostr(state)+downloaditem.getfullpath);
+  // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'downloadupdated: '+downloadstatetostr(state)+downloaditem.getfullpath);
   if assigned(OnDownloadUpdated) then
     OnDownloadUpdated(Sender, cancel, downloadItem.getid, state,
       downloadItem.getPercentComplete, downloadItem.getfullpath);
@@ -999,33 +976,33 @@ begin
     fURLLog.Add(url);
 end;
 
-procedure TCatChromium.WMCopyData(const msgid: integer; const str: string);
+procedure TCatChromium.LogRequest(const json: string);
 var
   j: TCatJSON;
-  procedure HandleResponse(json: string);
-  begin
-    j := TCatJSON.Create;
-    j.text := json;
-    if fLogURLs = true then
-      LogURL(j['url']);
-    if j['mimetype'] <> 'text/html' then
-      AddToResourceList(j['url']);
-    if fHeaders.StatusCode = emptystr then
-    begin // we just want the response for the first request
-      if j['url'] = GetURL then
-      begin
-        fHeaders.SentHead := j['headers'];
-        fHeaders.RcvdHead := j['responseheaders'];
-        fHeaders.StatusCode := j['status'];
-      end;
+begin
+  j := TCatJSON.Create;
+  j.text := json;
+  if fLogURLs = true then
+    LogURL(j['url']);
+  if j['mimetype'] <> 'text/html' then
+    AddToResourceList(j['url']);
+  if fHeaders.StatusCode = emptystr then
+  begin // we just want the response for the first request
+    if j['url'] = GetURL then
+    begin
+      fHeaders.SentHead := j['headers'];
+      fHeaders.RcvdHead := j['responseheaders'];
+      fHeaders.StatusCode := j['status'];
     end;
-    j.Free;
   end;
+  j.Free;
+end;
 
+procedure TCatChromium.WMCopyData(const msgid: integer; const str: string);
 begin
   case msgid of
     CRM_LOG_REQUEST_JSON:
-      HandleResponse(str);
+      LogRequest(str);
   end;
   if assigned(OnBrowserMessage) then
     OnBrowserMessage(msgid, str);
@@ -1186,12 +1163,6 @@ var
   rheader, rvalue: string;
   reqown: TSpecialCEFReq;
   urlreq: ICefUrlRequest;
-  function CreateField(const str: String): ICefPostDataElement;
-  begin
-    Result := TCefPostDataElementRef.New;
-    Result.SetToBytes(Length(AnsiString(str)), PAnsiChar(AnsiString(str)));
-  end;
-
 begin
   if (Load = true) and (IsFrameNil) then
     exit;
@@ -1212,10 +1183,10 @@ begin
   begin
     // r.Flags := UR_FLAG_SKIP_CACHE;
     data := TCefPostDataRef.New;
-    data.AddElement(CreateField(req.PostData));
-    { postdata.AddElement(CreateField('data.id=27'));
-      postdata.AddElement(CreateField('&data.title=title'));
-      postdata.AddElement(CreateField('&data.body=body')); }
+    data.AddElement(CreateCEFPOSTField(req.PostData));
+    { postdata.AddElement(CreateCEFPOSTField('data.id=27'));
+      postdata.AddElement(CreateCEFPOSTField('&data.title=title'));
+      postdata.AddElement(CreateCEFPOSTField('&data.body=body')); }
     r.PostData := data;
   end;
   if req.Headers <> emptystr then
@@ -1314,17 +1285,6 @@ begin
     application.ProcessMessages;
 end;
 
-// Stop loading and load a blank page
-procedure TCatChromium.StopLoadBlank;
-begin
-  if isLoading then
-  begin
-    Stop;
-    LoadBlank(true);
-  end;
-  application.ProcessMessages;
-end;
-
 destructor TCatChromium.Destroy;
 begin
   fMsg.Free;
@@ -1332,10 +1292,6 @@ begin
   OnAfterSetSource := nil;
   OnBrowserMessage := nil;
   NilComponentMethods(fCrm);
-{$IFDEF USEWACEF}
-  StopLoadBlank; // helps avoid some AV cases when closing an active tab
-  // TODO: check if this is still needed for the latest WACEF
-{$ENDIF}
 {$IFNDEF USEWACEF}
   if fDevTools <> nil then
     fDevTools.Free;

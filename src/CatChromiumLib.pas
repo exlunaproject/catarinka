@@ -169,13 +169,17 @@ const // Context menu options
   CRMMENU_ID_LINK_BOOKMARK = CRMMENU_ID_USER_FIRST + 19;
 
 function CertErrorCodeToErrorName(c: TCefErrorCode): string;
+function CreateCEFPOSTField(const str: String): ICefPostDataElement;
 function GetCEFUserAgent: string;
 function GetCEFDefaults(settings: TCatJSON): string;
 function CEFStateToBool(s: TCefState): Boolean;
 function CEFV8ValueToStr(v: ICefv8Value): string;
+function DownloadStateToStr(i: integer): string;
+function StrToCefString(s: ustring): TCefString;
 function StrToCEFV8Value(const s: string): ICefv8Value;
 function BuildRequest(Method, url: string; PostData: string = '')
   : TCatChromiumRequest;
+function CatCEFLoadLib:boolean;
 procedure CatCEFShutdown(mode: integer);
 function SaveResponseToFile(s: string): string;
 
@@ -185,6 +189,14 @@ uses CatTasks, CatStrings, CatHTTP, CatTime;
 
 var
   TempFileCount: integer = 0;
+
+function CatCEFLoadLib:boolean;
+begin
+ {$IFDEF USEWACEF}
+  TWACef.Initialize;
+ {$ENDIF}
+  result:={$IFDEF USEWACEF}TWACef.LoadLib{$ELSE}CefLoadLibDefault{$ENDIF};
+end;
 
 function BuildRequest(Method, url: string; PostData: string = '')
   : TCatChromiumRequest;
@@ -240,6 +252,12 @@ begin
     ERR_CERT_END:
       Result := 'Certificate end.';
   end;
+end;
+
+function CreateCEFPOSTField(const str: String): ICefPostDataElement;
+begin
+  Result := TCefPostDataElementRef.New;
+  Result.SetToBytes(Length(AnsiString(str)), PAnsiChar(AnsiString(str)));
 end;
 
 function StrToCefString(s: ustring): TCefString;
@@ -313,10 +331,22 @@ begin
   end;
 end;
 
+function DownloadStateToStr(i: integer): string;
+begin
+  case i of
+    SCD_INPROGRESS:
+      Result := 'inprogress';
+    SCD_CANCELED:
+      Result := 'canceled';
+    SCD_COMPLETE:
+      Result := 'complete';
+  end;
+end;
+
 function GetCEFDefaults(settings: TCatJSON): string;
 var
   sl: TStringList;
-  Count, Size, I: integer;
+  Count, Size, i: integer;
   List: PPropList;
   PropInfo: PPropInfo;
   CID: string;
@@ -329,9 +359,9 @@ begin
   GetMem(List, Size);
   try
     Count := GetPropList(opt.ClassInfo, tkAny, List);
-    for I := 0 to Count - 1 do
+    for i := 0 to Count - 1 do
     begin
-      PropInfo := List^[I];
+      PropInfo := List^[i];
       if PropInfo^.PropType^.Name = 'TCefState' then
       begin
         CID := cOptions + lowercase(string(PropInfo^.Name));
@@ -391,7 +421,7 @@ end;
 
 function TSpecialCEFReq.CEF_GetRcvdHeader(Response: ICefResponse): string;
 var
-  I: integer;
+  i: integer;
   s, kv, lastkv: string;
   Map: ICefStringMultimap;
   procedure Add(key, value: string);
@@ -409,10 +439,10 @@ begin
     Response.GetStatusText;
   with Map do
   begin
-    for I := 0 to GetSize do
+    for i := 0 to GetSize do
     begin
-      if I < GetSize then
-        Add(GetKey(I), GetValue(I));
+      if i < GetSize then
+        Add(GetKey(i), GetValue(i));
     end;
   end;
   Result := s;
@@ -421,7 +451,7 @@ end;
 function TSpecialCEFReq.CEF_GetSentHeader(request: ICefRequest;
   IncludePostData: Boolean = true): string;
 var
-  I: integer;
+  i: integer;
   s, PostData, kv, lastkv: string;
   Map: ICefStringMultimap;
   procedure Add(key, value: string);
@@ -440,10 +470,10 @@ begin
   begin
     if FindCount('Host') = 0 then
       Add('Host', ExtractURLHost(request.GetURL));
-    for I := 0 to GetSize do
+    for i := 0 to GetSize do
     begin
-      if I < GetSize then
-        Add(GetKey(I), GetValue(I));
+      if i < GetSize then
+        Add(GetKey(i), GetValue(i));
     end;
   end;
   if (IncludePostData) and (request.getMethod = 'POST') then
@@ -460,7 +490,7 @@ end;
 
 function TSpecialCEFReq.CEF_GetPostData(request: ICefRequest): string;
 var
-  I: integer;
+  i: integer;
   ansi, datastr: AnsiString;
   postElement: ICefPostDataElement;
   PostData: ICefPostData;
@@ -473,9 +503,9 @@ begin
   begin
     elcount := PostData.{$IFDEF USEWACEF}GetElementCount{$ELSE}GetCount{$ENDIF};
     List := PostData.GetElements(elcount);
-    for I := 0 to List.Count - 1 do
+    for i := 0 to List.Count - 1 do
     begin
-      postElement := List[I] as ICefPostDataElement;
+      postElement := List[i] as ICefPostDataElement;
       case postElement.GetType of
         PDE_TYPE_BYTES: // ToDo: handle PDE_TYPE_FILE and PDE_TYPE_EMPTY
           begin

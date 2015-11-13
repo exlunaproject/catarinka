@@ -6,7 +6,7 @@ unit CatChromiumOSR;
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
-  The OSR version is not fully working and tested yet
+  The OSR version is not fully tested yet
 }
 
 interface
@@ -128,6 +128,7 @@ type
       const Callback: ICefAuthCallback; out Result: Boolean);
     procedure crmRenderProcessTerminated(Sender: TObject;
       const Browser: ICefBrowser; status: TCefTerminationStatus);
+    procedure LogRequest(const json: string);
     procedure LogURL(const url: string);
     procedure SendMessageToTab(const id: integer; const s: string);
     procedure SetOptionState(settings, DefaultSettings: TCatJSON;
@@ -136,7 +137,6 @@ type
     function GetZoomLevel: double;
     function GetURLShort: string;
     procedure ReCreateBrowser(const aURL: string);
-    procedure StopLoadBlank;
     procedure WMCopyData(const msgid: integer; const str: string);
 {$IFDEF USEWACEF}
     procedure crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
@@ -272,15 +272,8 @@ begin
 end;
 
 procedure TCatChromiumOSR.RegisterNewV8Extension(const v8js: string);
-var
-  m: ICefProcessMessage;
 begin
-  if fCrm.Browser = nil then
-    exit;
-  m := TCefProcessMessageRef.New('msg');
-  m.getArgumentList.SetInt(0, SCTM_V8_REGISTEREXTENSION);
-  m.getArgumentList.SetString(1, v8js);
-  fCrm.Browser.SendProcessMessage(PID_RENDERER, m);
+  SendMessage(SCTM_V8_REGISTEREXTENSION, v8js);
 end;
 
 procedure TCatChromiumOSR.SetV8MsgHandle(const handle: integer);
@@ -302,7 +295,8 @@ begin
   // TODO
 end;
 
-function TCatChromiumOSR.IsMain(const b: ICefBrowser; const f: ICefFrame): Boolean;
+function TCatChromiumOSR.IsMain(const b: ICefBrowser;
+  const f: ICefFrame): Boolean;
 begin
   Result := (b <> nil) and (b.GetIdentifier = fCrm.BrowserId) and
     ((f = nil) or (f.IsMain));
@@ -387,7 +381,7 @@ begin
   else
     fCrm.Browser.GetMainFrame.GetSource(fSourceVisitor);
   // There is no need to free the source visitor own according to the DCEF author
-   fsourcevisitor.free; // would cause AV in the past
+  // fSourceVisitor.free;
 end;
 
 function TCatChromiumOSR.GetURL: string;
@@ -493,15 +487,13 @@ begin
           else
             r := false;
         finally
-          Free;
+          free;
         end
     end);
 
   Result := r;
   if r = true then
-  begin
     Callback.Cont(u, p);
-  end;
 end;
 
 procedure TCatChromiumOSR.ShowAuthDialog(const Username: string = '';
@@ -528,7 +520,7 @@ begin
       else
         r := false;
     finally
-      Free;
+      free;
     end;
   if r = true then
   begin
@@ -543,8 +535,8 @@ begin
   end;
 end;
 
-procedure TCatChromiumOSR.crmLoadEnd(Sender: TObject; const Browser: ICefBrowser;
-const frame: ICefFrame; httpStatusCode: integer);
+procedure TCatChromiumOSR.crmLoadEnd(Sender: TObject;
+const Browser: ICefBrowser; const frame: ICefFrame; httpStatusCode: integer);
 begin
   if IsMain(Browser, frame) = false then
     exit;
@@ -555,8 +547,8 @@ begin
     GetSource;
 end;
 
-procedure TCatChromiumOSR.crmLoadStart(Sender: TObject; const Browser: ICefBrowser;
-const frame: ICefFrame);
+procedure TCatChromiumOSR.crmLoadStart(Sender: TObject;
+const Browser: ICefBrowser; const frame: ICefFrame);
 begin
   if IsMain(Browser, frame) = false then
     exit;
@@ -565,8 +557,8 @@ begin
     OnLoadStart(Sender);
 end;
 
-procedure TCatChromiumOSR.crmLoadError(Sender: TObject; const Browser: ICefBrowser;
-const frame: ICefFrame; errorCode:
+procedure TCatChromiumOSR.crmLoadError(Sender: TObject;
+const Browser: ICefBrowser; const frame: ICefFrame; errorCode:
 {$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
 const errorText, failedUrl: ustring);
 begin
@@ -726,16 +718,17 @@ end;
 
 {$IFDEF USEWACEF}
 
-procedure TCatChromiumOSR.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
-const aOriginUrl: ustring; const aAcceptLang: ustring;
-aDialogType: TCefJsdialogType; const aMessageText: ustring;
-const aDefaultPromptText: ustring; const aCallback: ICefJsdialogCallback;
-var aSuppressMessage: Boolean; out Result: Boolean);
+procedure TCatChromiumOSR.crmJsdialog(Sender: TObject;
+const aBrowser: ICefBrowser; const aOriginUrl: ustring;
+const aAcceptLang: ustring; aDialogType: TCefJsdialogType;
+const aMessageText: ustring; const aDefaultPromptText: ustring;
+const aCallback: ICefJsdialogCallback; var aSuppressMessage: Boolean;
+out Result: Boolean);
 {$ELSE}
 
-procedure TCatChromiumOSR.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
-const aOriginUrl, aAcceptLang: ustring; aDialogType: TCefJsdialogType;
-const aMessageText, aDefaultPromptText: ustring;
+procedure TCatChromiumOSR.crmJsdialog(Sender: TObject;
+const aBrowser: ICefBrowser; const aOriginUrl, aAcceptLang: ustring;
+aDialogType: TCefJsdialogType; const aMessageText, aDefaultPromptText: ustring;
 aCallback: ICefJsdialogCallback; out aSuppressMessage: Boolean;
 out Result: Boolean);
 {$ENDIF}
@@ -817,18 +810,6 @@ const Callback: ICefDownloadItemCallback);
 var
   cancel: Boolean;
   state: integer;
-  function statetostr(s: integer): string;
-  begin
-    case s of
-      SCD_INPROGRESS:
-        Result := 'inprogress';
-      SCD_CANCELED:
-        Result := 'canceled';
-      SCD_COMPLETE:
-        Result := 'complete';
-    end;
-  end;
-
 begin
   if fEnableDownloads = false then
     exit;
@@ -843,9 +824,7 @@ begin
   if downloadItem.IsComplete then
     state := SCD_COMPLETE;
   if downloadItem.IsCanceled then
-  begin
     state := SCD_CANCELED;
-  end;
   if assigned(OnDownloadUpdated) then
     OnDownloadUpdated(Sender, cancel, downloadItem.getid, state,
       downloadItem.getPercentComplete, downloadItem.getfullpath);
@@ -861,33 +840,33 @@ begin
     fURLLog.Add(url);
 end;
 
-procedure TCatChromiumOSR.WMCopyData(const msgid: integer; const str: string);
+procedure TCatChromiumOSR.LogRequest(const json: string);
 var
   j: TCatJSON;
-  procedure HandleResponse(json: string);
-  begin
-    j := TCatJSON.Create;
-    j.text := json;
-    if fLogURLs = true then
-      LogURL(j['url']);
-    if j['mimetype'] <> 'text/html' then
-      AddToResourceList(j['url']);
-    if fHeaders.StatusCode = emptystr then
-    begin // we just want the response for the first request
-      if j['url'] = GetURL then
-      begin
-        fHeaders.SentHead := j['headers'];
-        fHeaders.RcvdHead := j['responseheaders'];
-        fHeaders.StatusCode := j['status'];
-      end;
+begin
+  j := TCatJSON.Create;
+  j.text := json;
+  if fLogURLs = true then
+    LogURL(j['url']);
+  if j['mimetype'] <> 'text/html' then
+    AddToResourceList(j['url']);
+  if fHeaders.StatusCode = emptystr then
+  begin // we just want the response for the first request
+    if j['url'] = GetURL then
+    begin
+      fHeaders.SentHead := j['headers'];
+      fHeaders.RcvdHead := j['responseheaders'];
+      fHeaders.StatusCode := j['status'];
     end;
-    j.Free;
   end;
+  j.free;
+end;
 
+procedure TCatChromiumOSR.WMCopyData(const msgid: integer; const str: string);
 begin
   case msgid of
     CRM_LOG_REQUEST_JSON:
-      HandleResponse(str);
+      LogRequest(str);
   end;
   if assigned(OnBrowserMessage) then
     OnBrowserMessage(msgid, str);
@@ -987,19 +966,18 @@ begin
   fResourceList := TStringList.Create;
   fURLLog := TStringList.Create;
   fCrm := TCustomChromiumOSRMod.Create(self);
-  {$IFDEF USEWACEF}
-  fCrm.Parent:=self;
-  {$ELSE}
+{$IFDEF USEWACEF}
+  fCrm.Parent := self;
+{$ELSE}
   fCrm.CreateBrowser;
-  {$ENDIF}
-  //Note: Not fully tested yet
-  //fCrm.OnTitleChange := crmTitleChange;
+{$ENDIF}
+  fCrm.OnTitleChange := crmTitleChange;
   fCrm.OnLoadEnd := crmLoadEnd;
-  {fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
+  fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
   fCrm.OnLoadStart := crmLoadStart;
   fCrm.OnAddressChange := crmAddressChange;
   fCrm.OnStatusMessage := crmStatusMessage;
-  fCrm.OnBeforeContextMenu := crmBeforeContextMenu;
+  // fCrm.OnBeforeContextMenu := crmBeforeContextMenu;
   fCrm.OnBeforeResourceLoad := crmBeforeResourceLoad;
   fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
   fCrm.OnBeforePopup := crmBeforePopup;
@@ -1014,7 +992,7 @@ begin
   fCrm.OnLoadingStateChange := crmLoadingStateChange;
   fCrm.OnPluginCrashed := crmPluginCrashed;
   fCrm.OnRenderProcessTerminated := crmRenderProcessTerminated;
-  fCrm.OnContextMenuCommand := crmContextMenuCommand;}
+  // fCrm.OnContextMenuCommand := crmContextMenuCommand;
 end;
 
 procedure TCatChromiumOSR.ClearRequestData;
@@ -1033,18 +1011,10 @@ var
   Map: ICefStringMultimap;
   data: ICefPostData;
   reqctx: ICefRequestContext;
-var
   slp: TStringLoop;
   rheader, rvalue: string;
-var
   reqown: TSpecialCEFReq;
   urlreq: ICefUrlRequest;
-  function CreateField(const str: String): ICefPostDataElement;
-  begin
-    Result := TCefPostDataElementRef.New;
-    Result.SetToBytes(Length(AnsiString(str)), PAnsiChar(AnsiString(str)));
-  end;
-
 begin
   if (Load = true) and (IsFrameNil) then
     exit;
@@ -1065,10 +1035,10 @@ begin
   begin
     // r.Flags := UR_FLAG_SKIP_CACHE;
     data := TCefPostDataRef.New;
-    data.AddElement(CreateField(req.PostData));
-    { postdata.AddElement(CreateField('data.id=27'));
-      postdata.AddElement(CreateField('&data.title=title'));
-      postdata.AddElement(CreateField('&data.body=body')); }
+    data.AddElement(CreateCEFPOSTField(req.PostData));
+    { postdata.AddElement(CreateCEFPOSTField('data.id=27'));
+      postdata.AddElement(CreateCEFPOSTField('&data.title=title'));
+      postdata.AddElement(CreateCEFPOSTField('&data.body=body')); }
     r.PostData := data;
   end;
   if req.Headers <> emptystr then
@@ -1086,7 +1056,7 @@ begin
         Map.Append(rheader, rvalue);
       end;
     end;
-    slp.Free;
+    slp.free;
     // map.Append('Authorization','Basic '+base64encode(u+':'+p));
     r.SetHeaderMap(Map);
   end;
@@ -1164,36 +1134,21 @@ begin
     application.ProcessMessages;
 end;
 
-// Stop loading and load a blank page
-procedure TCatChromiumOSR.StopLoadBlank;
-begin
-  if isLoading then
-  begin
-    Stop;
-    LoadBlank(true);
-  end;
-  application.ProcessMessages;
-end;
-
 destructor TCatChromiumOSR.Destroy;
 begin
-  fMsg.Free;
+  fMsg.free;
   fInterceptRequests := false;
   OnAfterSetSource := nil;
   OnBrowserMessage := nil;
   NilComponentMethods(fCrm);
-{$IFDEF USEWACEF}
-  StopLoadBlank; // helps avoid some AV cases when closing an active tab
-  // TODO: check if this is still needed for the latest WACEF
-{$ENDIF}
 {$IFNDEF USEWACEF}
   if fDevTools <> nil then
-    fDevTools.Free;
+    fDevTools.free;
 {$ENDIF}
-  fCrm.Free;
-  fURLLog.Free;
-  fResourceList.Free;
-  fCriticalSection.Free;
+  fCrm.free;
+  fURLLog.free;
+  fResourceList.free;
+  fCriticalSection.free;
   inherited Destroy;
 end;
 
@@ -1209,7 +1164,7 @@ end;
 
 destructor TCatSourceVisitorOSROwn.Destroy;
 begin
-  fCriticalSection.Free;
+  fCriticalSection.free;
   inherited;
 end;
 
