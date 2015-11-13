@@ -62,8 +62,7 @@ type
     const fullPath: string) of object;
   TCatChromiumOnLoadingStateChange = procedure(Sender: TObject;
     const isLoading, canGoBack, canGoForward: Boolean) of object;
-  TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode:
-{$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
+  TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode:integer;
     const errorText, failedUrl: string) of object;
   TCatChromiumOnCertificateError = procedure(Sender: TObject;
     aCertError: TCefErrorCode; const aRequestUrl: ustring;

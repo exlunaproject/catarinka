@@ -565,7 +565,7 @@ begin
   if IsMain(Browser, frame) = false then
     exit;
   if assigned(OnLoadError) then
-    OnLoadError(Sender, errorCode, errorText, failedUrl);
+    OnLoadError(Sender, integer(errorCode), errorText, failedUrl);
 end;
 
 procedure TCatChromiumOSR.crmLoadingStateChange(Sender: TObject;
