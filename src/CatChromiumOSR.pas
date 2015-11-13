@@ -1,10 +1,12 @@
-unit CatChromium;
+unit CatChromiumOSR;
 
 {
-  Catarinka Browser Component
+  Catarinka Browser OSR Component
   Copyright (c) 2011-2015 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
+
+  The OSR version is not fully working and tested yet
 }
 
 interface
@@ -29,7 +31,13 @@ uses
   CatJSON, CatMsg, CatChromiumLib;
 
 type
-  TCatSourceVisitorOwn = class(TCefStringVisitorOwn)
+  TCustomChromiumOSRMod = class(TCustomChromiumOSR)
+  public
+    property Browser;
+  end;
+
+type
+  TCatSourceVisitorOSROwn = class(TCefStringVisitorOwn)
   private
     fCriticalSection: TCriticalSection;
   protected
@@ -41,7 +49,7 @@ type
   end;
 
 type
-  TCatChromium = class(TCustomControl)
+  TCatChromiumOSR = class(TCustomControl)
   private
 {$IFNDEF USEWACEF}
     fDevTools: TChromiumDevTools;
@@ -49,7 +57,7 @@ type
     fAdjustSourceDisplayMethod: Boolean;
     fAutoGetSource: Boolean;
     fCriticalSection: TCriticalSection;
-    fCrm: TChromium;
+    fCrm: TCustomChromiumOSRMod;
     fEnableDownloads: Boolean;
     fHeaders: TCatRequestHeaders;
     fInterceptRequests: Boolean;
@@ -79,7 +87,7 @@ type
     fResourceList: TStringList;
     fSentRequests: integer;
     fSource: string;
-    fSourceVisitor: TCatSourceVisitorOwn;
+    fSourceVisitor: TCatSourceVisitorOSROwn;
     fURLLog: TStringList;
     procedure ClearRequestData;
     procedure crmTitleChange(Sender: TObject; const Browser: ICefBrowser;
@@ -92,12 +100,6 @@ type
       const frame: ICefFrame; const url: ustring);
     procedure crmStatusMessage(Sender: TObject; const Browser: ICefBrowser;
       const value: ustring);
-    procedure crmBeforeContextMenu(Sender: TObject; const Browser: ICefBrowser;
-      const frame: ICefFrame; const params: ICefContextMenuParams;
-      const model: ICefMenuModel);
-    procedure crmContextMenuCommand(Sender: TObject; const Browser: ICefBrowser;
-      const frame: ICefFrame; const params: ICefContextMenuParams;
-      commandId: integer; eventFlags: TCefEventFlags; out Result: Boolean);
     procedure crmConsoleMessage(Sender: TObject; const Browser: ICefBrowser;
       const message, source: ustring; line: integer; out Result: Boolean);
     procedure crmProcessMessageReceived(Sender: TObject;
@@ -202,7 +204,7 @@ type
     // properties
     property AdjustSourceDisplayMethod: Boolean read fAdjustSourceDisplayMethod
       write fAdjustSourceDisplayMethod;
-    property Crm: TChromium read fCrm;
+    property Crm: TCustomChromiumOSRMod read fCrm;
     property EnableDownloads: Boolean read fEnableDownloads
       write fEnableDownloads;
     property Headers: TCatRequestHeaders read fHeaders;
@@ -232,7 +234,7 @@ type
       write fOnAddressChange;
     property OnStatusMessage: TCatChromiumOnStatusMessage read fOnStatusMessage
       write fOnStatusMessage;
-    // property OnRequestComplete:TCatChromiumOnRequestComplete read FOnRequestComplete write FOnRequestComplete;
+    // property OnRequestComplete:TCatChromiumOSROnRequestComplete read FOnRequestComplete write FOnRequestComplete;
     property OnBeforePopup: TCatChromiumOnBeforePopup read fOnBeforePopup
       write fOnBeforePopup;
     property OnConsoleMessage: TCatChromiumOnConsoleMessage
@@ -254,10 +256,10 @@ implementation
 uses uAuthentication, CatStringLoop, CatUI, CatStrings, CatHTTP;
 
 // ------------------------------------------------------------------------//
-// TCatChromium                                                            //
+// TCatChromiumOSR                                                            //
 // ------------------------------------------------------------------------//
 
-procedure TCatChromium.SendMessage(const msg: integer; const msgstr: string);
+procedure TCatChromiumOSR.SendMessage(const msg: integer; const msgstr: string);
 var
   m: ICefProcessMessage;
 begin
@@ -269,7 +271,7 @@ begin
   fCrm.Browser.SendProcessMessage(PID_RENDERER, m);
 end;
 
-procedure TCatChromium.RegisterNewV8Extension(const v8js: string);
+procedure TCatChromiumOSR.RegisterNewV8Extension(const v8js: string);
 var
   m: ICefProcessMessage;
 begin
@@ -281,7 +283,7 @@ begin
   fCrm.Browser.SendProcessMessage(PID_RENDERER, m);
 end;
 
-procedure TCatChromium.SetV8MsgHandle(const handle: integer);
+procedure TCatChromiumOSR.SetV8MsgHandle(const handle: integer);
 var
   m: ICefProcessMessage;
 begin
@@ -293,25 +295,20 @@ begin
   fCrm.Browser.SendProcessMessage(PID_RENDERER, m);
 end;
 
-procedure TCatChromium.crmProcessMessageReceived(Sender: TObject;
+procedure TCatChromiumOSR.crmProcessMessageReceived(Sender: TObject;
   const Browser: ICefBrowser; sourceProcess: TCefProcessId;
   const message: ICefProcessMessage; out Result: Boolean);
 begin
-  // test code
-  // if sourceprocess <> PID_RENDERER then exit;
-  { if message.getName = 'msg' then begin
-    showmessage(message.getName);
-    Result := True;
-    end else result:=false; }
+  // TODO
 end;
 
-function TCatChromium.IsMain(const b: ICefBrowser; const f: ICefFrame): Boolean;
+function TCatChromiumOSR.IsMain(const b: ICefBrowser; const f: ICefFrame): Boolean;
 begin
   Result := (b <> nil) and (b.GetIdentifier = fCrm.BrowserId) and
     ((f = nil) or (f.IsMain));
 end;
 
-function TCatChromium.GetZoomLevel: double;
+function TCatChromiumOSR.GetZoomLevel: double;
 begin
   Result := 0;
   if fCrm.Browser = nil then
@@ -319,33 +316,33 @@ begin
   Result := fCrm.Browser.GetHost.GetZoomLevel;
 end;
 
-procedure TCatChromium.SetZoomLevel(const zl: double);
+procedure TCatChromiumOSR.SetZoomLevel(const zl: double);
 begin
   if fCrm.Browser = nil then
     exit;
   fCrm.Browser.GetHost.SetZoomLevel(zl);
 end;
 
-procedure TCatChromium.GoBack;
+procedure TCatChromiumOSR.GoBack;
 begin
   if fCrm.Browser <> nil then
     fCrm.Browser.GoBack;
 end;
 
-procedure TCatChromium.GoForward;
+procedure TCatChromiumOSR.GoForward;
 begin
   if fCrm.Browser <> nil then
     fCrm.Browser.GoForward;
 end;
 
-procedure TCatChromium.SetSource(const s: string);
+procedure TCatChromiumOSR.SetSource(const s: string);
 begin
   fSource := s;
   if assigned(OnAfterSetSource) then
     OnAfterSetSource(s);
 end;
 
-function TCatChromium.IsFrameNil: Boolean;
+function TCatChromiumOSR.IsFrameNil: Boolean;
 begin
   Result := false;
   if fCrm.Browser = nil then
@@ -356,16 +353,16 @@ begin
     Result := true;
 end;
 
-procedure TCatChromium.GetSourceAsText;
+procedure TCatChromiumOSR.GetSourceAsText;
 begin
   if IsFrameNil then
     exit;
-  fSourceVisitor := TCatSourceVisitorOwn.Create;
+  fSourceVisitor := TCatSourceVisitorOSROwn.Create;
   fSourceVisitor.Browser := self;
   fCrm.Browser.GetMainFrame.GetText(fSourceVisitor)
 end;
 
-procedure TCatChromium.GetSource;
+procedure TCatChromiumOSR.GetSource;
 var
   ext: string;
   showtext: Boolean;
@@ -383,17 +380,17 @@ begin
     if ext = '.xml' then
       showtext := true;
   end;
-  fSourceVisitor := TCatSourceVisitorOwn.Create;
+  fSourceVisitor := TCatSourceVisitorOSROwn.Create;
   fSourceVisitor.Browser := self;
   if showtext then
     fCrm.Browser.GetMainFrame.GetText(fSourceVisitor)
   else
     fCrm.Browser.GetMainFrame.GetSource(fSourceVisitor);
   // There is no need to free the source visitor own according to the DCEF author
-  // fsourcevisitor.free; // causes AV
+   fsourcevisitor.free; // would cause AV in the past
 end;
 
-function TCatChromium.GetURL: string;
+function TCatChromiumOSR.GetURL: string;
 begin
   if fCrm.Browser = nil then
     exit;
@@ -401,7 +398,7 @@ begin
     Result := fCrm.Browser.GetMainFrame.GetURL;
 end;
 
-function TCatChromium.GetURLShort: string;
+function TCatChromiumOSR.GetURLShort: string;
 var
   u: string;
 begin
@@ -426,7 +423,7 @@ begin
   end;
 end;
 
-function TCatChromium.EvalJavaScript(const Script: string): variant;
+function TCatChromiumOSR.EvalJavaScript(const Script: string): variant;
 var
   ret: ICefv8Value;
   expt: ICefV8Exception;
@@ -452,12 +449,12 @@ begin
   end;
 end;
 
-procedure TCatChromium.RunJavaScript(const Script: string);
+procedure TCatChromiumOSR.RunJavaScript(const Script: string);
 begin
   RunJavaScript(Script, emptystr, 0, false);
 end;
 
-procedure TCatChromium.RunJavaScript(const Script: string;
+procedure TCatChromiumOSR.RunJavaScript(const Script: string;
   const ScriptURL: string; const StartLine: integer;
   const ReportErrors: Boolean = false);
 begin
@@ -474,7 +471,7 @@ begin
   fCrm.Browser.GetMainFrame.ExecuteJavaScript(Script, ScriptURL, StartLine);
 end;
 
-procedure TCatChromium.crmGetAuthCredentials(Sender: TObject;
+procedure TCatChromiumOSR.crmGetAuthCredentials(Sender: TObject;
   const Browser: ICefBrowser; const frame: ICefFrame; isProxy: Boolean;
   const host: ustring; port: integer; const realm, scheme: ustring;
   const Callback: ICefAuthCallback; out Result: Boolean);
@@ -507,7 +504,7 @@ begin
   end;
 end;
 
-procedure TCatChromium.ShowAuthDialog(const Username: string = '';
+procedure TCatChromiumOSR.ShowAuthDialog(const Username: string = '';
 const Password: string = '');
 var
   u, p: string;
@@ -546,7 +543,7 @@ begin
   end;
 end;
 
-procedure TCatChromium.crmLoadEnd(Sender: TObject; const Browser: ICefBrowser;
+procedure TCatChromiumOSR.crmLoadEnd(Sender: TObject; const Browser: ICefBrowser;
 const frame: ICefFrame; httpStatusCode: integer);
 begin
   if IsMain(Browser, frame) = false then
@@ -558,7 +555,7 @@ begin
     GetSource;
 end;
 
-procedure TCatChromium.crmLoadStart(Sender: TObject; const Browser: ICefBrowser;
+procedure TCatChromiumOSR.crmLoadStart(Sender: TObject; const Browser: ICefBrowser;
 const frame: ICefFrame);
 begin
   if IsMain(Browser, frame) = false then
@@ -568,7 +565,7 @@ begin
     OnLoadStart(Sender);
 end;
 
-procedure TCatChromium.crmLoadError(Sender: TObject; const Browser: ICefBrowser;
+procedure TCatChromiumOSR.crmLoadError(Sender: TObject; const Browser: ICefBrowser;
 const frame: ICefFrame; errorCode:
 {$IFDEF USEWACEF}TCefErrorCode{$ELSE}integer{$ENDIF};
 const errorText, failedUrl: ustring);
@@ -579,7 +576,7 @@ begin
     OnLoadError(Sender, errorCode, errorText, failedUrl);
 end;
 
-procedure TCatChromium.crmLoadingStateChange(Sender: TObject;
+procedure TCatChromiumOSR.crmLoadingStateChange(Sender: TObject;
 const Browser: ICefBrowser; isLoading, canGoBack, canGoForward: Boolean);
 begin
   if IsMain(Browser) = false then
@@ -588,13 +585,13 @@ begin
     OnLoadingStateChange(Sender, isLoading, canGoBack, canGoForward);
 end;
 
-procedure TCatChromium.crmPluginCrashed(Sender: TObject;
+procedure TCatChromiumOSR.crmPluginCrashed(Sender: TObject;
 const Browser: ICefBrowser; const pluginPath: ustring);
 begin
   // TODO
 end;
 
-procedure TCatChromium.crmTitleChange(Sender: TObject;
+procedure TCatChromiumOSR.crmTitleChange(Sender: TObject;
 const Browser: ICefBrowser; const title: ustring);
 begin
   if IsMain(Browser) = false then
@@ -604,7 +601,7 @@ begin
     OnTitleChange(Sender, title);
 end;
 
-procedure TCatChromium.crmAddressChange(Sender: TObject;
+procedure TCatChromiumOSR.crmAddressChange(Sender: TObject;
 const Browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
 begin
   if IsMain(Browser, frame) = false then
@@ -613,144 +610,14 @@ begin
     OnAddressChange(Sender, url);
 end;
 
-procedure TCatChromium.crmStatusMessage(Sender: TObject;
+procedure TCatChromiumOSR.crmStatusMessage(Sender: TObject;
 const Browser: ICefBrowser; const value: ustring);
 begin
   if assigned(OnStatusMessage) then
     OnStatusMessage(Sender, value);
 end;
 
-procedure TCatChromium.crmBeforeContextMenu(Sender: TObject;
-const Browser: ICefBrowser; const frame: ICefFrame;
-const params: ICefContextMenuParams; const model: ICefMenuModel);
-var
-  fn: string;
-  addsep, canclear: Boolean;
-  framemodel: ICefMenuModel;
-begin
-  addsep := false;
-  canclear := true;
-  if params.IsEditable = false then
-  begin
-    if not(CM_TYPEFLAG_SELECTION in params.TypeFlags) then
-    begin
-      model.InsertSeparatorAt(2);
-      model.InsertItemAt(3, integer(MENU_ID_RELOAD), 'Reload');
-      model.InsertItemAt(4, integer(MENU_ID_RELOAD_NOCACHE),
-        'Reload (Ignore Cache)');
-      model.InsertSeparatorAt(5);
-      model.InsertItemAt(6, integer(CRMMENU_ID_PAGE_BOOKMARK), 'Bookmark Page');
-      model.InsertItemAt(7, integer(CRMMENU_ID_PAGE_SAVEAS), 'Save Page As...');
-      model.InsertItemAt(8, CRMMENU_ID_COPYADDRESS, 'Copy Location');
-      model.InsertSeparatorAt(9);
-      model.InsertItemAt(10, integer(MENU_ID_SELECT_ALL), 'Select All');
-      if CM_TYPEFLAG_FRAME in params.TypeFlags then
-      begin
-        model.AddSeparator;
-        framemodel := model.AddSubMenu(CRMMENU_ID_FRAMEMENU, 'Frame');
-        framemodel.AddItem(CRMMENU_ID_FRAMEMENU_OPEN, 'Open');
-        framemodel.AddItem(CRMMENU_ID_FRAMEMENU_OPEN_INNEWTAB,
-          'Open in New Tab');
-        framemodel.AddItem(CRMMENU_ID_FRAMEMENU_OPEN_INBGTAB,
-          'Open in Background Tab');
-        framemodel.AddSeparator;
-        framemodel.AddItem(CRMMENU_ID_FRAMEMENU_COPYADDRESS, 'Copy Location')
-      end;
-    end
-    else
-    begin
-      model.AddSeparator;
-      model.AddItem(CRMMENU_ID_SEARCH, 'Search');
-      model.AddItem(CRMMENU_ID_SEARCH_INNEWTAB, 'Search in New Tab');
-    end;
-  end;
-  if CM_TYPEFLAG_LINK in params.TypeFlags then
-  begin
-    if canclear then
-      model.clear;
-    canclear := false;
-    model.AddItem(CRMMENU_ID_OPENLINK, 'Open Link Location');
-    model.AddItem(CRMMENU_ID_OPENLINK_INNEWTAB, 'Open Link in New Tab');
-    model.AddItem(CRMMENU_ID_OPENLINK_INBGTAB, 'Open Link in Background Tab');
-    model.AddSeparator;
-    model.AddItem(CRMMENU_ID_LINK_BOOKMARK, 'Bookmark Link');
-    model.AddItem(CRMMENU_ID_LINK_COPYADDRESS, 'Copy Link');
-    model.AddItem(CRMMENU_ID_LINK_SAVEAS, 'Save Link As...');
-    addsep := true;
-  end;
-  // CM_TYPEFLAG_FRAME
-  // CM_TYPEFLAG_SELECTION
-  // CM_TYPEFLAG_EDITABLE
-  if CM_TYPEFLAG_MEDIA in params.TypeFlags then
-  begin
-    if CM_MEDIATYPE_IMAGE = params.MediaType then
-    begin
-      if canclear then
-        model.clear;
-      // canclear := false;
-      if addsep then
-        model.AddSeparator;
-      fn := extracturlfilename(params.SourceUrl);
-      if Length(fn) <= 50 then
-        model.AddItem(CRMMENU_ID_OPENIMAGE, 'Open Image (' + fn + ')')
-      else
-        model.AddItem(CRMMENU_ID_OPENIMAGE, 'Open Image');
-      model.AddItem(CRMMENU_ID_OPENIMAGE_INNEWTAB, 'Open Image in New Tab');
-      model.AddSeparator;
-      model.AddItem(CRMMENU_ID_COPYIMAGEADDRESS, 'Copy Image Location');
-      model.AddItem(CRMMENU_ID_SAVEIMAGEAS, 'Save Image As...');
-    end;
-  end;
-end;
-
-procedure TCatChromium.crmContextMenuCommand(Sender: TObject;
-const Browser: ICefBrowser; const frame: ICefFrame;
-const params: ICefContextMenuParams; commandId: integer;
-eventFlags: TCefEventFlags; out Result: Boolean);
-begin
-  case commandId of
-    CRMMENU_ID_OPENLINK:
-      Load(params.LinkUrl);
-    CRMMENU_ID_OPENLINK_INNEWTAB:
-      SendMessageToTab(CRM_NEWTAB, params.LinkUrl);
-    CRMMENU_ID_OPENLINK_INBGTAB:
-      SendMessageToTab(CRM_NEWTAB_INBACKGROUND, params.LinkUrl);
-    CRMMENU_ID_OPENIMAGE:
-      Load(params.SourceUrl);
-    CRMMENU_ID_OPENIMAGE_INNEWTAB:
-      SendMessageToTab(CRM_NEWTAB, params.SourceUrl);
-    CRMMENU_ID_COPYIMAGEADDRESS:
-      clipboard.AsText := params.SourceUrl;
-    CRMMENU_ID_SAVEIMAGEAS:
-      SendMessageToTab(CRM_SAVECACHEDRESOURCE, params.SourceUrl);
-    CRMMENU_ID_COPYADDRESS:
-      clipboard.AsText := GetURL;
-    CRMMENU_ID_SEARCH:
-      SendMessageToTab(CRM_SEARCHWITHENGINE, params.SelectionText);
-    CRMMENU_ID_SEARCH_INNEWTAB:
-      SendMessageToTab(CRM_SEARCHWITHENGINE_INNEWTAB, params.SelectionText);
-    CRMMENU_ID_LINK_COPYADDRESS:
-      clipboard.AsText := params.LinkUrl;
-    CRMMENU_ID_FRAMEMENU_OPEN:
-      Load(params.FrameUrl);
-    CRMMENU_ID_FRAMEMENU_OPEN_INNEWTAB:
-      SendMessageToTab(CRM_NEWTAB, params.FrameUrl);
-    CRMMENU_ID_FRAMEMENU_OPEN_INBGTAB:
-      SendMessageToTab(CRM_NEWTAB_INBACKGROUND, params.FrameUrl);
-    CRMMENU_ID_FRAMEMENU_COPYADDRESS:
-      clipboard.AsText := params.FrameUrl;
-    CRMMENU_ID_PAGE_SAVEAS:
-      SendMessageToTab(CRM_SAVECACHEDRESOURCE, GetURL);
-    CRMMENU_ID_LINK_SAVEAS:
-      SendMessageToTab(CRM_SAVECLOUDRESOURCE, params.LinkUrl);
-    CRMMENU_ID_PAGE_BOOKMARK:
-      SendMessageToTab(CRM_BOOKMARKURL, GetURL);
-    CRMMENU_ID_LINK_BOOKMARK:
-      SendMessageToTab(CRM_BOOKMARKURL, params.LinkUrl);
-  end;
-end;
-
-procedure TCatChromium.AddToResourceList(const url: string);
+procedure TCatChromiumOSR.AddToResourceList(const url: string);
   function ResourceAllowed: Boolean;
   begin
     Result := true;
@@ -772,7 +639,7 @@ begin
     OnBrowserMessage(CRM_NEWPAGERESOURCE, url);
 end;
 
-procedure TCatChromium.crmGetResourceHandler(Sender: TObject;
+procedure TCatChromiumOSR.crmGetResourceHandler(Sender: TObject;
 const Browser: ICefBrowser; const frame: ICefFrame; const request: ICefRequest;
 out Result: ICefResourceHandler);
 var
@@ -791,20 +658,19 @@ begin
   req := TCefUrlRequestRef.New(request, reqown, reqctx) as ICefUrlRequest;
 end;
 
-procedure TCatChromium.crmBeforeResourceLoad(Sender: TObject;
+procedure TCatChromiumOSR.crmBeforeResourceLoad(Sender: TObject;
 const Browser: ICefBrowser; const frame: ICefFrame; const request: ICefRequest;
 const Callback: ICefRequestCallback; out Result: TCefReturnValue);
 begin
-  // result:=false; // unnecessary
-  // This would avoid a weird crash during navigation with past CEF3 releases
+  // TODO
 end;
 
-procedure TCatChromium.SendMessageToTab(const id: integer; const s: string);
+procedure TCatChromiumOSR.SendMessageToTab(const id: integer; const s: string);
 begin
   SendCDMessage(fMsg.MsgHandle, id, s);
 end;
 
-procedure TCatChromium.crmBeforePopup(Sender: TObject;
+procedure TCatChromiumOSR.crmBeforePopup(Sender: TObject;
 const aBrowser: ICefBrowser; const aFrame: ICefFrame;
 {$IFDEF USEWACEF}
 var aTargetUrl: ustring; const aTargetFrameName: ustring;
@@ -824,7 +690,7 @@ begin
   // if assigned(OnBeforePopup) then onBeforePopup(sender,u,result);
 end;
 
-procedure TCatChromium.crmCertificateError(Sender: TObject;
+procedure TCatChromiumOSR.crmCertificateError(Sender: TObject;
 const aBrowser: ICefBrowser; aCertError: TCefErrorCode;
 const aRequestUrl: ustring; const aSslInfo: ICefSslinfo;
 const aCallback: ICefRequestCallback; out Result: Boolean);
@@ -848,7 +714,7 @@ begin
   end;
 end;
 
-procedure TCatChromium.crmConsoleMessage(Sender: TObject;
+procedure TCatChromiumOSR.crmConsoleMessage(Sender: TObject;
 const Browser: ICefBrowser; const message, source: ustring; line: integer;
 out Result: Boolean);
 begin
@@ -860,14 +726,14 @@ end;
 
 {$IFDEF USEWACEF}
 
-procedure TCatChromium.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
+procedure TCatChromiumOSR.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
 const aOriginUrl: ustring; const aAcceptLang: ustring;
 aDialogType: TCefJsdialogType; const aMessageText: ustring;
 const aDefaultPromptText: ustring; const aCallback: ICefJsdialogCallback;
 var aSuppressMessage: Boolean; out Result: Boolean);
 {$ELSE}
 
-procedure TCatChromium.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
+procedure TCatChromiumOSR.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
 const aOriginUrl, aAcceptLang: ustring; aDialogType: TCefJsdialogType;
 const aMessageText, aDefaultPromptText: ustring;
 aCallback: ICefJsdialogCallback; out aSuppressMessage: Boolean;
@@ -885,7 +751,7 @@ begin
   end;
 end;
 
-procedure TCatChromium.ViewDevTools;
+procedure TCatChromiumOSR.ViewDevTools;
 {$IFDEF USEWACEF}
 var
   info: TCefWindowInfo;
@@ -920,7 +786,7 @@ begin
 {$ENDIF}
 end;
 
-procedure TCatChromium.ViewSourceExternalEditor;
+procedure TCatChromiumOSR.ViewSourceExternalEditor;
 begin
   if fCrm.Browser = nil then
     exit;
@@ -929,7 +795,7 @@ begin
   fCrm.Browser.GetMainFrame.ViewSource;
 end;
 
-procedure TCatChromium.crmBeforeDownload(Sender: TObject;
+procedure TCatChromiumOSR.crmBeforeDownload(Sender: TObject;
 const Browser: ICefBrowser; const downloadItem: ICefDownloadItem;
 const suggestedName: ustring; const Callback: ICefBeforeDownloadCallback);
 var
@@ -939,15 +805,13 @@ begin
   if fEnableDownloads = false then
     exit;
   s := suggestedName;
-  // debug
-  // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'beforedownload:'+inttostr(downloaditem.getid));
   fn := GetSpecialFolderPath(CSIDL_PERSONAL, false) + '\' + suggestedName;
   Callback.Cont(fn, true);
   if assigned(OnBeforeDownload) then
     OnBeforeDownload(Sender, downloadItem.getid, s);
 end;
 
-procedure TCatChromium.crmDownloadUpdated(Sender: TObject;
+procedure TCatChromiumOSR.crmDownloadUpdated(Sender: TObject;
 const Browser: ICefBrowser; const downloadItem: ICefDownloadItem;
 const Callback: ICefDownloadItemCallback);
 var
@@ -982,8 +846,6 @@ begin
   begin
     state := SCD_CANCELED;
   end;
-  // debug
-  // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'downloadupdated: '+statetostr(state)+downloaditem.getfullpath);
   if assigned(OnDownloadUpdated) then
     OnDownloadUpdated(Sender, cancel, downloadItem.getid, state,
       downloadItem.getPercentComplete, downloadItem.getfullpath);
@@ -991,7 +853,7 @@ begin
     Callback.cancel;
 end;
 
-procedure TCatChromium.LogURL(const url: string);
+procedure TCatChromiumOSR.LogURL(const url: string);
 begin
   if url = emptystr then
     exit;
@@ -999,7 +861,7 @@ begin
     fURLLog.Add(url);
 end;
 
-procedure TCatChromium.WMCopyData(const msgid: integer; const str: string);
+procedure TCatChromiumOSR.WMCopyData(const msgid: integer; const str: string);
 var
   j: TCatJSON;
   procedure HandleResponse(json: string);
@@ -1031,26 +893,14 @@ begin
     OnBrowserMessage(msgid, str);
 end;
 
-procedure TCatChromium.crmRenderProcessTerminated(Sender: TObject;
+procedure TCatChromiumOSR.crmRenderProcessTerminated(Sender: TObject;
 const Browser: ICefBrowser; status: TCefTerminationStatus);
 begin
   if assigned(OnLoadEnd) then
     OnLoadEnd(Sender, 0);
 end;
 
-{
-  // No longer supported in DCEF
-  procedure TCatChromium.LoadCustomCSS;
-  begin
-  fneedrecreate:=true;
-  FChrome.crm.options.UserStyleSheetEnabled :=true;
-  FChrome.crm.UserStyleSheetLocation:=UserScript.CSS_UserStyleSheet;
-  //FChrome.crm.Options.UniversalAccessFromFileUrlsAllowed:=true;
-  //FChrome.Crm.Options.FileAccessFromFileUrlsAllowed:=true;
-  end;
-}
-
-procedure TCatChromium.SetOptionState(settings, DefaultSettings: TCatJSON;
+procedure TCatChromiumOSR.SetOptionState(settings, DefaultSettings: TCatJSON;
 const curstate: TCefState; const propname: string);
 var
   CID: string;
@@ -1070,7 +920,7 @@ begin
   end;
 end;
 
-procedure TCatChromium.LoadSettings(settings, DefaultSettings: TCatJSON);
+procedure TCatChromiumOSR.LoadSettings(settings, DefaultSettings: TCatJSON);
   procedure SetState(const curstate: TCefState; const propname: string);
   begin
     SetOptionState(settings, DefaultSettings, curstate, propname);
@@ -1103,7 +953,6 @@ begin
 
   if fNeedRecreate then
   begin
-    // showmessage(CEFStateToStr(crm.Options.Javascript));
     if fCrm.Browser <> nil then
     begin
       fNeedRecreate := false;
@@ -1113,14 +962,14 @@ begin
 
 end;
 
-procedure TCatChromium.ReCreateBrowser(const aURL: string);
+procedure TCatChromiumOSR.ReCreateBrowser(const aURL: string);
 begin
 {$IFNDEF USEWACEF}
   fCrm.ReCreateBrowser(aURL);
 {$ENDIF}
 end;
 
-constructor TCatChromium.Create(AOwner: TComponent);
+constructor TCatChromiumOSR.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls];
@@ -1137,14 +986,16 @@ begin
   fLogJavaScriptErrors := false;
   fResourceList := TStringList.Create;
   fURLLog := TStringList.Create;
-  fCrm := TChromium.Create(nil);
-  fCrm.Visible := false;
-  fCrm.Color := clWindow;
-  fCrm.Parent := self;
-  fCrm.Align := alclient;
-  fCrm.OnTitleChange := crmTitleChange;
+  fCrm := TCustomChromiumOSRMod.Create(self);
+  {$IFDEF USEWACEF}
+  fCrm.Parent:=self;
+  {$ELSE}
+  fCrm.CreateBrowser;
+  {$ENDIF}
+  //Note: Not fully tested yet
+  //fCrm.OnTitleChange := crmTitleChange;
   fCrm.OnLoadEnd := crmLoadEnd;
-  fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
+  {fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
   fCrm.OnLoadStart := crmLoadStart;
   fCrm.OnAddressChange := crmAddressChange;
   fCrm.OnStatusMessage := crmStatusMessage;
@@ -1163,10 +1014,10 @@ begin
   fCrm.OnLoadingStateChange := crmLoadingStateChange;
   fCrm.OnPluginCrashed := crmPluginCrashed;
   fCrm.OnRenderProcessTerminated := crmRenderProcessTerminated;
-  fCrm.OnContextMenuCommand := crmContextMenuCommand;
+  fCrm.OnContextMenuCommand := crmContextMenuCommand;}
 end;
 
-procedure TCatChromium.ClearRequestData;
+procedure TCatChromiumOSR.ClearRequestData;
 begin
   fLastStatusCode := 0;
   fSentRequests := 0;
@@ -1175,15 +1026,17 @@ begin
   fHeaders.StatusCode := emptystr;
 end;
 
-procedure TCatChromium.SendRequest(const req: TCatChromiumRequest;
+procedure TCatChromiumOSR.SendRequest(const req: TCatChromiumRequest;
 const Load: Boolean = false);
 var
   r: ICefRequest;
   Map: ICefStringMultimap;
   data: ICefPostData;
   reqctx: ICefRequestContext;
+var
   slp: TStringLoop;
   rheader, rvalue: string;
+var
   reqown: TSpecialCEFReq;
   urlreq: ICefUrlRequest;
   function CreateField(const str: String): ICefPostDataElement;
@@ -1248,7 +1101,7 @@ begin
   end;
 end;
 
-procedure TCatChromium.LoadFromString(const s, url: string);
+procedure TCatChromiumOSR.LoadFromString(const s, url: string);
 begin
   ClearRequestData;
   if GetURL = emptystr then
@@ -1258,10 +1111,9 @@ begin
   if fCrm.Browser.GetMainFrame = nil then
     exit;
   fCrm.Browser.GetMainFrame.LoadString(s, url);
-  fCrm.Visible := true;
 end;
 
-procedure TCatChromium.Load(const url: string);
+procedure TCatChromiumOSR.Load(const url: string);
 begin
   ClearRequestData;
   // Better to use crm.Load() instead of:
@@ -1269,21 +1121,19 @@ begin
   fCrm.Load(url);
   if fNeedRecreate then
     ReCreateBrowser(url);
-  fCrm.Visible := true;
 end;
 
-procedure TCatChromium.LoadBlank(const WaitLoad: Boolean = false);
+procedure TCatChromiumOSR.LoadBlank(const WaitLoad: Boolean = false);
 begin
   ClearRequestData;
   fCrm.Load(cURL_HOME);
-  fCrm.Visible := true;
   if WaitLoad then
     exit;
   while isLoading do
     application.ProcessMessages;
 end;
 
-function TCatChromium.isLoading: Boolean;
+function TCatChromiumOSR.isLoading: Boolean;
 begin
   Result := false;
   if fCrm.Browser = nil then
@@ -1291,7 +1141,7 @@ begin
   Result := fCrm.Browser.isLoading;
 end;
 
-procedure TCatChromium.Reload(const IgnoreCache: Boolean = false);
+procedure TCatChromiumOSR.Reload(const IgnoreCache: Boolean = false);
 begin
   ClearRequestData;
   if isLoading then
@@ -1304,7 +1154,7 @@ begin
     fCrm.Browser.Reload; // standard reload
 end;
 
-procedure TCatChromium.Stop(const waitstop: Boolean = false);
+procedure TCatChromiumOSR.Stop(const waitstop: Boolean = false);
 begin
   if fCrm.Browser <> nil then
     fCrm.Browser.StopLoad;
@@ -1315,7 +1165,7 @@ begin
 end;
 
 // Stop loading and load a blank page
-procedure TCatChromium.StopLoadBlank;
+procedure TCatChromiumOSR.StopLoadBlank;
 begin
   if isLoading then
   begin
@@ -1325,7 +1175,7 @@ begin
   application.ProcessMessages;
 end;
 
-destructor TCatChromium.Destroy;
+destructor TCatChromiumOSR.Destroy;
 begin
   fMsg.Free;
   fInterceptRequests := false;
@@ -1348,30 +1198,30 @@ begin
 end;
 
 // ------------------------------------------------------------------------//
-// TCatSourceVisitorOwn                                                    //
+// TCatSourceVisitorOSROwn                                                    //
 // ------------------------------------------------------------------------//
 
-constructor TCatSourceVisitorOwn.Create;
+constructor TCatSourceVisitorOSROwn.Create;
 begin
   inherited Create;
   fCriticalSection := TCriticalSection.Create;
 end;
 
-destructor TCatSourceVisitorOwn.Destroy;
+destructor TCatSourceVisitorOSROwn.Destroy;
 begin
   fCriticalSection.Free;
   inherited;
 end;
 
-procedure TCatSourceVisitorOwn.Visit(const str: ustring);
+procedure TCatSourceVisitorOSROwn.Visit(const str: ustring);
 var
-  t: TCatChromium;
+  t: TCatChromiumOSR;
 begin
   fCriticalSection.Enter;
   try
     if self.Browser <> nil then
     begin
-      t := TCatChromium(self.Browser);
+      t := TCatChromiumOSR(self.Browser);
       self.Browser := nil;
       t.SetSource(str);
       // t := nil;
