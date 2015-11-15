@@ -62,7 +62,7 @@ type
     const fullPath: string) of object;
   TCatChromiumOnLoadingStateChange = procedure(Sender: TObject;
     const isLoading, canGoBack, canGoForward: Boolean) of object;
-  TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode:integer;
+  TCatChromiumOnLoadError = procedure(Sender: TObject; const errorCode: integer;
     const errorText, failedUrl: string) of object;
   TCatChromiumOnCertificateError = procedure(Sender: TObject;
     aCertError: TCefErrorCode; const aRequestUrl: ustring;
@@ -178,7 +178,7 @@ function StrToCefString(s: ustring): TCefString;
 function StrToCEFV8Value(const s: string): ICefv8Value;
 function BuildRequest(Method, url: string; PostData: string = '')
   : TCatChromiumRequest;
-function CatCEFLoadLib:boolean;
+function CatCEFLoadLib: Boolean;
 procedure CatCEFShutdown(mode: integer);
 function SaveResponseToFile(s: string): string;
 
@@ -189,12 +189,12 @@ uses CatTasks, CatStrings, CatHTTP, CatTime;
 var
   TempFileCount: integer = 0;
 
-function CatCEFLoadLib:boolean;
+function CatCEFLoadLib: Boolean;
 begin
- {$IFDEF USEWACEF}
+{$IFDEF USEWACEF}
   TWACef.Initialize;
- {$ENDIF}
-  result:={$IFDEF USEWACEF}TWACef.LoadLib{$ELSE}CefLoadLibDefault{$ENDIF};
+{$ENDIF}
+  Result := {$IFDEF USEWACEF}TWACef.LoadLib{$ELSE}CefLoadLibDefault{$ENDIF};
 end;
 
 function BuildRequest(Method, url: string; PostData: string = '')
@@ -501,7 +501,15 @@ begin
   if PostData <> nil then
   begin
     elcount := PostData.{$IFDEF USEWACEF}GetElementCount{$ELSE}GetCount{$ENDIF};
+{$IFDEF USEWACEF}
+   // FIXME: WACEF branch 2357 is crashing when trying to get POST elements
+    try
+      List := PostData.GetElements(elcount);
+    except
+    end;
+{$ELSE}
     List := PostData.GetElements(elcount);
+{$ENDIF}
     for i := 0 to List.Count - 1 do
     begin
       postElement := List[i] as ICefPostDataElement;

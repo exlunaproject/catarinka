@@ -9037,11 +9037,14 @@ end;
 // Set the page ranges.
 procedure TCefPrintSettingsRef.SetPageRanges(aRangesCount: csize_t; aRanges: TCefPageRangeArray);
 begin
+  {$IFDEF WIN32}
+  // FIX ME: not compiling for 64 (Felipe)
 	PCefPrintSettings(FData).set_page_ranges(
 		PCefPrintSettings(FData),
 		aRangesCount,
 		@aRanges
 	);
+ {$ENDIF}
 end;
 
 // Returns the number of page ranges that currently exist.
