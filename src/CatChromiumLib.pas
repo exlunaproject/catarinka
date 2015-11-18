@@ -15,10 +15,10 @@ uses
 {$IFDEF DXE2_OR_UP}
   System.Classes, Winapi.Windows, Winapi.Messages, Vcl.Controls, Vcl.Graphics,
   Vcl.Forms, System.SysUtils, System.SyncObjs, Vcl.Dialogs, Vcl.Clipbrd,
-  System.TypInfo,
+  System.TypInfo, Vcl.StdCtrls, Vcl.ExtCtrls, System.UITypes,
 {$ELSE}
   Classes, Windows, Messages, Controls, Graphics, Forms, SysUtils, SyncObjs,
-  Dialogs, Clipbrd, TypInfo,
+  Dialogs, Clipbrd, TypInfo, StdCtrls, ExtCtrls,
 {$ENDIF}
 {$IFDEF USEWACEF}
   WACefComponent, WACefInterfaces, WACefTypes, WACefOwns, WACefCExports,
@@ -109,6 +109,23 @@ type
     Details: string;
     constructor Create; override;
     destructor Destroy; override;
+  end;
+
+type
+  TCatDevTools = class(TCustomControl)
+  private
+{$IFNDEF USEWACEF}
+    fDevTools: TChromiumDevTools;
+{$ENDIF}
+    fTitlePanel: TPanel;
+    fCloseBtn: TButton;
+    fSplitter: TSplitter;
+    procedure CloseBtnClick(Sender: TObject);
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure View(browser: ICefBrowser);
+    property Splitter: TSplitter read fSplitter write fSplitter;
   end;
 
 const
@@ -502,7 +519,7 @@ begin
   begin
     elcount := PostData.{$IFDEF USEWACEF}GetElementCount{$ELSE}GetCount{$ENDIF};
 {$IFDEF USEWACEF}
-   // FIXME: WACEF branch 2357 is crashing when trying to get POST elements
+    // FIXME: WACEF branch 2357 is crashing when trying to get POST elements
     try
       List := PostData.GetElements(elcount);
     except
@@ -603,6 +620,63 @@ begin
   finally
     fCriticalSection.Leave;
   end;
+end;
+
+// ------------------------------------------------------------------------//
+// TCatDevTools                                                            //
+// ------------------------------------------------------------------------//
+
+procedure TCatDevTools.View(browser: ICefBrowser);
+begin
+{$IFNDEF USEWACEF}
+  if fDevTools = nil then
+  begin
+    fDevTools := TChromiumDevTools.Create(self);
+    fDevTools.Parent := self;
+    fDevTools.Align := AlClient;
+  end;
+  fDevTools.ShowDevTools(browser);
+{$ENDIF}
+end;
+
+procedure TCatDevTools.CloseBtnClick(Sender: TObject);
+begin
+  height := 0;
+  if fSplitter <> nil then
+    fSplitter.Visible := false;
+end;
+
+constructor TCatDevTools.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  ControlStyle := ControlStyle + [csAcceptsControls];
+  Color := clWindow;
+  fTitlePanel := TPanel.Create(self);
+  fTitlePanel.Parent := self;
+  fTitlePanel.Align := alTop;
+  fTitlePanel.height := 24;
+  fTitlePanel.Caption := 'DevTools';
+  fTitlePanel.Color := clBtnShadow;
+  fTitlePanel.ParentBackground := false;
+  fTitlePanel.Font.Color := clWhite;
+  fCloseBtn := TButton.Create(self);
+  fCloseBtn.Parent := fTitlePanel;
+  fCloseBtn.Align := alright;
+  fCloseBtn.OnClick := CloseBtnClick;
+  fCloseBtn.Font.Style := fCloseBtn.Font.Style + [fsBold];
+  fCloseBtn.Width := 22;
+  fCloseBtn.Caption := 'x';
+end;
+
+destructor TCatDevTools.Destroy;
+begin
+{$IFNDEF USEWACEF}
+  if fDevTools <> nil then
+    fDevTools.Free;
+{$ENDIF}
+  fCloseBtn.Free;
+  fTitlePanel.Free;
+  inherited Destroy;
 end;
 
 initialization

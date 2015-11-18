@@ -15,10 +15,10 @@ uses
 {$IFDEF DXE2_OR_UP}
   System.Classes, Winapi.Windows, Winapi.Messages, Vcl.Controls, Vcl.Graphics,
   Vcl.Forms, System.SysUtils, System.SyncObjs, Vcl.Dialogs, Vcl.Clipbrd,
-  System.TypInfo,
+  System.TypInfo, Vcl.ExtCtrls,
 {$ELSE}
   Classes, Windows, Messages, Controls, Graphics, Forms, SysUtils, SyncObjs,
-  Dialogs, Clipbrd, TypInfo,
+  Dialogs, Clipbrd, TypInfo, ExtCtrls,
 {$ENDIF}
 {$IFDEF USEWACEF}
   WACefComponent, WACefInterfaces, WACefTypes, WACefOwns, WACefCExports,
@@ -43,9 +43,7 @@ type
 type
   TCatChromium = class(TCustomControl)
   private
-{$IFNDEF USEWACEF}
-    fDevTools: TChromiumDevTools;
-{$ENDIF}
+    fDevTools: TCatDevTools;
     fAdjustSourceDisplayMethod: Boolean;
     fAutoGetSource: Boolean;
     fCriticalSection: TCriticalSection;
@@ -80,6 +78,7 @@ type
     fSentRequests: integer;
     fSource: string;
     fSourceVisitor: TCatSourceVisitorOwn;
+    fSplitter: TSplitter;
     fURLLog: TStringList;
     procedure ClearRequestData;
     procedure crmTitleChange(Sender: TObject; const Browser: ICefBrowser;
@@ -902,12 +901,15 @@ begin
   fCrm.Browser.GetHost.ShowDevTools(info, fCrm.Browser.GetHost.GetClient,
     settings);
 {$ELSE}
-  if fDevTools = nil then
-    fDevTools := TChromiumDevTools.Create(self);
-  fDevTools.Parent := self;
   fDevTools.Align := AlBottom;
-  fDevTools.height := 300;
-  fDevTools.ShowDevTools(fCrm.Browser);
+  fDevTools.View(fCrm.Browser);
+  if fSplitter.visible = false then
+  begin
+    fDevTools.height := 300;
+    fSplitter.visible := true;
+    fSplitter.Align := AlBottom;
+    fSplitter.Top := fDevTools.Top + 10;
+  end;
 {$ENDIF}
 end;
 
@@ -1114,8 +1116,18 @@ begin
   fLogJavaScriptErrors := false;
   fResourceList := TStringList.Create;
   fURLLog := TStringList.Create;
+
+  fSplitter := TSplitter.Create(self);
+  fSplitter.Parent := self;
+  fSplitter.width := 2;
+  fSplitter.visible := false;
+  fSplitter.Color := clBtnShadow;
+  fDevTools := TCatDevTools.Create(self);
+  fDevTools.Parent := self;
+  fDevTools.Splitter:=fSplitter;
+
   fCrm := TChromium.Create(nil);
-  fCrm.Visible := false;
+  fCrm.visible := false;
   fCrm.Color := clWindow;
   fCrm.Parent := self;
   fCrm.Align := alclient;
@@ -1229,7 +1241,7 @@ begin
   if fCrm.Browser.GetMainFrame = nil then
     exit;
   fCrm.Browser.GetMainFrame.LoadString(s, url);
-  fCrm.Visible := true;
+  fCrm.visible := true;
 end;
 
 procedure TCatChromium.Load(const url: string);
@@ -1240,14 +1252,14 @@ begin
   fCrm.Load(url);
   if fNeedRecreate then
     ReCreateBrowser(url);
-  fCrm.Visible := true;
+  fCrm.visible := true;
 end;
 
 procedure TCatChromium.LoadBlank(const WaitLoad: Boolean = false);
 begin
   ClearRequestData;
   fCrm.Load(cURL_HOME);
-  fCrm.Visible := true;
+  fCrm.visible := true;
   if WaitLoad then
     exit;
   while isLoading do
@@ -1292,10 +1304,8 @@ begin
   OnAfterSetSource := nil;
   OnBrowserMessage := nil;
   NilComponentMethods(fCrm);
-{$IFNDEF USEWACEF}
-  if fDevTools <> nil then
-    fDevTools.Free;
-{$ENDIF}
+  fSplitter.Free;
+  fDevTools.Free;
   fCrm.Free;
   fURLLog.Free;
   fResourceList.Free;
