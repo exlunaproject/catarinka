@@ -2,10 +2,10 @@ unit CatHighlighters;
 
 {
   Catarinka - Multiple Code Highlighters
-  Copyright (c) 2011-2014 Syhunt Informatica
+  Copyright (c) 2011-2015 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
-  
+
   Color scheme adapted from the CodeRay project (MIT-licensed)
   https://github.com/rubychan/coderay
   Copyright (C) 2005-2012 Kornelius Kalnbach <murphy@rubychan.de> (@murphy_karasu)
@@ -21,6 +21,8 @@ uses
 {$ELSE}
   Classes, SysUtils, TypInfo, Graphics,
 {$ENDIF}
+  SynUnicode,
+  SynExportHTML,
   SynEditHighlighter,
   SynHighlighterRuby,
   SynHighlighterPerl,
@@ -46,10 +48,12 @@ type
     Python: TSynPythonSyn;
     SQLSyn: TSynSQLSyn;
     VBScript: TSynVBScriptSyn;
+    function GetSynExport(HL: TSynCustomHighlighter; Source: string): string;
   public
     WebHTML: TSynWebHtmlSyn;
     function GetByFileExtension(const fileext: string): TSynCustomHighlighter;
     function GetByContentType(const contenttype: string): TSynCustomHighlighter;
+    function HighlightSourceByFileExt(const Source, fileext: string): string;
     procedure SetCodeRayColors(const e: TSynWebEngine);
     constructor Create(AOwner: TObject);
     destructor Destroy; override;
@@ -118,6 +122,46 @@ begin
     xml:
       result := WebXML;
   end;
+end;
+
+function TCatHighlighters.GetSynExport(HL: TSynCustomHighlighter;
+  Source: string): string;
+var
+  codestream: TMemoryStream;
+  Code: TUnicodeStringList;
+  SynExp: TSynExporterHTML;
+begin
+  result := emptystr;
+  if Source = emptystr then
+    exit;
+  codestream := TMemoryStream.Create;
+  Code := TUnicodeStringList.Create;
+  Code.Text := Source;
+  SynExp := TSynExporterHTML.Create(nil);
+  SynExp.Highlighter := HL;
+  SynExp.ExportAsText := TRUE;
+  SynExp.ExportAll(Code);
+  SynExp.SaveToStream(codestream);
+  SynExp.free;
+  codestream.Position := 0;
+  Code.LoadFromStream(codestream);
+  // code.SaveToFile('D:\debug.txt');
+  result := Code.Text;
+  Code.free;
+  codestream.free;
+end;
+
+function TCatHighlighters.HighlightSourceByFileExt(const Source,
+  fileext: string): string;
+var
+  HL: TSynCustomHighlighter;
+begin
+  result := emptystr;
+  if Source = emptystr then
+    exit;
+  HL := GetByFileExtension(fileext);
+  if HL <> nil then
+    result := GetSynExport(HL, Source);
 end;
 
 procedure TCatHighlighters.SetCodeRayColors(const e: TSynWebEngine);
