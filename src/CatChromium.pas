@@ -811,7 +811,8 @@ begin
   Result := fPreventPopup;
   u := aTargetUrl;
   SendMessageToTab(CRM_NEWTAB, u);
-  // if assigned(OnBeforePopup) then onBeforePopup(sender,u,result);
+  if assigned(OnBeforePopup) then
+    OnBeforePopup(Sender, u, Result);
 end;
 
 procedure TCatChromium.crmCertificateError(Sender: TObject;
@@ -1124,7 +1125,7 @@ begin
   fSplitter.Color := clBtnShadow;
   fDevTools := TCatDevTools.Create(self);
   fDevTools.Parent := self;
-  fDevTools.Splitter:=fSplitter;
+  fDevTools.Splitter := fSplitter;
 
   fCrm := TChromium.Create(nil);
   fCrm.visible := false;
