@@ -679,7 +679,7 @@ begin
   Result := fPreventPopup;
   u := aTargetUrl;
   SendMessageToTab(CRM_NEWTAB, u);
-  // if assigned(OnBeforePopup) then onBeforePopup(sender,u,result);
+  if assigned(OnBeforePopup) then onBeforePopup(sender,u,result);
 end;
 
 procedure TCatChromiumOSR.crmCertificateError(Sender: TObject;
@@ -988,7 +988,10 @@ begin
   fCrm.OnDownloadUpdated := crmDownloadUpdated;
   fCrm.OnGetResourceHandler := crmGetResourceHandler;
   fCrm.OnProcessMessageReceived := crmProcessMessageReceived;
+{$IFNDEF CPUX64}
+  // causing a crash when using cef_binary_3.2454.1344.g2782fb8_windows64 (?)
   fCrm.OnLoadError := crmLoadError;
+{$ENDIF}
   fCrm.OnLoadingStateChange := crmLoadingStateChange;
   fCrm.OnPluginCrashed := crmPluginCrashed;
   fCrm.OnRenderProcessTerminated := crmRenderProcessTerminated;
