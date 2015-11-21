@@ -847,6 +847,7 @@ procedure TCustomChromium.CreateBrowser;
 var
   info: TCefWindowInfo;
   rect: TRect;
+  setting: TCefBrowserSettings;
 begin
   if not (csDesigning in ComponentState) then
   begin
@@ -858,13 +859,13 @@ begin
     info.y := rect.top;
     info.Width := rect.right - rect.left;
     info.Height := rect.bottom - rect.top;
-    FillChar(FSettings, SizeOf(TCefBrowserSettings), 0);
-    FSettings.size := SizeOf(TCefBrowserSettings);
-    GetSettings(FSettings);
+    FillChar(setting, SizeOf(TCefBrowserSettings), 0);
+    setting.size := SizeOf(TCefBrowserSettings);
+    GetSettings(setting);
 {$IFDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
-    CefBrowserHostCreate(@info, FHandler, FDefaultUrl, @settings, nil);
+    CefBrowserHostCreate(@info, FHandler, FDefaultUrl, @setting, nil);
 {$ELSE}
-    FBrowser := CefBrowserHostCreateSync(@info, FHandler, '', @FSettings, nil);
+    FBrowser := CefBrowserHostCreateSync(@info, FHandler, '', @setting, nil);
     FBrowserId := FBrowser.Identifier;
 {$ENDIF}
   end;
@@ -2175,6 +2176,7 @@ procedure TChromiumDevTools.ShowDevTools(const browser: ICefBrowser;
 var
   info: TCefWindowInfo;
   rect: TRect;
+  setting: TCefBrowserSettings;
 begin
   if browser = nil then Exit;
 
@@ -2189,10 +2191,10 @@ begin
   info.Height := rect.bottom - rect.top;
   info.window_name := CefString('DevTools');
 
-  FillChar(FSettings, SizeOf(FSettings), 0);
-  FSettings.size := SizeOf(FSettings);
+  FillChar(Setting, SizeOf(Setting), 0);
+  Setting.size := SizeOf(Setting);
 
-  Browser.Host.ShowDevTools(@info, TCefClientOwn.Create as ICefClient, @FSettings, inspectElementAt);
+  Browser.Host.ShowDevTools(@info, TCefClientOwn.Create as ICefClient, @Setting, inspectElementAt);
 end;
 
 procedure TChromiumDevTools.WndProc(var Message: TMessage);

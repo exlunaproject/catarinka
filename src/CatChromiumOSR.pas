@@ -988,8 +988,7 @@ begin
   fCrm.OnDownloadUpdated := crmDownloadUpdated;
   fCrm.OnGetResourceHandler := crmGetResourceHandler;
   fCrm.OnProcessMessageReceived := crmProcessMessageReceived;
-{$IFNDEF CPUX64}
-  // causing a crash when using cef_binary_3.2454.1344.g2782fb8_windows64 (?)
+{$IFDEF CANUSECEFLOADERROR}
   fCrm.OnLoadError := crmLoadError;
 {$ENDIF}
   fCrm.OnLoadingStateChange := crmLoadingStateChange;
