@@ -62,12 +62,15 @@ function RemoveNumbers(const s: string): string;
 function RemoveQuotes(const s: string): string;
 function RemoveShortcuts(const s: string): string;
 function RepeatString(const s: string; count: cardinal): string;
+function ReplaceBadChars(const s: string; const badchars: TSysCharSet; const repwith: Char='_'): string;
 function ReplaceStr(const s, substr, repstr: string): string;
 function RestStr(const s: string; const index: longword): string;
 function RightPad(const s: string; const c: Char; const len: Integer): string;
 function StrDecrease(const s: string; const step: Integer = 1): string;
 function StrIncrease(const s: string; const step: Integer = 1): string;
 function StripBadChars(const s: string; const badchars: TSysCharSet): string;
+function StrMaxLen(const s: string; const MaxLen: Integer;
+  const AddEllipsis: Boolean = false): string;
 function StrToAlphaNum(const s: string): string;
 function StrToBool(const s: string): Boolean;
 function StrToCommaText(const s: string): string;
@@ -92,6 +95,7 @@ const
 implementation
 
 {$IFDEF CHARINSET_UNAVAILABLE}
+
 // Before D2009
 function CharInSet(c: Char; CharSet: TSysCharSet): Boolean;
 begin
@@ -370,13 +374,14 @@ end;
 // Removes the last character from a string
 function RemoveLastChar(const s: string): string;
 var
- len: Integer; astr:string;
+  len: Integer;
+  astr: string;
 begin
   astr := s;
-  len := Length(astr);
+  len := length(astr);
   if len > 0 then
-     Delete(astr, len, 1);
-  Result := astr;
+    Delete(astr, len, 1);
+  result := astr;
 end;
 
 function RemoveNumbers(const s: string): string;
@@ -491,6 +496,22 @@ begin
   SetLength(result, P);
 end;
 
+function ReplaceBadChars(const s: string; const badchars: TSysCharSet; const repwith: Char='_'): string;
+var
+  i, P: Integer;
+begin
+  P := 0;
+  SetLength(result, length(s));
+  for i := 1 to length(s) do
+  begin
+    inc(P);
+    result[P] := s[i];
+    if (CharInSet(s[i], badchars)) then
+    result[P] := repwith;
+  end;
+  SetLength(result, P);
+end;
+
 function CommaTextToStr(const s: string): string;
 var
   sl: TStringList;
@@ -499,6 +520,21 @@ begin
   sl.CommaText := s;
   result := sl.GetText;
   sl.free;
+end;
+
+function StrMaxLen(const s: string; const MaxLen: Integer;
+  const AddEllipsis: Boolean = false): string;
+var
+  i: Integer;
+begin
+  result := s;
+  if length(result) <= MaxLen then
+    Exit;
+  SetLength(result, MaxLen);
+  if AddEllipsis = false then
+    Exit;
+  for i := MaxLen downto MaxLen - 2 do
+    result[i] := '.';
 end;
 
 function StrToAlphaNum(const s: string): string;

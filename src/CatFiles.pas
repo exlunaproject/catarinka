@@ -20,18 +20,19 @@ uses
 {$ELSE}
   Windows, Classes, SysUtils, ShellAPI;
 {$ENDIF}
+function CleanFilename(const filename: string;
+  const invCharRep: Char = '_'): string;
 function DeleteFolder(const dir: string): boolean;
 function DirExists(const dir: string): boolean;
 function FileCanBeOpened(const filename: String): boolean;
 function FileCopy(const source, dest: string): boolean;
 function FilenameToMimeType(const filename: string): string;
-function FixInvalidFilename(const filename: string;
-  const rep: string = '-'): string;
 function ForceDir(const dir: string): boolean;
 function GetDiskSerialNumber(const drive: string): string;
 function GetFileSize(const filename: string): Int64;
 function GetFileToStr(const filename: string): string;
-function GetFileVersion(const Filename: string; const ResFormat:string='%d.%d.%d.%d'): string;
+function GetFileVersion(const filename: string;
+  const ResFormat: string = '%d.%d.%d.%d'): string;
 function GetSizeDescription(const bytes: cardinal): string;
 function GetTextFileLinesCount(const filename: string): integer;
 function GetTempFile(const ext: string): string;
@@ -53,7 +54,7 @@ implementation
 
 uses
   CatStrings;
-  
+
 procedure CatReadLn(const f: Text; var s: string);
 var
   c: Char;
@@ -69,7 +70,8 @@ begin
       13:
         begin
           read(f, c);
-          if ord(c) = 13 then begin // hides H2077 compiler warning
+          if Ord(c) = 13 then
+          begin // hides H2077 compiler warning
           end;
           Break;
         end;
@@ -133,38 +135,34 @@ var
   ext: string;
 begin
   ext := LowerCase(ExtractFileExt(filename));
-  if length(ext) > 1 then
-    ext := Copy(ext, 2, length(ext));
-  if (ext = 'htm') or (ext = 'html') then
-    result := 'text/html'
+  if Length(ext) > 1 then
+    ext := copy(ext, 2, Length(ext));
+  if ext = 'css' then
+    Result := 'text/css'
+  else if (ext = 'htm') or (ext = 'html') then
+    Result := 'text/html'
   else if ext = 'bmp' then
-    result := 'image/bmp'
+    Result := 'image/bmp'
   else if ext = 'gif' then
-    result := 'image/gif'
+    Result := 'image/gif'
   else if (ext = 'jpg') or (ext = 'jpeg') then
-    result := 'image/jpeg'
+    Result := 'image/jpeg'
+  else if ext = 'js' then
+    Result := 'text/javascript'
   else if (ext = 'png') then
-    result := 'image/png'
+    Result := 'image/png'
   else if ext = 'txt' then
-    result := 'text/plain'
+    Result := 'text/plain'
   else
-    result := 'application/octet-stream'; // Unknown Type
+    Result := 'application/octet-stream'; // Unknown Type
 end;
 
-// TODO: rewrite
-function FixInvalidFilename(const filename: string;
-  const rep: string = '-'): string;
+function CleanFilename(const filename: string;
+  const invCharRep: Char = '_'): string;
+const
+  invChars = ['\', ':', '*', '?', '"', '<', '>', '|', '/'];
 begin
-  result := filename;
-  result := ReplaceStr(result, '\', rep);
-  result := ReplaceStr(result, ':', rep);
-  result := ReplaceStr(result, '*', rep);
-  result := ReplaceStr(result, '?', rep);
-  result := ReplaceStr(result, '"', rep);
-  result := ReplaceStr(result, '<', rep);
-  result := ReplaceStr(result, '>', rep);
-  result := ReplaceStr(result, '|', rep);
-  result := ReplaceStr(result, '/', rep);
+  Result := ReplaceBadChars(filename, invChars, invCharRep);
 end;
 
 function ForceDir(const dir: string): boolean;
@@ -276,19 +274,20 @@ begin
 end;
 
 // Returns the version of a binary file (DLL, EXE, etc)
-function GetFileVersion(const Filename: string; const ResFormat:string='%d.%d.%d.%d'): string;
+function GetFileVersion(const filename: string;
+  const ResFormat: string = '%d.%d.%d.%d'): string;
 var
   p, pi: Pointer;
-  infosz, plen: DWord;
+  infosz, plen: DWORD;
   verinfo: VS_FIXEDFILEINFO;
 begin
-  Result := EmptyStr;
-  infosz := GetFileVersionInfoSize({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(Filename), plen);
+  Result := emptystr;
+  infosz := GetFileVersionInfoSize({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(filename), plen);
   FillChar(verinfo, SizeOf(verinfo), 0);
   if infosz > 0 then
   begin
     GetMem(p, infosz);
-    GetFileVersionInfo({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(Filename),
+    GetFileVersionInfo({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(filename),
       0, infosz, p);
     VerQueryValue(p, '\', pi, plen);
     move(pi^, verinfo, SizeOf(verinfo));
@@ -328,8 +327,8 @@ begin
   GetTempPath({$IFDEF UNICODE}Length{$ELSE}SizeOf{$ENDIF}(buf) - 1, buf);
   GetTempFileName(buf, '~', 0, buf);
   Result := StrPas(buf);
-  if ext<>emptystr then // if the extension is empty will return a .tmp
-  Result := ChangeFileExt(Result, ext);
+  if ext <> emptystr then // if the extension is empty will return a .tmp
+    Result := changefileext(Result, ext);
 end;
 
 function GetTextFileLinesCount(const filename: string): integer;
