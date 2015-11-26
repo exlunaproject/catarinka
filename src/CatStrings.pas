@@ -9,6 +9,7 @@ unit CatStrings;
   Base64 encode and decode functions by Lukas Gebauer (BSD license, included below)
   MD5 function by Stijn Sanders (MIT license, included at the end of this file)
   IScan, SplitString, GetTextBetweenTags functions by Peter Below
+  MatchStrings and PosX functions by Arsne von Wyss
 
   Note: random functions included with this library are not suitable
   for cryptographic purposes.
@@ -52,7 +53,7 @@ function IsInteger(const s: string): Boolean;
 function LastChar(const s: string): Char;
 function LeftPad(const s: string; const c: Char; const len: Integer): string;
 function LeftStr(s: string; c: longword): string;
-function MatchStrings(const source, pattern: string): Boolean;
+function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MD5Hash(s: UTF8String): UTF8String;
 function Occurs(substr, s: string): Integer;
 function RandomString(const len: Integer;
@@ -62,7 +63,8 @@ function RemoveNumbers(const s: string): string;
 function RemoveQuotes(const s: string): string;
 function RemoveShortcuts(const s: string): string;
 function RepeatString(const s: string; count: cardinal): string;
-function ReplaceBadChars(const s: string; const badchars: TSysCharSet; const repwith: Char='_'): string;
+function ReplaceBadChars(const s: string; const badchars: TSysCharSet;
+  const repwith: Char = '_'): string;
 function ReplaceStr(const s, substr, repstr: string): string;
 function RestStr(const s: string; const index: longword): string;
 function RightPad(const s: string; const c: Char; const len: Integer): string;
@@ -496,7 +498,8 @@ begin
   SetLength(result, P);
 end;
 
-function ReplaceBadChars(const s: string; const badchars: TSysCharSet; const repwith: Char='_'): string;
+function ReplaceBadChars(const s: string; const badchars: TSysCharSet;
+  const repwith: Char = '_'): string;
 var
   i, P: Integer;
 begin
@@ -507,7 +510,7 @@ begin
     inc(P);
     result[P] := s[i];
     if (CharInSet(s[i], badchars)) then
-    result[P] := repwith;
+      result[P] := repwith;
   end;
   SetLength(result, P);
 end;
@@ -734,60 +737,78 @@ begin
     result := emptystr;
 end;
 
+function PosX(const substr, s: string; Start: Integer): Integer;
+var
+  i, J, len: Integer;
+begin
+  len := length(substr);
+  if len = 0 then
+  begin
+    PosX := 1;
+    Exit;
+  end;
+  for i := Start to Succ(length(s) - len) do
+  begin
+    J := 1;
+    while J <= len do
+    begin
+      if not((substr[J] = '?') or (substr[J] = s[Pred(i + J)])) then
+        Break;
+      inc(J);
+    end;
+    if J > len then
+    begin
+      PosX := i;
+      Exit;
+    end;
+  end;
+  PosX := 0;
+end;
+
 {
   This function takes two strings and compares them. The first string
   can be anything, but should not contain pattern characters (* or ?).
   The pattern string can have as many of these pattern characters as you want.
-  For example: MatchStrings('David Stidolph','*St*') would return True.
+  For example: MatchStrings('Pascal','*as*') would return True.
 
-  Original code by Sean Stanley in C
-  Rewritten in Pascal by David Stidolph
-  Slightly modified by Felipe Daragon (XE2 and higher support)
+  Copyright (c) 1999 Arsne von Wyss
 }
-function MatchStrings(const source, pattern: String): Boolean;
+function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
+const
+  WildSize = 0; { minimal number of characters representing a "*" }
 var
-  pSource: Array [0 .. 255] of {$IFDEF UNICODE}AnsiChar{$ELSE}Char{$ENDIF};
-  pPattern: Array [0 .. 255] of {$IFDEF UNICODE}AnsiChar{$ELSE}Char{$ENDIF};
-
-  function MatchPattern(element, pattern: PAnsiChar): Boolean;
-
-    function IsPatternWild(pattern: PAnsiChar): Boolean;
-    begin
-      result := StrScan(pattern, '*') <> nil;
-      if not result then
-        result := StrScan(pattern, '?') <> nil;
-    end;
-
-  begin
-    if 0 = StrComp(pattern, '*') then
-      result := true
-    else if (element^ = Chr(0)) and (pattern^ <> Chr(0)) then
-      result := false
-    else if element^ = Chr(0) then
-      result := true
-    else
-    begin
-      case pattern^ of
-        '*':
-          if MatchPattern(element, @pattern[1]) then
-            result := true
-          else
-            result := MatchPattern(@element[1], pattern);
-        '?':
-          result := MatchPattern(@element[1], @pattern[1]);
-      else
-        if element^ = pattern^ then
-          result := MatchPattern(@element[1], @pattern[1])
-        else
-          result := false;
-      end;
-    end;
-  end;
-
+  Min, Max, At, MaskSTart, MaskEnd: Integer;
+  T: string;
 begin
-  StrCopy(pSource, PAnsiChar(AnsiString(source)));
-  StrCopy(pPattern, PAnsiChar(AnsiString(pattern)));
-  result := MatchPattern(pSource, pPattern);
+  if IgnoreCase then
+  begin
+    for At := 1 to length(s) do
+      s[At] := UpCase(s[At]);
+    for At := 1 to length(Mask) do
+      Mask[At] := UpCase(Mask[At]);
+  end;
+  s := s + #0;
+  Mask := Mask + #0;
+  Min := 1;
+  Max := 1;
+  MaskEnd := 0;
+  while length(Mask) >= MaskEnd do
+  begin
+    MaskSTart := MaskEnd + 1;
+    repeat
+      inc(MaskEnd);
+    until (MaskEnd > length(Mask)) or (Mask[MaskEnd] = '*');
+    T := Copy(Mask, MaskSTart, MaskEnd - MaskSTart);
+    At := PosX(T, s, Min);
+    if (At = 0) or (At > Max) then
+    begin
+      MatchStrings := false;
+      Exit;
+    end;
+    Min := At + length(T) + WildSize;
+    Max := length(s);
+  end;
+  MatchStrings := true;
 end;
 
 // CONTRIBUTED ------------------------------------------------------------//
@@ -985,7 +1006,7 @@ const
   Hex: array [0 .. 15] of AnsiChar = '0123456789abcdef';
 var
   a: cardinal;
-  dl, i, j, k, l: Integer;
+  dl, i, J, k, l: Integer;
   d: array of cardinal;
   g, h: array [0 .. 3] of cardinal;
 begin
@@ -997,12 +1018,12 @@ begin
   dl := dl shr 2;
   SetLength(d, dl);
   SetLength(s, i);
-  j := a + 1;
-  s[j] := #$80;
-  while j < i do
+  J := a + 1;
+  s[J] := #$80;
+  while J < i do
   begin
-    inc(j);
-    s[j] := #0;
+    inc(J);
+    s[J] := #0;
   end;
   Move(s[1], d[0], i);
   d[dl - 2] := a shl 3;
@@ -1014,46 +1035,46 @@ begin
   while i < dl do
   begin
     g := h;
-    j := i;
+    J := i;
     for k := 0 to 15 do
     begin
       l := k * 3;
       a := h[l and 3] + ((h[(l + 1) and 3] and h[(l + 2) and 3]) or
-        (not(h[(l + 1) and 3]) and h[(l + 3) and 3])) + d[j] + base1[k];
+        (not(h[(l + 1) and 3]) and h[(l + 3) and 3])) + d[J] + base1[k];
       h[l and 3] := h[(l + 1) and 3] +
         ((a shl roll1[k and 3]) or (a shr (32 - roll1[k and 3])));
-      inc(j);
+      inc(J);
     end;
-    j := 1;
+    J := 1;
     for k := 0 to 15 do
     begin
       l := k * 3;
       a := h[l and 3] + ((h[(l + 3) and 3] and h[(l + 1) and 3]) or
-        (not(h[(l + 3) and 3]) and h[(l + 2) and 3])) + d[i or (j and $F)]
+        (not(h[(l + 3) and 3]) and h[(l + 2) and 3])) + d[i or (J and $F)]
         + base2[k];
       h[l and 3] := h[(l + 1) and 3] +
         ((a shl roll2[k and 3]) or (a shr (32 - roll2[k and 3])));
-      inc(j, 5);
+      inc(J, 5);
     end;
-    j := 5;
+    J := 5;
     for k := 0 to 15 do
     begin
       l := k * 3;
       a := h[l and 3] + (h[(l + 1) and 3] xor h[(l + 2) and 3] xor h[(l + 3) and
-        3]) + d[i or (j and $F)] + base3[k];
+        3]) + d[i or (J and $F)] + base3[k];
       h[l and 3] := h[(l + 1) and 3] +
         ((a shl roll3[k and 3]) or (a shr (32 - roll3[k and 3])));
-      inc(j, 3);
+      inc(J, 3);
     end;
-    j := 0;
+    J := 0;
     for k := 0 to 15 do
     begin
       l := k * 3;
       a := h[l and 3] + (h[(l + 2) and 3] xor (h[(l + 1) and 3] or
-        not h[(l + 3) and 3])) + d[i or (j and $F)] + base4[k];
+        not h[(l + 3) and 3])) + d[i or (J and $F)] + base4[k];
       h[l and 3] := h[(l + 1) and 3] +
         ((a shl roll4[k and 3]) or (a shr (32 - roll4[k and 3])));
-      inc(j, 7);
+      inc(J, 7);
     end;
     for k := 0 to 3 do
       inc(h[k], g[k]);
