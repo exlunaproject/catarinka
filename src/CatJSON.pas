@@ -6,6 +6,9 @@ unit CatJSON;
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  25.11.2015:
+  - Set empty JSON string when calling SetText('')
+
   2013:
   - Added the HasPath method
   - Changed the default property from string to variant
@@ -130,10 +133,15 @@ begin
 end;
 
 procedure TCatJSON.SetText(const Text: string);
+var
+  JSON: string;
 begin
+  JSON := Text;
+  if JSON = emptystr then
+    JSON := EmptyJSONStr;
   fObject := nil;
   fCount := 0;
-  fObject := TSuperObject.ParseString(StrToPWideChar(Text), False);
+  fObject := TSuperObject.ParseString(StrToPWideChar(JSON), False);
 end;
 
 procedure TCatJSON.Clear;
@@ -145,8 +153,7 @@ end;
 constructor TCatJSON.Create(JSON: string = '');
 begin
   fObject := TSuperObject.Create(stObject);
-  if JSON <> emptystr then
-    Text := JSON;
+  Text := JSON;
 end;
 
 destructor TCatJSON.Destroy;

@@ -3,7 +3,7 @@ unit CatUI;
 {
   Catarinka - User Interface related functions
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2015 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -19,20 +19,22 @@ interface
 uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, Vcl.Forms, Vcl.Menus, Vcl.ExtCtrls, System.SysUtils,
-  System.Classes, Vcl.Controls, Vcl.ComCtrls, Winapi.CommCtrl, Winapi.Messages,
-  Winapi.ShlObj, System.TypInfo;
+  System.Classes, Vcl.Controls, Vcl.ComCtrls, Vcl.Clipbrd,
+  Winapi.CommCtrl, Winapi.Messages, Winapi.ShlObj, System.TypInfo;
 {$ELSE}
   Windows, Forms, Menus, ExtCtrls, SysUtils, Classes, Controls, ComCtrls,
-  CommCtrl, Messages, ShlObj, TypInfo;
+  CommCtrl, Messages, ShlObj, TypInfo, Clipbrd;
 {$ENDIF}
 function AskYN(const question: string): Boolean;
+function GetLVItemAsString(lv: TListView; li: TListItem;
+  copytoclipboard: Boolean = false): string;
 function GetWindowState: integer;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 function GetWindowClassHandle(const Title: string): integer;
 function GetFullPath(N: TTreeNode; Sep: string = '\'): string;
 function GetFullPathData(N: TTreeNode): string;
-function GetLVCheckedItems(lvcomp: TListview): string;
-function GetLVCheckedItemsSingleLn(lvcomp: TListview): string;
+function GetLVCheckedItems(lvcomp: TListView): string;
+function GetLVCheckedItemsSingleLn(lvcomp: TListView): string;
 function GetPercentage(const percent, Value: integer): Int64;
 function GetSpecialFolderPath(const Folder: integer;
   const CanCreate: Boolean): string;
@@ -40,21 +42,21 @@ function MakeNotifyEvent(forObject: TObject; const procname: string)
   : TNotifyEvent;
 function TreeItemSearch(tv: ttreeview; const SearchItem: string): TTreeNode;
 
-procedure AddListViewItem(LV: TListview; const capt: string; const ii: integer;
+procedure AddListViewItem(lv: TListView; const capt: string; const ii: integer;
   const mv: Boolean);
-procedure AddMultipleListViewItems(LV: TListview; const captlist: string;
+procedure AddMultipleListViewItems(lv: TListView; const captlist: string;
   const ii: integer; const mv: Boolean);
 procedure ApplyWindowState(const i: integer);
-procedure CommaToLVItems(lvcomp: TListview; const commastring: string);
+procedure CommaToLVItems(lvcomp: TListView; const commastring: string);
 procedure CloseWindowByClass(const classname: string);
 procedure DisableLVToolTips(H: THandle);
 procedure ExpandTreeViewItems(tv: ttreeview);
 procedure FlashUI(const times: integer = 2; const delay: integer = 500);
-procedure LoadListviewStrings(listview: TListview; const filename: string);
+procedure LoadListviewStrings(listview: TListView; const filename: string);
 procedure NilComponentMethods(Component: TComponent);
 procedure QuickSortTreeViewItems(tv: ttreeview);
 procedure ShowPopupMenu(PopupMenu: TPopupMenu; const AppHandle: integer);
-procedure SaveListviewStrings(listview: TListview; const filename: string);
+procedure SaveListviewStrings(listview: TListView; const filename: string);
 procedure SaveMemStreamToStrings(Stream: TMemoryStream; List: TStrings);
 procedure SetNodeBoldState(Node: TTreeNode; const Value: Boolean);
 
@@ -139,10 +141,10 @@ implementation
 uses
   CatPointer, CatStrings;
 
-procedure AddListViewItem(LV: TListview; const capt: string; const ii: integer;
+procedure AddListViewItem(lv: TListView; const capt: string; const ii: integer;
   const mv: Boolean);
 begin
-  with LV.Items.Add do
+  with lv.Items.Add do
   begin
     Caption := capt;
     imageindex := ii;
@@ -150,7 +152,7 @@ begin
   end;
 end;
 
-procedure AddMultipleListViewItems(LV: TListview; const captlist: string;
+procedure AddMultipleListViewItems(lv: TListView; const captlist: string;
   const ii: integer; const mv: Boolean);
 var
   c, i: integer;
@@ -162,7 +164,7 @@ begin
   for i := 0 to c do
   begin
     if i < c then
-      AddListViewItem(LV, List[i], ii, mv);
+      AddListViewItem(lv, List[i], ii, mv);
   end;
   List.free;
 end;
@@ -181,12 +183,12 @@ end;
 
 function AskYN(const question: string): Boolean;
 begin
-  result:= false;
+  result := false;
   case Application.MessageBox({$IFDEF UNICODE}pwidechar{$ELSE}pchar{$ENDIF}(question), {$IFDEF UNICODE}pwidechar{$ELSE}pchar{$ENDIF}(Application.Title), mb_YesNo + mb_DefButton1) of
     IDYes:
-      Result := true;
+      result := true;
     IDNo:
-      Result := false;
+      result := false;
   end;
 end;
 
@@ -205,7 +207,7 @@ begin
   until (winHandle = 0);
 end;
 
-procedure CommaToLVItems(lvcomp: TListview; const commastring: string);
+procedure CommaToLVItems(lvcomp: TListView; const commastring: string);
 var
   i: integer;
   sl: TStringlist;
@@ -280,27 +282,27 @@ end;
 
 function GetFullPath(N: TTreeNode; Sep: string = '\'): string;
 begin
-  Result := N.text;
+  result := N.text;
   N := N.Parent;
   while (N <> nil) do
   begin
-    Result := N.text + Sep + Result;
+    result := N.text + Sep + result;
     N := N.Parent;
   end;
 end;
 
 function GetFullPathData(N: TTreeNode): string;
 begin
-  Result := PointerToStr(N.data);
+  result := PointerToStr(N.data);
   N := N.Parent;
   while (N <> nil) do
   begin
-    Result := PointerToStr(N.data) + '/' + Result;
+    result := PointerToStr(N.data) + '/' + result;
     N := N.Parent;
   end;
 end;
 
-function GetLVCheckedItems(lvcomp: TListview): string;
+function GetLVCheckedItems(lvcomp: TListView): string;
 var
   i: integer;
   sl: TStringlist;
@@ -313,20 +315,40 @@ begin
     else
       sl.Add(lvcomp.Items[i].Caption + '=0');
   end;
-  Result := sl.CommaText;
+  result := sl.CommaText;
   sl.free;
 end;
 
-function GetLVCheckedItemsSingleLn(lvcomp: TListview): string;
+function GetLVCheckedItemsSingleLn(lvcomp: TListView): string;
 var
   i: integer;
 begin
   for i := 0 to lvcomp.Items.count - 1 do
   begin
     if lvcomp.Items[i].checked then
-      Result := Result + inttostr(i) + ';';
+      result := result + inttostr(i) + ';';
   end;
-  Result := Result;
+  result := result;
+end;
+
+// Returns the caption of a listview item along with the caption of its subitems
+// (if any)
+function GetLVItemAsString(lv: TListView; li: TListItem;
+  copytoclipboard: Boolean = false): string;
+var
+  s, t: String;
+  i: integer;
+begin
+  t := emptystr;
+  s := li.Caption;
+  for i := 0 to li.SubItems.count - 1 do
+  begin
+    if i < lv.Columns.count - 1 then // ignore subitems that are not visible
+      s := s + '  ' + li.SubItems[i];
+  end;
+  t := t + s + sLineBreak;
+  if copytoclipboard = true then
+    Clipboard.AsText := t;
 end;
 
 function GetPercentage(const percent, Value: integer): Int64;
@@ -334,7 +356,7 @@ var
   p: Real;
 begin
   p := ((percent / Value) * 100);
-  Result := Round(p);
+  result := Round(p);
 end;
 
 // Gets the path of special system folders
@@ -345,7 +367,7 @@ var
   FilePath: array [0 .. 255] of char;
 begin
   SHGetSpecialFolderPath(0, @FilePath[0], Folder, CanCreate);
-  Result := FilePath;
+  result := FilePath;
 end;
 
 function GetWindowClassHandle(const Title: string): integer;
@@ -355,18 +377,18 @@ end;
 
 function GetWindowState: integer;
 begin
-  Result := 2;
+  result := 2;
   case Application.MainForm.WindowState of
     WsMaximized:
-      Result := 0;
+      result := 0;
     WsMinimized:
-      Result := 1;
+      result := 1;
     WsNormal:
-      Result := 2;
+      result := 2;
   end;
 end;
 
-procedure LoadListviewStrings(listview: TListview; const filename: string);
+procedure LoadListviewStrings(listview: TListView; const filename: string);
 var
   sl, lineelements: TStringlist;
   i: integer;
@@ -401,29 +423,29 @@ end;
 function MakeNotifyEvent(forObject: TObject; const procname: String)
   : TNotifyEvent;
 begin
-  TMethod(Result).data := forObject;
-  TMethod(Result).code := forObject.methodAddress(procname);
+  TMethod(result).data := forObject;
+  TMethod(result).code := forObject.methodAddress(procname);
 end;
 
 procedure NilComponentMethods(Component: TComponent);
 var
-  Count, Size, I: Integer;
+  count, Size, i: integer;
   List: PPropList;
   PropInfo: PPropInfo;
   NilMethod: TMethod;
 begin
-  Count := GetPropList(Component.ClassInfo, tkAny, nil);
-  Size  := Count * SizeOf(Pointer);
+  count := GetPropList(Component.ClassInfo, tkAny, nil);
+  Size := count * sizeof(Pointer);
   GetMem(List, Size);
-  NilMethod.Data := nil;
-  NilMethod.Code := nil;
+  NilMethod.data := nil;
+  NilMethod.code := nil;
   try
-    Count := GetPropList(Component.ClassInfo, tkAny, List);
-    for I := 0 to Count - 1 do
+    count := GetPropList(Component.ClassInfo, tkAny, List);
+    for i := 0 to count - 1 do
     begin
-      PropInfo := List^[I];
+      PropInfo := List^[i];
       if PropInfo^.PropType^.Kind in tkMethods then
-      SetMethodProp(Component,string(PropInfo.Name),NilMethod);
+        SetMethodProp(Component, string(PropInfo.Name), NilMethod);
     end;
   finally
     FreeMem(List);
@@ -438,10 +460,10 @@ begin
   tv.Items.EndUpdate;
 end;
 
-procedure SaveListviewStrings(listview: TListview; const filename: string);
+procedure SaveListviewStrings(listview: TListView; const filename: string);
 var
   sl: TStringlist;
-  S: string;
+  s: string;
   i, si: integer;
   item: TListItem;
 begin
@@ -451,10 +473,10 @@ begin
     for i := 0 to listview.Items.count - 1 do
     begin
       item := listview.Items[i];
-      S := item.Caption;
+      s := item.Caption;
       for si := 0 to item.SubItems.count - 1 do
-        S := S + #9 + item.SubItems[si];
-      sl.Add(S);
+        s := s + #9 + item.SubItems[si];
+      sl.Add(s);
     end;
     sl.SaveToFile(filename);
   finally
@@ -516,7 +538,7 @@ var
   i: integer;
   sitem: string;
 begin
-  Result := nil;
+  result := nil;
   if (tv = nil) or (SearchItem = emptystr) then
     Exit;
   for i := 0 to tv.Items.count - 1 do
@@ -524,11 +546,11 @@ begin
     sitem := tv.Items[i].text;
     if SearchItem = sitem then
     begin
-      Result := tv.Items[i];
+      result := tv.Items[i];
       Exit;
     end
     else
-      Result := nil;
+      result := nil;
   end;
 end;
 
@@ -543,7 +565,7 @@ begin
     ShowWindow(hwnd, SW_RESTORE);
 
   if GetForegroundWindow = hwnd then
-    Result := true
+    result := true
   else
   begin
     // Windows 98/2000 doesn't want to foreground a window when some other
@@ -558,7 +580,7 @@ begin
       // Converted to Delphi by Ray Lischner
       // Published in The Delphi Magazine 55, page 16
 
-      Result := false;
+      result := false;
       ForegroundThreadID := GetWindowThreadProcessID(GetForegroundWindow, nil);
       ThisThreadID := GetWindowThreadProcessID(hwnd, nil);
       if AttachThreadInput(ThisThreadID, ForegroundThreadID, true) then
@@ -566,9 +588,9 @@ begin
         BringWindowToTop(hwnd); // IE 5.5 related hack
         SetForegroundWindow(hwnd);
         AttachThreadInput(ThisThreadID, ForegroundThreadID, false);
-        Result := (GetForegroundWindow = hwnd);
+        result := (GetForegroundWindow = hwnd);
       end;
-      if not Result then
+      if not result then
       begin
         // Code by Daniel P. Stasinski
         SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @timeout, 0);
@@ -586,7 +608,7 @@ begin
       SetForegroundWindow(hwnd);
     end;
 
-    Result := (GetForegroundWindow = hwnd);
+    result := (GetForegroundWindow = hwnd);
   end;
 end;
 
