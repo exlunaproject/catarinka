@@ -2,7 +2,7 @@ unit CatZIP;
 {
   Catarinka - ZIP Compression/Decompression
 
-  Copyright (c) 2013-2014 Felipe Daragon
+  Copyright (c) 2013-2015 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -25,6 +25,7 @@ procedure GUnZipTStream(var Document: TStream);
 procedure GZipAFile(const outzipname, infilename, filetozip: string);
 procedure GZipTStream(var Document: TStream);
 function GetTextFileFromZIP(const zipname, filename: string): string;
+function ZIPFileExists(const zipname, filename: string): boolean;
 
 implementation
 
@@ -162,6 +163,21 @@ begin
   result := sl.text;
   sl.free;
   ms.free;
+end;
+
+// working
+function ZIPFileExists(const zipname, filename: string): boolean;
+var
+  kit: TAbZipKit;
+  f: string;
+begin
+  result:=false;
+  f := replacestr(filename, '\', '/');
+  kit := TAbZipKit.Create(nil);
+  kit.OpenArchive(zipname);
+  if kit.FindFile(f) <> -1 then
+    result:=true;
+  kit.free;
 end;
 
 end.
