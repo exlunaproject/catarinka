@@ -45,6 +45,7 @@ type
   // HTML functions
 function BoolToDisplayState(const b: boolean): string;
 function ColorToHTMLColor(const Color: TColor): string;
+function DequoteHTMLAttribValue(const s: string): string;
 function HtmlColorToColor(const Color: string): TColor;
 function HtmlEntityDecode(const s: string): string;
 function HtmlEscape(const s: string): string;
@@ -142,6 +143,35 @@ begin
   result.Path := ExtractUrlPath(url);
   result.Port := ExtractUrlPort(url);
   result.Protocol := before(url, ':');
+end;
+
+// A special dequote for HTML attribute values
+// "value" -> value, 'value' -> value
+function DequoteHTMLAttribValue(const s: string): string;
+const
+  cQuotes = ['"', ''''];
+var
+  i: integer;
+  last: char;
+  firstisquote: boolean;
+begin
+  result := s;
+  i := length(s);
+  if i = 0 then
+    Exit;
+  last := LastChar(s);
+  firstisquote := CharInSet(s[1], cQuotes);
+  if (firstisquote = true) and (s[1] = last) then
+  begin
+    Delete(result, 1, 1);
+    SetLength(result, length(result) - 1);
+  end
+  else if (firstisquote = false) and (ContainsAnyOfChars(s, cQuotes) = true) then
+  begin
+    // uncommon, but handling something like: value" target="new"
+    if pos(' ', s) <> 0 then
+      result := before(s, ' ');
+  end;
 end;
 
 function PostDataToJSON(const s: string): string;
@@ -321,7 +351,7 @@ begin
   result := emptystr;
   afield := lowercase(Field);
   if pos(afield, lowercase(ReqStr)) = 0 then
-    exit; // not found
+    Exit; // not found
   slp := TStringLoop.Create;
   slp.LoadFromString(ReqStr);
   while slp.Found do
@@ -512,7 +542,7 @@ begin
       sp := '%20';
     for i := 1 to length(s) do
     begin
-      if not(charinset(s[i], preserve)) then
+      if not(CharInSet(s[i], preserve)) then
         result := result + '%' + IntToHex(ord(s[i]), 2)
       else if (s[i] = ' ') then
         result := result + sp
@@ -534,9 +564,10 @@ var
 begin
   result := s;
   for i := 1 to length(result) - 1 do
-    if charinset(result[i],(['~', '/'] - ['.', '-', 'A' .. 'Z', 'a' .. 'z'])) then
-      if charinset(result[i + 1],['a' .. 'z']) then
-        result[i + 1] := Char(ord(result[i + 1]) and not $20);
+    if CharInSet(result[i], (['~', '/'] - ['.', '-', 'A' .. 'Z', 'a' .. 'z']))
+    then
+      if CharInSet(result[i + 1], ['a' .. 'z']) then
+        result[i + 1] := char(ord(result[i + 1]) and not $20);
 end;
 
 // ------------------------------------------------------------------------//

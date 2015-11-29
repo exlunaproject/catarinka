@@ -35,6 +35,7 @@ function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
 function CatWrapText(const text: string; const chars: Integer): TStringList;
 function CommaTextToStr(const s: string): string;
+function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
 function EndsWith(const s, prefix: string): Boolean;
 function ExtractFromString(const s, startstr, endstr: string): string;
 function ExtractFromTag(const s, tag: string): string;
@@ -63,14 +64,14 @@ function RemoveNumbers(const s: string): string;
 function RemoveQuotes(const s: string): string;
 function RemoveShortcuts(const s: string): string;
 function RepeatString(const s: string; count: cardinal): string;
-function ReplaceBadChars(const s: string; const badchars: TSysCharSet;
+function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
 function ReplaceStr(const s, substr, repstr: string): string;
 function RestStr(const s: string; const index: longword): string;
 function RightPad(const s: string; const c: Char; const len: Integer): string;
 function StrDecrease(const s: string; const step: Integer = 1): string;
 function StrIncrease(const s: string; const step: Integer = 1): string;
-function StripBadChars(const s: string; const badchars: TSysCharSet): string;
+function StripChars(const s: string; const aSet: TSysCharSet): string;
 function StrMaxLen(const s: string; const MaxLen: Integer;
   const AddEllipsis: Boolean = false): string;
 function StrToAlphaNum(const s: string): string;
@@ -199,6 +200,21 @@ begin
   end;
 end;
 
+function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
+var
+  i: Integer;
+begin
+  result := false;
+  for i := 1 to length(s) do
+  begin
+    if (CharInSet(s[i], aSet)) then
+    begin
+      result := true;
+      break;
+    end;
+  end;
+end;
+
 function EndsWith(const s, prefix: string): Boolean;
 begin
   result := AnsiEndsStr(prefix, s);
@@ -293,7 +309,7 @@ begin
     if not(CharInSet(s[i], ['0' .. '9', 'A' .. 'F', 'a' .. 'f'])) then
     begin
       result := false;
-      Break;
+      break;
     end;
 end;
 
@@ -361,16 +377,22 @@ begin
   until (length(result) = len);
 end;
 
+// Strips a quote pair off a string if it exists
+// The leading and trailing quotes will only be removed if both exist
+// Otherwise, the string is left unchanged
 function RemoveQuotes(const s: string): string;
+var
+  i: Integer;
 begin
-  result := AnsiDequotedStr(s, '"');
-  result := AnsiDequotedStr(result, '''');
-  if length(result) <> 2 then
+  result := s;
+  i := length(s);
+  if i = 0 then
     Exit;
-  if result = '""' then
-    result := emptystr
-  else if result = '''''' then
-    result := emptystr;
+  if (CharInSet(s[1], ['"', '''']) = true) and (s[1] = LastChar(s)) then
+  begin
+    Delete(result, 1, 1);
+    SetLength(result, length(result) - 1);
+  end;
 end;
 
 // Removes the last character from a string
@@ -481,7 +503,7 @@ begin
   sl.free;
 end;
 
-function StripBadChars(const s: string; const badchars: TSysCharSet): string;
+function StripChars(const s: string; const aSet: TSysCharSet): string;
 var
   i, P: Integer;
 begin
@@ -489,7 +511,7 @@ begin
   SetLength(result, length(s));
   for i := 1 to length(s) do
   begin
-    if not(CharInSet(s[i], badchars)) then
+    if not(CharInSet(s[i], aSet)) then
     begin
       inc(P);
       result[P] := s[i];
@@ -498,7 +520,7 @@ begin
   SetLength(result, P);
 end;
 
-function ReplaceBadChars(const s: string; const badchars: TSysCharSet;
+function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
 var
   i, P: Integer;
@@ -509,7 +531,7 @@ begin
   begin
     inc(P);
     result[P] := s[i];
-    if (CharInSet(s[i], badchars)) then
+    if (CharInSet(s[i], aSet)) then
       result[P] := repwith;
   end;
   SetLength(result, P);
@@ -635,7 +657,7 @@ begin
     if s[i] = ch then
     begin
       result := i;
-      Break;
+      break;
     end;
   end;
 end;
@@ -753,7 +775,7 @@ begin
     while J <= len do
     begin
       if not((substr[J] = '?') or (substr[J] = s[Pred(i + J)])) then
-        Break;
+        break;
       inc(J);
     end;
     if J > len then

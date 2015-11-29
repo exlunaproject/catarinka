@@ -162,7 +162,7 @@ function CleanFilename(const filename: string;
 const
   invChars = ['\', ':', '*', '?', '"', '<', '>', '|', '/'];
 begin
-  Result := ReplaceBadChars(filename, invChars, invCharRep);
+  Result := ReplaceChars(filename, invChars, invCharRep);
 end;
 
 function ForceDir(const dir: string): boolean;
