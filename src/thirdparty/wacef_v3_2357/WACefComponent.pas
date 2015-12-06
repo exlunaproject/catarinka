@@ -1048,6 +1048,7 @@ begin
     if CefInstances = 0 then
       Timer.Enabled := false;
   end;
+  FreeAndNil(Timer);
   inherited;
 end;
 
