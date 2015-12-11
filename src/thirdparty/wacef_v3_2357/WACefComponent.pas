@@ -2081,11 +2081,11 @@ var
 begin
   HandleNeeded;
   if FBrowser <> nil then
-  begin
-    frm := FBrowser.MainFrame;
-    if frm <> nil then
-      frm.LoadUrl(url);
-  end;
+    begin
+      frm := FBrowser.MainFrame;
+      if frm <> nil then
+        frm.LoadUrl(url);
+    end;
 end;
 
 
