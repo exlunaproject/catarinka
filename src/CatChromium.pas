@@ -1140,7 +1140,7 @@ begin
   fCrm.OnStatusMessage := crmStatusMessage;
   fCrm.OnBeforeContextMenu := crmBeforeContextMenu;
   fCrm.OnBeforeResourceLoad := crmBeforeResourceLoad;
-  fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
+  // fCrm.OnGetAuthCredentials := crmGetAuthCredentials;
   fCrm.OnBeforePopup := crmBeforePopup;
   fCrm.OnCertificateError := crmCertificateError;
   fCrm.OnConsoleMessage := crmConsoleMessage;

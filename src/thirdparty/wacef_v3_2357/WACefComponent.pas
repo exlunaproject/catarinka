@@ -1048,6 +1048,7 @@ begin
     if CefInstances = 0 then
       Timer.Enabled := false;
   end;
+  FreeAndNil(Timer);
   inherited;
 end;
 
@@ -2080,11 +2081,11 @@ var
 begin
   HandleNeeded;
   if FBrowser <> nil then
-  begin
-    frm := FBrowser.MainFrame;
-    if frm <> nil then
-      frm.LoadUrl(url);
-  end;
+    begin
+      frm := FBrowser.MainFrame;
+      if frm <> nil then
+        frm.LoadUrl(url);
+    end;
 end;
 
 
