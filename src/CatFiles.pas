@@ -15,12 +15,11 @@ interface
 {$I Catarinka.inc}
 
 uses
-{$IF CompilerVersion > 22}
-  Winapi.Windows, System.Classes, System.SysUtils, Winapi.ShellAPI,
-  System.IOUtils;
+{$IFDEF DXE2_OR_UP}
+  Winapi.Windows, System.Classes, System.SysUtils, Winapi.ShellAPI;
 {$ELSE}
   Windows, Classes, SysUtils, ShellAPI;
-{$IFEND}
+{$ENDIF}
 function CleanFilename(const filename: string;
   const invCharRep: Char = '_'): string;
 function DeleteFolder(const dir: string): boolean;
@@ -248,7 +247,7 @@ begin
     try
       Result := f.nFileSizeHigh shl 32 + f.nFileSizeLow;
     finally
-{$IF CompilerVersion > 22}Winapi.{$ENDIF}Windows.FindClose(h);
+{$IFDEF DXE2_OR_UP}Winapi.{$ENDIF}Windows.FindClose(h);
     end;
   except
   end;
@@ -422,21 +421,11 @@ end;
 
 // By David Stidolph, 21 Jun 1995
 function FileCopy(const source, dest: string): boolean;
-{$IF CompilerVersion < 22}
 var
   fSrc, fDst, len: integer;
   Size: LongInt;
   buffer: packed array [0 .. 2047] of Byte;
-{$ENDIF}
 begin
-{$IF CompilerVersion > 22}
-  try
-    TFile.Copy(source, dest);
-  except
-    raise EExternalException.CreateFmt('Error copy file from %s to %s', [source,dest]);
-  end;
-  Result := True;
-{$ELSE}
   Result := false;
   if source <> dest then
   begin
@@ -454,17 +443,14 @@ begin
           FileWrite(fDst, buffer, len);
           Size := Size - len;
         end;
-
         FileSetDate(fDst, FileGetDate(fSrc));
         FileClose(fDst);
         FileSetAttr(dest, FileGetAttr(source));
-
         Result := true;
       end;
       FileClose(fSrc);
     end;
   end;
-{$ENDIF}
 end;
 
 // Peter Below ------------------------------------------------------------//
