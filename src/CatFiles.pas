@@ -432,7 +432,7 @@ var
 begin
 {$IF CompilerVersion > 22}
   Result := true;
-  if FileExists(dest) then
+  if FileExists(source) and FileExists(dest) then
     DeleteFile(dest);
   try
     TFile.copy(source, dest);
