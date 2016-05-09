@@ -248,7 +248,7 @@ begin
     try
       Result := f.nFileSizeHigh shl 32 + f.nFileSizeLow;
     finally
-{$IF CompilerVersion > 22}Winapi.{$ENDIF}Windows.FindClose(h);
+{$IF CompilerVersion > 22}Winapi.{$IFEND}Windows.FindClose(h);
     end;
   except
   end;
@@ -420,23 +420,27 @@ begin
   fs.Free;
 end;
 
-// By David Stidolph, 21 Jun 1995
+// Copies a file, based on a source and destination filename, and returns true
+// if successful or false if the operation failed
 function FileCopy(const source, dest: string): boolean;
 {$IF CompilerVersion < 22}
 var
   fSrc, fDst, len: integer;
   Size: LongInt;
   buffer: packed array [0 .. 2047] of Byte;
-{$ENDIF}
+{$IFEND}
 begin
 {$IF CompilerVersion > 22}
+  Result := true;
+  if FileExists(dest) then
+    DeleteFile(dest);
   try
-    TFile.Copy(source, dest);
+    TFile.copy(source, dest);
   except
-    raise EExternalException.CreateFmt('Error copy file from %s to %s', [source,dest]);
+    Result := false;
   end;
-  Result := True;
 {$ELSE}
+  // By David Stidolph, 21 Jun 1995
   Result := false;
   if source <> dest then
   begin
@@ -464,7 +468,7 @@ begin
       FileClose(fSrc);
     end;
   end;
-{$ENDIF}
+{$IFEND}
 end;
 
 // Peter Below ------------------------------------------------------------//
@@ -542,7 +546,7 @@ begin
   finally
     fs.Free;
   end;
-  Deletefile(filename);
+  DeleteFile(filename);
 end;
 
 // ------------------------------------------------------------------------//

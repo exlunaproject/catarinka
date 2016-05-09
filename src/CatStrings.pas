@@ -23,7 +23,7 @@ uses
 {$IFDEF DXE2_OR_UP}
   System.Classes, System.SysUtils, System.StrUtils, System.AnsiStrings;
 {$ELSE}
-  Classes, SysUtils, StrUtils,
+  Classes, SysUtils, StrUtils;
 {$ENDIF}
 
 
