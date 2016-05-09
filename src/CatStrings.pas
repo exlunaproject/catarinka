@@ -21,10 +21,13 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.Classes, System.SysUtils, System.StrUtils;
+  System.Classes, System.SysUtils, System.StrUtils, System.AnsiStrings;
 {$ELSE}
-  Classes, SysUtils, StrUtils;
+  Classes, SysUtils, StrUtils,
 {$ENDIF}
+
+
+
 function After(const s, substr: string): string;
 function ASCIIToInt(const s: string): Integer;
 function Base64Encode(const s: string): string;
@@ -150,7 +153,11 @@ var
   tmpstr: string;
 begin
   tmpstr := s;
-  SetLength(tmpstr, StrLen(PAnsiChar(AnsiString(prefix))));
+{$IFDEF DXE2_OR_UP}
+  SetLength(tmpstr, System.AnsiStrings.StrLen(System.PAnsiChar(AnsiString(prefix))));
+{$ELSE}
+  SetLength(tmpstr, StrLen(PAnsiChar(prefix)));
+{$ENDIF}
   result := AnsiCompareText(tmpstr, prefix) = 0;
 end;
 
@@ -693,11 +700,23 @@ begin
   pTag2 := PAnsiChar(AnsiString(Uppercase(tag2)));
   pScan := PAnsiChar(AnsiString(searchtext));
   repeat
+
+{$IFDEF DXE2_OR_UP}
+    pScan := System.AnsiStrings.StrPos(pScan, pTag1);
+{$ELSE}
     pScan := StrPos(pScan, pTag1);
+{$ENDIF}
+
     if pScan <> nil then
     begin
       inc(pScan, length(tag1));
-      pEnd := StrPos(pScan, pTag2);
+
+{$IFDEF DXE2_OR_UP}
+      pEnd := System.AnsiStrings.StrPos(pScan, pTag2);
+{$ELSE}
+     pEnd := StrPos(pScan, pTag2);
+{$ENDIF}
+
       if pEnd <> nil then
       begin
         SetString(foundText, PAnsiChar(AnsiString(s)) +
