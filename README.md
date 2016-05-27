@@ -26,9 +26,10 @@ CatPrefs: Rename the `src\CatDCPKey.pas` file, edit it and add your own encrypti
 ## Dependencies
 
 * All included in the `src` directory, except the following which you need to download separately:
+* [DCEF](https://github.com/hgourvest/dcef3) or [WACEF](https://bitbucket.org/WaspAce/wacef), needed by CatChromium. See [dcef-mod](https://github.com/felipedaragon/dcef-mod) for a copy of the latest CEF components, with or without minor modifications
 * [DCPcrypt 2](https://bitbucket.org/wpostma/dcpcrypt2010) - needed by CatDCP.
 * [SynWeb 1.5](https://code.google.com/p/synweb/) and [SynEdit](http://sourceforge.net/projects/synedit/) - needed by CatSynEdit.
-* [Structured Storage](https://code.google.com/p/gpdelphiunits/) - need by CatStorage.
+* [Structured Storage](https://github.com/gabr42/GpDelphiUnits) - need by CatStorage.
 * [Abbrevia 5.0](http://sourceforge.net/projects/tpabbrevia/) - needed by CatZIP.
 
 ## License & Credits
