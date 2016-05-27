@@ -915,7 +915,7 @@ begin
   SetState(fCrm.Options.ImageLoading, 'ImageLoading');
   SetState(fCrm.Options.ImageShrinkStandaloneToFit,
     'ImageShrinkStandaloneToFit');
-  SetState(fCrm.Options.Java, 'Java');
+  // SetState(fCrm.Options.Java, 'Java');
   SetState(fCrm.Options.Javascript, 'Javascript');
   SetState(fCrm.Options.JavascriptAccessClipboard, 'JavascriptAccessClipboard');
   SetState(fCrm.Options.JavascriptCloseWindows, 'JavascriptCloseWindows');
