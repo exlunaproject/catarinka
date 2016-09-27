@@ -1,6 +1,12 @@
 __history/
 __recovery/
-*.dcu
-*.~pas
 *.~*
+*.cfg
+*.dof
+*.dcu
+*.dll
+*.dproj
+*.dproj.local
+*.identcache
+*.stat
 Thumbs.db

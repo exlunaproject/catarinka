@@ -1,9 +1,19 @@
 # Catarinka
 
-Catarinka is a set of visual and non-visual components, and methods for Pascal/Delphi, developed as part of the [Sandcat Browser](https://github.com/felipedaragon/sandcat) project. This kit includes the following components:
+Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of the [Sandcat Browser](https://github.com/felipedaragon/sandcat) project.
+
+## Directories
+
+* `/lualib` - Catarinka Lua Library source
+ * `/docs` - Documentation about the library's functions and classes
+* `/src` - a set of visual and non-visual components, and methods for Pascal/Delphi
+ 
+## Pascal Components
+
+ This kit includes the following components:
 
 * `TCatChromium` - A web browser component built on top of WACEF3/DCEF3.
-* `TCatConsole` - Console component built on top of a modified version of the Console component by Michael Elsdörfer.
+* `TCatConsole` - Console component built on top of a modified version of the Console component by Michael Elsdï¿½rfer.
 * `TCatHighlighters` - Provides quick access to multiple SynEdit highlighters with a color scheme adapted from the CodeRay project.
 * `TCatHTMLParser` - HTML Parser based on a component by Przemyslaw Jankowski
 * `TCatJSON` - JSON Manipulation component built on top of the SuperObject.
@@ -46,4 +56,4 @@ Twitter: [@felipedaragon](https://twitter.com/felipedaragon), [@syhunt](https://
 
 Email: felipe _at_ syhunt.com
 
-If you want to report a security bug, please see the `docs\SECURITY.md` file.
+If you want to report a security bug, please see the `SECURITY.md` file.
