@@ -38,17 +38,21 @@ begin
       result := result + ' ' + (ParamStr(i));
 end;
 
-// eg: if hascmdparam('-test') then ...
+// Example: hascmdparam('-test') or ('-test:anystr') returns true
 function HasCmdParam(const param: string): boolean;
 var
   i: integer;
+  curparam: string;
 begin
   result := false;
   if ParamCount = 0 then
     exit;
   for i := 1 to ParamCount do
   begin
-    if lowercase(ParamStr(i)) = lowercase(param) then
+    curparam := lowercase(ParamStr(i));
+    if pos(':', curparam) <> 0 then
+      curparam := before(curparam, ':');
+    if curparam = lowercase(param) then
       result := true;
   end;
 end;
