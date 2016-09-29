@@ -2,7 +2,7 @@ unit CatStrings;
 {
   Catarinka - String Operation functions
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2016 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -26,41 +26,47 @@ uses
   Classes, SysUtils, StrUtils;
 {$ENDIF}
 
-
+type
+  TCatCaseLabel = record
+    name: string;
+    id: integer;
+  end;
 
 function After(const s, substr: string): string;
-function ASCIIToInt(const s: string): Integer;
+function ASCIIToInt(const s: string): integer;
 function Base64Encode(const s: string): string;
 function Base64Decode(const s: string): string;
 function Before(const s, substr: string): string;
 function BeginsWith(const s, prefix: string): Boolean;
 function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
-function CatWrapText(const text: string; const chars: Integer): TStringList;
+function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
+  const casesensitive: Boolean = true): integer;
+function CatWrapText(const text: string; const chars: integer): TStringList;
 function CommaTextToStr(const s: string): string;
 function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
 function EndsWith(const s, prefix: string): Boolean;
 function ExtractFromString(const s, startstr, endstr: string): string;
 function ExtractFromTag(const s, tag: string): string;
-function GetLineByPos(const s: string; const Position: Integer): Integer;
+function GetLineByPos(const s: string; const Position: integer): integer;
 function GetToken(const aString, SepChar: string; const TokenNum: Byte): string;
 function GetValidCompName(const s: string): string;
-function HexToInt(const Hex: string; const WarnError: Boolean = false): Integer;
+function HexToInt(const Hex: string; const WarnError: Boolean = false): integer;
 function HexToStr(const s: string): string;
 function IIF(const Cond: Boolean; const TrueStr: String;
   const FalseStr: string = ''): string; overload;
-function IIF(const Cond: Boolean; const TrueInt: Integer;
-  const FalseInt: Integer = 0): Integer; overload;
-function IScan(ch: Char; const s: string; fromPos: Integer): Integer;
+function IIF(const Cond: Boolean; const TrueInt: integer;
+  const FalseInt: integer = 0): integer; overload;
+function IScan(ch: Char; const s: string; fromPos: integer): integer;
 function IsHexStr(const s: string): Boolean;
 function IsInteger(const s: string): Boolean;
 function LastChar(const s: string): Char;
-function LeftPad(const s: string; const c: Char; const len: Integer): string;
+function LeftPad(const s: string; const c: Char; const len: integer): string;
 function LeftStr(s: string; c: longword): string;
 function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MD5Hash(s: UTF8String): UTF8String;
-function Occurs(substr, s: string): Integer;
-function RandomString(const len: Integer;
+function Occurs(substr, s: string): integer;
+function RandomString(const len: integer;
   const chars: string = 'abcdefghijklmnopqrstuvwxyz'): string;
 function RemoveLastChar(const s: string): string;
 function RemoveNumbers(const s: string): string;
@@ -71,17 +77,17 @@ function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
 function ReplaceStr(const s, substr, repstr: string): string;
 function RestStr(const s: string; const index: longword): string;
-function RightPad(const s: string; const c: Char; const len: Integer): string;
-function StrDecrease(const s: string; const step: Integer = 1): string;
-function StrIncrease(const s: string; const step: Integer = 1): string;
+function RightPad(const s: string; const c: Char; const len: integer): string;
+function StrDecrease(const s: string; const step: integer = 1): string;
+function StrIncrease(const s: string; const step: integer = 1): string;
 function StripChars(const s: string; const aSet: TSysCharSet): string;
-function StrMaxLen(const s: string; const MaxLen: Integer;
+function StrMaxLen(const s: string; const MaxLen: integer;
   const AddEllipsis: Boolean = false): string;
 function StrToAlphaNum(const s: string): string;
 function StrToBool(const s: string): Boolean;
 function StrToCommaText(const s: string): string;
 function StrToHex(const s: string): string;
-function StrToIntSafe(const s: string; const FalseInt: Integer = 0): Integer;
+function StrToIntSafe(const s: string; const FalseInt: integer = 0): integer;
 function StrToPWideChar(const s: string): PWideChar;
 function TitleCase(const s: string): string;
 procedure GetTextBetweenTags(const s, tag1, tag2: string; const list: TStrings;
@@ -123,9 +129,9 @@ begin
     result := Copy(s, i + length(substr), length(s));
 end;
 
-function ASCIIToInt(const s: string): Integer;
+function ASCIIToInt(const s: string): integer;
 var
-  i, len: Integer;
+  i, len: integer;
   c: Char;
 begin
   result := 0;
@@ -154,7 +160,8 @@ var
 begin
   tmpstr := s;
 {$IFDEF DXE2_OR_UP}
-  SetLength(tmpstr, System.AnsiStrings.StrLen(System.PAnsiChar(AnsiString(prefix))));
+  SetLength(tmpstr, System.AnsiStrings.StrLen
+    (System.PAnsiChar(AnsiString(prefix))));
 {$ELSE}
   SetLength(tmpstr, StrLen(PAnsiChar(prefix)));
 {$ENDIF}
@@ -177,11 +184,61 @@ begin
     result := 'No';
 end;
 
+{
+  A CaseOf function using arrays
+  Usage Example:
+
+procedure TForm1.Button1Click(Sender: TObject);
+const
+ ana = 1;
+ roberto = 2;
+ lucia = 3;
+const
+ labels : array [1..3] of TCatCaseLabel =
+ (
+ (name:'ana';id:ana),
+ (name:'roberto';id:roberto),
+ (name:'lucia';id:lucia)
+ );
+begin
+  case CatCaseOf(edit1.text,labels) of
+    ana: form1.caption:='ana!';
+    roberto: form1.caption:='roberto!';
+    lucia: form1.caption:='lucia!';
+  else
+    form1.Caption:=edit1.text+' not in case list!';
+  end;
+end;
+
+}
+function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
+  const casesensitive: Boolean = true): integer;
+var
+  i: integer;
+begin
+  result := -1; // label not found
+  for i := 0 to high(labels) do
+  begin
+    if casesensitive then
+    begin
+      if s = labels[i].name then
+        result := labels[i].id;
+    end
+    else
+    begin
+      if lowercase(s) = lowercase(labels[i].name) then
+        result := labels[i].id;
+    end;
+    if result <> -1 then
+      break;
+  end;
+end;
+
 // Wraps a text and returns it as a stringlist
-function CatWrapText(const text: string; const chars: Integer): TStringList;
+function CatWrapText(const text: string; const chars: integer): TStringList;
 var
   sl: TStringList;
-  P, ln: Integer;
+  P, ln: integer;
   s, newln: string;
 begin
   sl := TStringList.Create;
@@ -209,7 +266,7 @@ end;
 
 function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
 var
-  i: Integer;
+  i: integer;
 begin
   result := false;
   for i := 1 to length(s) do
@@ -232,9 +289,9 @@ begin
   result := ExtractFromString(s, '<' + tag + '>', '</' + tag + '>');
 end;
 
-function GetLineByPos(const s: string; const Position: Integer): Integer;
+function GetLineByPos(const s: string; const Position: integer): integer;
 var
-  i, ln: Integer;
+  i, ln: integer;
 begin
   result := -1;
   if (Position = -1) then
@@ -254,7 +311,7 @@ end;
 // Returns a valid Pascal component name (stripping invalid chars)
 function GetValidCompName(const s: string): string;
 var
-  i: Integer;
+  i: integer;
 begin
   result := emptystr;
   for i := 1 to length(s) do
@@ -264,7 +321,7 @@ begin
   end;
 end;
 
-function HexToInt(const Hex: string; const WarnError: Boolean = false): Integer;
+function HexToInt(const Hex: string; const WarnError: Boolean = false): integer;
 begin
   if IsHexStr(Hex) then
     result := StrToInt('$' + Hex)
@@ -286,8 +343,8 @@ begin
     result := FalseStr;
 end;
 
-function IIF(const Cond: Boolean; const TrueInt: Integer;
-  const FalseInt: Integer = 0): Integer; overload;
+function IIF(const Cond: Boolean; const TrueInt: integer;
+  const FalseInt: integer = 0): integer; overload;
 begin
   if Cond = true then
     result := TrueInt
@@ -297,7 +354,7 @@ end;
 
 function IsInteger(const s: string): Boolean;
 var
-  v, c: Integer;
+  v, c: integer;
 begin
   Val(s, v, c);
   if v = 0 then
@@ -309,7 +366,7 @@ end;
 // Returns true if the string contains valid hexadecimal digits
 function IsHexStr(const s: string): Boolean;
 var
-  i: Integer;
+  i: integer;
 begin
   result := true;
   for i := 1 to length(s) do
@@ -328,9 +385,9 @@ begin
     result := s[length(s)];
 end;
 
-function LeftPad(const s: string; const c: Char; const len: Integer): string;
+function LeftPad(const s: string; const c: Char; const len: integer): string;
 var
-  i: Integer;
+  i: integer;
 begin
   result := s;
   i := len - length(s);
@@ -339,9 +396,9 @@ begin
   result := s + StringOfChar(c, i);
 end;
 
-function RightPad(const s: string; const c: Char; const len: Integer): string;
+function RightPad(const s: string; const c: Char; const len: integer): string;
 var
-  i: Integer;
+  i: integer;
 begin
   result := s;
   i := len - length(s);
@@ -357,16 +414,16 @@ end;
 
 procedure MergeStrings(const dest, source: TStrings);
 var
-  i: Integer;
+  i: integer;
 begin
   for i := 0 to -1 + source.count do
     if dest.IndexOf(source[i]) = -1 then
       dest.Add(source[i]);
 end;
 
-function Occurs(substr, s: string): Integer;
+function Occurs(substr, s: string): integer;
 var
-  i: Integer;
+  i: integer;
 begin
   result := 0;
   for i := 1 to length(s) do
@@ -374,7 +431,7 @@ begin
       inc(result);
 end;
 
-function RandomString(const len: Integer;
+function RandomString(const len: integer;
   const chars: string = 'abcdefghijklmnopqrstuvwxyz'): string;
 begin
   Randomize;
@@ -389,7 +446,7 @@ end;
 // Otherwise, the string is left unchanged
 function RemoveQuotes(const s: string): string;
 var
-  i: Integer;
+  i: integer;
 begin
   result := s;
   i := length(s);
@@ -405,7 +462,7 @@ end;
 // Removes the last character from a string
 function RemoveLastChar(const s: string): string;
 var
-  len: Integer;
+  len: integer;
   astr: string;
 begin
   astr := s;
@@ -417,7 +474,7 @@ end;
 
 function RemoveNumbers(const s: string): string;
 var
-  i, l: Integer;
+  i, l: integer;
 begin
   SetLength(result, length(s));
   l := 0;
@@ -437,7 +494,7 @@ end;
 
 function RepeatString(const s: string; count: cardinal): string;
 var
-  i: Integer;
+  i: integer;
 begin
   for i := 1 to count do
     result := result + s;
@@ -448,9 +505,9 @@ begin
   result := stringreplace(s, substr, repstr, [rfReplaceAll]);
 end;
 
-function StrIncrease(const s: string; const step: Integer = 1): string;
+function StrIncrease(const s: string; const step: integer = 1): string;
 var
-  i, c: Integer;
+  i, c: integer;
   tmpstr: WideString;
 begin
   tmpstr := '';
@@ -463,9 +520,9 @@ begin
   result := tmpstr;
 end;
 
-function StrDecrease(const s: string; const step: Integer = 1): string;
+function StrDecrease(const s: string; const step: integer = 1): string;
 var
-  i, c: Integer;
+  i, c: integer;
   tmpstr: WideString;
 begin
   tmpstr := '';
@@ -480,7 +537,7 @@ end;
 
 function RestStr(const s: string; const index: longword): string;
 var
-  l: Integer;
+  l: integer;
 begin
   l := length(s);
   if l > 0 then
@@ -491,7 +548,7 @@ end;
 
 procedure StripBlankLines(const sl: TStringList);
 var
-  i: Integer;
+  i: integer;
 begin
   for i := (sl.count - 1) downto 0 do
   begin
@@ -512,7 +569,7 @@ end;
 
 function StripChars(const s: string; const aSet: TSysCharSet): string;
 var
-  i, P: Integer;
+  i, P: integer;
 begin
   P := 0;
   SetLength(result, length(s));
@@ -530,7 +587,7 @@ end;
 function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
 var
-  i, P: Integer;
+  i, P: integer;
 begin
   P := 0;
   SetLength(result, length(s));
@@ -554,10 +611,10 @@ begin
   sl.free;
 end;
 
-function StrMaxLen(const s: string; const MaxLen: Integer;
+function StrMaxLen(const s: string; const MaxLen: integer;
   const AddEllipsis: Boolean = false): string;
 var
-  i: Integer;
+  i: integer;
 begin
   result := s;
   if length(result) <= MaxLen then
@@ -571,7 +628,7 @@ end;
 
 function StrToAlphaNum(const s: string): string;
 var
-  i: Integer;
+  i: integer;
   tmpstr: string;
 begin
   tmpstr := emptystr;
@@ -587,7 +644,7 @@ function StrToBool(const s: string): Boolean;
 var
   tmpstr: string;
 begin
-  tmpstr := Trim(LowerCase(s));
+  tmpstr := Trim(lowercase(s));
   if (tmpstr = 'true') or (tmpstr = '1') or (tmpstr = 'yes') or (tmpstr = 'y')
   then
     result := true
@@ -597,14 +654,14 @@ end;
 
 function StrToHex(const s: string): string;
 var
-  i: Integer;
+  i: integer;
 begin
   result := emptystr;
   for i := 1 to length(s) do
     result := result + IntToHex(ord(Copy(s, i, 1)[1]), 2);
 end;
 
-function StrToIntSafe(const s: string; const FalseInt: Integer = 0): Integer;
+function StrToIntSafe(const s: string; const FalseInt: integer = 0): integer;
 begin
   if IsInteger(s) then
     result := StrToInt(s)
@@ -619,7 +676,7 @@ end;
 
 function HexToStr(const s: string): string;
 var
-  i: Integer;
+  i: integer;
   h: string;
 begin
   result := emptystr;
@@ -636,7 +693,7 @@ end;
 
 function TitleCase(const s: string): string;
 var
-  i: Integer;
+  i: integer;
 begin
   if s = emptystr then
     result := emptystr
@@ -647,16 +704,16 @@ begin
       if s[i - 1] = ' ' then
         result := result + Uppercase(s[i])
       else
-        result := result + LowerCase(s[i]);
+        result := result + lowercase(s[i]);
   end;
 end;
 
 // CONTRIBUTED ------------------------------------------------------------//
 
 // Peter Below, 11.27.1996
-function IScan(ch: Char; const s: string; fromPos: Integer): Integer;
+function IScan(ch: Char; const s: string; fromPos: integer): integer;
 var
-  i: Integer;
+  i: integer;
 begin
   result := 0;
   for i := fromPos to length(s) do
@@ -673,7 +730,7 @@ end;
 procedure SplitString(const s: string; separator: Char;
   substrings: TStringList);
 var
-  i, n: Integer;
+  i, n: integer;
 begin
   if Assigned(substrings) and (length(s) > 0) then
   begin
@@ -706,7 +763,6 @@ begin
 {$ELSE}
     pScan := StrPos(pScan, pTag1);
 {$ENDIF}
-
     if pScan <> nil then
     begin
       inc(pScan, length(tag1));
@@ -714,9 +770,8 @@ begin
 {$IFDEF DXE2_OR_UP}
       pEnd := System.AnsiStrings.StrPos(pScan, pTag2);
 {$ELSE}
-     pEnd := StrPos(pScan, pTag2);
+      pEnd := StrPos(pScan, pTag2);
 {$ENDIF}
-
       if pEnd <> nil then
       begin
         SetString(foundText, PAnsiChar(AnsiString(s)) +
@@ -737,7 +792,7 @@ end;
 // Based on an example by Mike Orriss
 function ExtractFromString(const s, startstr, endstr: string): string;
 var
-  ps, pe: Integer;
+  ps, pe: integer;
 begin
   ps := pos(startstr, s);
   pe := pos(endstr, s);
@@ -754,7 +809,7 @@ end;
 function GetToken(const aString, SepChar: String; const TokenNum: Byte): String;
 var
   Token, tmpstr: String;
-  StrLen, Num, EndofToken: Integer;
+  StrLen, Num, EndofToken: integer;
 begin
   tmpstr := aString;
   StrLen := length(tmpstr);
@@ -778,9 +833,9 @@ begin
     result := emptystr;
 end;
 
-function PosX(const substr, s: string; Start: Integer): Integer;
+function PosX(const substr, s: string; Start: integer): integer;
 var
-  i, J, len: Integer;
+  i, J, len: integer;
 begin
   len := length(substr);
   if len = 0 then
@@ -818,7 +873,7 @@ function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 const
   WildSize = 0; { minimal number of characters representing a "*" }
 var
-  Min, Max, At, MaskSTart, MaskEnd: Integer;
+  Min, Max, At, MaskSTart, MaskEnd: integer;
   T: string;
 begin
   if IgnoreCase then
@@ -887,8 +942,8 @@ end;
 function Encode3to4(const Value, Table: AnsiString): AnsiString;
 var
   c: Byte;
-  n, l: Integer;
-  count: Integer;
+  n, l: integer;
+  count: integer;
   DOut: array [0 .. 3] of Byte;
 begin
   SetLength(result, ((length(Value) + 2) div 3) * 4);
@@ -937,11 +992,11 @@ end;
 
 function Decode4to3Ex(const Value, Table: AnsiString): AnsiString;
 var
-  x, y, lv: Integer;
-  d: Integer;
-  dl: Integer;
+  x, y, lv: integer;
+  d: integer;
+  dl: integer;
   c: Byte;
-  P: Integer;
+  P: integer;
 begin
   lv := length(Value);
   SetLength(result, lv);
@@ -1047,7 +1102,7 @@ const
   Hex: array [0 .. 15] of AnsiChar = '0123456789abcdef';
 var
   a: cardinal;
-  dl, i, J, k, l: Integer;
+  dl, i, J, k, l: integer;
   d: array of cardinal;
   g, h: array [0 .. 3] of cardinal;
 begin
@@ -1128,4 +1183,3 @@ end;
 
 // ------------------------------------------------------------------------//
 end.
-
