@@ -201,7 +201,7 @@ function SaveResponseToFile(s: string): string;
 
 implementation
 
-uses CatTasks, CatStrings, CatHTTP, CatTime;
+uses CatTasks, CatStrings, CatHTTP, CatTime, CatMsgCromis;
 
 var
   TempFileCount: integer = 0;
@@ -615,7 +615,7 @@ begin
     fr.s['headers'] := SentHead;
     fr.s['responseheaders'] := RcvdHead;
     if MsgHandle <> 0 then
-      SendCDMessage(MsgHandle, CRM_LOG_REQUEST_JSON, fr.AsJson(true));
+      SendCromisMessage(MsgHandle, CRM_LOG_REQUEST_JSON, fr.AsJson(true));
     fr := nil;
   finally
     fCriticalSection.Leave;

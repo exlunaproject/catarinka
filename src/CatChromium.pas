@@ -2,7 +2,7 @@ unit CatChromium;
 
 {
   Catarinka Browser Component
-  Copyright (c) 2011-2015 Syhunt Informatica
+  Copyright (c) 2011-2016 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -26,7 +26,7 @@ uses
 {$ELSE}
   cefgui, cefvcl, ceflib,
 {$ENDIF}
-  CatJSON, CatMsg, CatChromiumLib;
+  CatJSON, CatMsg, CatMsgCromis, CatChromiumLib;
 
 type
   TCatSourceVisitorOwn = class(TCefStringVisitorOwn)
@@ -56,6 +56,7 @@ type
     fLogJavaScriptErrors: Boolean;
     fLogURLs: Boolean;
     fMsg: TCatMsg;
+    fMsgCrom: TCatMsgCromis;
     fNeedRecreate: Boolean;
     fOnBrowserMessage: TCatChromiumOnBrowserMessage;
     fOnAfterSetSource: TCatChromiumOnAfterSetSource;
@@ -777,7 +778,7 @@ begin
   fSentRequests := fSentRequests + 1;
   // sendmessagetotab(fmsg.msghandle,CRM_LOGWRITELN,'getresourcehandler:'+request.getUrl);
   reqown := TSpecialCEFReq.Create;
-  reqown.MsgHandle := self.fMsg.MsgHandle;
+  reqown.MsgHandle := self.fMsgCrom.MsgHandle;
   req := TCefUrlRequestRef.New(request, reqown, reqctx) as ICefUrlRequest;
 end;
 
@@ -1105,8 +1106,10 @@ begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls];
   Color := clWindow;
+  fMsgCrom := TCatMsgCromis.Create;
+  fMsgCrom.OnDataMessage:= WMCopyData;
   fMsg := TCatMsg.Create;
-  fMsg.OnCopyDataMessage := WMCopyData;
+  fMsg.OnDataMessage := WMCopyData;
   fCriticalSection := TCriticalSection.Create;
   fPreventPopup := true;
   fInterceptRequests := true;
@@ -1228,7 +1231,7 @@ begin
   else
   begin
     reqown := TSpecialCEFReq.Create;
-    reqown.MsgHandle := self.fMsg.MsgHandle;
+    reqown.MsgHandle := self.fMsgCrom.MsgHandle;
     reqown.Details := req.Details;
     urlreq := TCefUrlRequestRef.New(r, reqown, reqctx) as ICefUrlRequest;
   end;
@@ -1303,6 +1306,7 @@ end;
 destructor TCatChromium.Destroy;
 begin
   fMsg.Free;
+  fMsgCrom.Free;
   fInterceptRequests := false;
   OnAfterSetSource := nil;
   OnBrowserMessage := nil;

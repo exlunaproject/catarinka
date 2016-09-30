@@ -2,7 +2,7 @@ unit CatMsg;
 
 {
   Catarinka TCatMsg - For handling WM_COPYDATA messages
-  Copyright (c) 2015 Felipe Daragon
+  Copyright (c) 2015-2016 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -26,14 +26,14 @@ type
   TCatMsg = class
   private
     fMsgHandle: HWND;
-    fOnCopyDataMessage: TCatMsgOnCopyDataMessage;
+    fOnDataMessage: TCatMsgOnCopyDataMessage;
     procedure crmMessage(var AMsg: TMessage);
     procedure WMCopyData(var message: TMessage); message WM_COPYDATA;
   public
     constructor Create;
     destructor Destroy; override;
-    property OnCopyDataMessage: TCatMsgOnCopyDataMessage read fOnCopyDataMessage
-      write fOnCopyDataMessage;
+    property OnDataMessage: TCatMsgOnCopyDataMessage read fOnDataMessage
+      write fOnDataMessage;
     property MsgHandle: HWND read fMsgHandle;
   end;
 
@@ -43,19 +43,12 @@ implementation
 
 procedure SendCDMessage(desthandle, msgid: integer; l: string);
 var
-  pData: PCopyDataStruct;
+  pData: TCopyDataStruct;
 begin
-  pData := nil;
-  try
-    New(pData);
-    pData^.dwData := msgid;
-    pData^.cbData := Length(l) + 1;
-    pData^.lpData := PAnsiChar(AnsiString(l));
-    // SendMessage(desthandle, WM_COPYDATA, application.handle, integer(pData));
-    SendMessage(desthandle, WM_COPYDATA, 0, integer(pData));
-  finally
-    Dispose(pData);
-  end;
+  pData.dwData := msgid;
+  pData.cbData := Length(l) + 1;
+  pData.lpData := PAnsiChar(AnsiString(l));
+  SendMessage(desthandle, WM_COPYDATA, 0, integer(@pData));
 end;
 
 procedure TCatMsg.WMCopyData(var message: TMessage);
@@ -73,8 +66,8 @@ begin
 {$ELSE} // < Delphi 2009
   str := string(StrPas(PAnsiChar(pData^.lpData)));
 {$IFEND}
-  if assigned(OnCopyDataMessage) then
-    OnCopyDataMessage(pData^.dwData, str);
+  if assigned(OnDataMessage) then
+    OnDataMessage(pData^.dwData, str);
   message.Result := 1;
 end;
 

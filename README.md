@@ -18,6 +18,7 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 * `TCatHTMLParser` - HTML Parser based on a component by Przemyslaw Jankowski
 * `TCatJSON` - JSON Manipulation component built on top of the SuperObject.
 * `TCatListEditor` - A list editor based on SuperList by David Koretzky.
+* `TCatMsg`, `TCatMsgCromis` - Easy to deploy IPC components.
 * `TCatPreferences` - JSON-Based settings management component
 * `TCatStorage` - VFS/Cache component that uses the Structured Storage library by Primoz Gabrijelcic.
 * `TCatSynEdit` - Enhanced SynEdit with popup menu and improved scrolling.
@@ -41,6 +42,7 @@ CatPrefs: Rename the `src\CatDCPKey.pas` file, edit it and add your own encrypti
 * [SynWeb 1.5](https://code.google.com/p/synweb/) and [SynEdit](http://sourceforge.net/projects/synedit/) - needed by CatSynEdit.
 * [Structured Storage](https://github.com/gabr42/GpDelphiUnits) - need by CatStorage.
 * [Abbrevia 5.0](http://sourceforge.net/projects/tpabbrevia/) - needed by CatZIP.
+* [Cromis](http://www.cromis.net/blog/downloads/cromis-ipc/) - needed by CatMsgCromis.
 
 ## License & Credits
 
