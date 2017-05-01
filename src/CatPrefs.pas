@@ -3,7 +3,7 @@ unit CatPrefs;
 {
   Catarinka Preferences (TCatPreferences)
 
-  Copyright (c) 2013-2014 Felipe Daragon
+  Copyright (c) 2013-2016 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -76,7 +76,7 @@ function TCatPreferences.Encrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := strtoaes(Value,GetDCPKey(CATKEY_PASSWORD))
+    result := strtoaes(Value,GetDCPKey(CATKEY_PASSWORD),false)
   else
     result := Value;
 end;
@@ -85,7 +85,7 @@ function TCatPreferences.Decrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := aestostr(Value,GetDCPKey(CATKEY_PASSWORD))
+    result := aestostr(Value,GetDCPKey(CATKEY_PASSWORD),false)
   else
     result := Value;
 end;

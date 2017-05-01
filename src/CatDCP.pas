@@ -9,32 +9,48 @@ unit CatDCP;
 
 interface
 
-function StrToAES(const s, key: string): string;
-function AESToStr(const s, key: string): string;
+function StrToAES(const s, key: string; Unicode: boolean = true): string;
+function AESToStr(const s, key: string; Unicode: boolean = true): string;
 
 implementation
 
 uses
   DCPrijndael, DCPsha512;
 
-function StrToAES(const s, key: string): string;
+function StrToAES(const s, key: string; Unicode: boolean = true): string;
 var
   Cipher: TDCP_rijndael;
 begin
   Cipher := TDCP_rijndael.Create(nil);
-  Cipher.InitStr(key, TDCP_sha512);
-  result := Cipher.EncryptString(s);
+  if Unicode then
+  begin
+    Cipher.InitStr(key, TDCP_sha512);
+    result := string(Cipher.EncryptString(s));
+  end
+  else
+  begin // force ANSI
+    Cipher.InitStr(ansistring(key), TDCP_sha512);
+    result := string(Cipher.EncryptString(ansistring(s)));
+  end;
   Cipher.Burn;
   Cipher.Free;
 end;
 
-function AESToStr(const s, key: string): string;
+function AESToStr(const s, key: string; Unicode: boolean = true): string;
 var
   Cipher: TDCP_rijndael;
 begin
   Cipher := TDCP_rijndael.Create(nil);
-  Cipher.InitStr(key, TDCP_sha512);
-  result := Cipher.DecryptString(s);
+  if Unicode then
+  begin
+    Cipher.InitStr(key, TDCP_sha512);
+    result := string(Cipher.DecryptString(s));
+  end
+  else
+  begin // force ANSI
+    Cipher.InitStr(ansistring(key), TDCP_sha512);
+    result := string(Cipher.DecryptString(ansistring(s)));
+  end;
   Cipher.Burn;
   Cipher.Free;
 end;
