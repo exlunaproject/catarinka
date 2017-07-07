@@ -45,6 +45,7 @@ function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
 function CatWrapText(const text: string; const chars: integer): TStringList;
 function CommaTextToStr(const s: string): string;
 function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
+function ContainsAnyOfStrings(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
 function EndsWith(const s, prefix: string): Boolean;
 function ExtractFromString(const s, startstr, endstr: string): string;
 function ExtractFromTag(const s, tag: string): string;
@@ -63,6 +64,7 @@ function IsInteger(const s: string): Boolean;
 function LastChar(const s: string): Char;
 function LeftPad(const s: string; const c: Char; const len: integer): string;
 function LeftStr(s: string; c: longword): string;
+function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
 function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MD5Hash(s: UTF8String): UTF8String;
 function Occurs(substr, s: string): integer;
@@ -276,6 +278,21 @@ begin
       result := true;
       break;
     end;
+  end;
+end;
+
+function ContainsAnyOfStrings(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
+var b: Byte; astr:string;
+begin
+  Result:=false;
+  if IgnoreCase then begin
+      s:=lowercase(s);
+      for b := Low(aArray) to High(aArray) do
+      aArray[b]:=lowercase(aArray[b]);
+  end;
+  for b := Low(aArray) to High(aArray) do begin
+     if pos(aArray[b],s)<>0 then
+     result:=True;
   end;
 end;
 
@@ -859,6 +876,21 @@ begin
     end;
   end;
   PosX := 0;
+end;
+
+function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
+var b: Byte; astr:string;
+begin
+  Result:=false;
+  if IgnoreCase then begin
+      s:=lowercase(s);
+      for b := Low(aArray) to High(aArray) do
+      aArray[b]:=lowercase(aArray[b]);
+  end;
+  for b := Low(aArray) to High(aArray) do begin
+     if s=aArray[b] then
+     result:=True;
+  end;
 end;
 
 {
