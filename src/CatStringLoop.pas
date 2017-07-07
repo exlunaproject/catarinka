@@ -1,6 +1,6 @@
 {
-  Catarinka TStringLoop
-  Loops through a string list
+  Catarinka TStringLoop, TSepStringLoop
+  Loops through a string list or a separated string
   
   Copyright (c) 2003-2014 Felipe Daragon
   License: 3-clause BSD
@@ -64,8 +64,29 @@ type
     property IsCSV: boolean read fIsCSV write fIsCSV;
     property List: TStringList read FList;
   end;
+  
+type
+  TSepStringLoop = class
+  protected
+    fCount: integer;
+    fCurrent: string;
+    fPos: integer;
+    fTags: string; // a separated string
+    fSeparator: string;
+  public
+    constructor Create(const tags: string = ''; const asep: string = '|');
+    destructor Destroy; override;
+    function Found: boolean;
+    property Count: integer read fCount;
+    property Current: string read fCurrent;
+    property Position: integer read fPos;
+    property Separator: string read fSeparator write fSeparator;
+    property tags: string read fTags write fTags;
+  end;
 
 implementation
+
+uses CatStrings;
 
 function TStringLoop.GetCount: integer;
 begin
@@ -236,6 +257,36 @@ destructor TStringLoop.Destroy;
 begin
   fList.free;
   fcsv.free;
+  inherited;
+end;
+
+{------------------------------------------------------------------------------}
+
+function TSepStringLoop.Found: boolean;
+begin
+  result := false;
+  if fTags = emptystr then
+    exit;
+  fCount := occurs(fSeparator, fTags) + 1;
+  if fPos < fCount then
+  begin
+    fPos := fPos + 1;
+    fCurrent := gettoken(fTags, fSeparator, fPos);
+    result := true;
+  end;
+end;
+
+constructor TSepStringLoop.Create(const tags: string = '';
+  const asep: string = '|');
+begin
+  fTags := tags;
+  fCurrent := emptystr;
+  fPos := 0;
+  fSeparator := asep;
+end;
+
+destructor TSepStringLoop.Destroy;
+begin
   inherited;
 end;
 
