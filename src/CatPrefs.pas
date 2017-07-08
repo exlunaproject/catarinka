@@ -3,7 +3,7 @@ unit CatPrefs;
 {
   Catarinka Preferences (TCatPreferences)
 
-  Copyright (c) 2013-2016 Felipe Daragon
+  Copyright (c) 2013-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -40,6 +40,7 @@ type
       const DefaultValue: Variant): Variant;
     procedure Lock(const CID: string);
     procedure SetValue(const CID: string; const Value: Variant);
+    procedure SetValues(const CIDs: array of string; const Value: Variant);
     procedure LoadFromFile(const f: string);
     procedure LoadFromString(const s: string);
     procedure RegisterDefault(const CID: string; const DefaultValue: Variant;
@@ -125,6 +126,14 @@ end;
 procedure TCatPreferences.SetValue(const CID: string; const Value: Variant);
 begin
   fCurrent[CID] := Encrypt(CID, Value);
+end;
+
+procedure TCatPreferences.SetValues(const CIDs: array of string; const Value: Variant);
+var X: Byte;
+begin
+  for X := Low(CIDs) to High(CIDs) do
+    if not (CIDs[X] = '') then
+      SetValue(CIDs[X],Value);
 end;
 
 // Reverts to the default configuration
