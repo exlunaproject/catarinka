@@ -2,7 +2,7 @@ unit CatStrings;
 {
   Catarinka - String Operation functions
 
-  Copyright (c) 2003-2016 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -68,6 +68,8 @@ function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = 
 function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MD5Hash(s: UTF8String): UTF8String;
 function Occurs(substr, s: string): integer;
+function RandomCase(const S: string; const ToUpperSet: TSysCharSet=['a'..'z'];
+  const ToLowerSet: TSysCharSet=['A'..'Z']): string;
 function RandomString(const len: integer;
   const chars: string = 'abcdefghijklmnopqrstuvwxyz'): string;
 function RemoveLastChar(const s: string): string;
@@ -282,7 +284,7 @@ begin
 end;
 
 function ContainsAnyOfStrings(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
-var b: Byte; astr:string;
+var b: Byte;
 begin
   Result:=false;
   if IgnoreCase then begin
@@ -446,6 +448,21 @@ begin
   for i := 1 to length(s) do
     if Copy(s, i, length(substr)) = substr then
       inc(result);
+end;
+
+function RandomCase(const S: string; const ToUpperSet: TSysCharSet=['a'..'z'];
+  const ToLowerSet: TSysCharSet=['A'..'Z']): string;
+var
+  i : integer;
+begin
+  Randomize();
+  Result := S;
+  for I := 1 to Length(Result) do
+    if Random(2) = 1 then
+      if CharInset(Result[I], ToLowerSet) then
+       Inc(Result[I], 32) else
+      if CharInset(Result[I], ToUpperSet) then
+       Dec(Result[I], 32);
 end;
 
 function RandomString(const len: integer;
@@ -879,7 +896,7 @@ begin
 end;
 
 function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
-var b: Byte; astr:string;
+var b: Byte;
 begin
   Result:=false;
   if IgnoreCase then begin
