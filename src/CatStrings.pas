@@ -54,6 +54,7 @@ function GetToken(const aString, SepChar: string; const TokenNum: Byte): string;
 function GetValidCompName(const s: string): string;
 function HexToInt(const Hex: string; const WarnError: Boolean = false): integer;
 function HexToStr(const s: string): string;
+function Hex16ToStr(const s: string): string;
 function IIF(const Cond: Boolean; const TrueStr: String;
   const FalseStr: string = ''): string; overload;
 function IIF(const Cond: Boolean; const TrueInt: integer;
@@ -91,6 +92,7 @@ function StrToAlphaNum(const s: string): string;
 function StrToBool(const s: string): Boolean;
 function StrToCommaText(const s: string): string;
 function StrToHex(const s: string): string;
+function StrToHex16(const s: string): string;
 function StrToIntSafe(const s: string; const FalseInt: integer = 0): integer;
 function StrToPWideChar(const s: string): PWideChar;
 function TitleCase(const s: string): string;
@@ -695,6 +697,17 @@ begin
     result := result + IntToHex(ord(Copy(s, i, 1)[1]), 2);
 end;
 
+function StrToHex16(const s: string): string;
+var
+  i: Integer;
+  str: string;
+begin
+  str := emptystr;
+  for i := 1 to Length(s) do
+    str := str + IntToHex(Integer(s[i]), 4);
+  Result := str;
+end;
+
 function StrToIntSafe(const s: string; const FalseInt: integer = 0): integer;
 begin
   if IsInteger(s) then
@@ -722,6 +735,21 @@ begin
     end;
   except
     result := emptystr;
+  end;
+end;
+
+function Hex16ToStr(const s: string): string;
+var
+  i: Integer;
+  c: string;
+begin
+  Result := emptystr;
+  i := 1;
+  while i < Length(s) do
+  begin
+    c := Copy(s, i, 4);
+    Result := Result + Chr(StrToInt('$' + c));
+    Inc(i, 4);
   end;
 end;
 

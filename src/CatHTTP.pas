@@ -124,6 +124,9 @@ function URLDecode(const s: string): string;
 function URLEncode(const s: string; plus: boolean = false;
   const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
   ' ']): string;
+function URLEncode_U(const s: string; plus: boolean = false;
+  const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
+  ' ']): string;
 function URLEncodeFull(const s: string): string;
 function URLPathTitleCase(const s: string): string;
 
@@ -589,6 +592,33 @@ begin
     begin
       if not(CharInSet(s[i], preserve)) then
         result := result + '%' + IntToHex(ord(s[i]), 2)
+      else if (s[i] = ' ') then
+        result := result + sp
+      else
+        result := result + s[i];
+    end;
+  end;
+end;
+
+function URLEncode_U(const s: string; plus: boolean = false;
+  const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
+  ' ']): string;
+var
+  i: integer;
+  sp: string;
+begin
+  if length(s) = 0 then
+    result := emptystr
+  else
+  begin
+    if plus then
+      sp := '+'
+    else
+      sp := '%u0020';
+    for i := 1 to length(s) do
+    begin
+      if not(CharInSet(s[i], preserve)) then
+        result := result + '%u' + IntToHex(Integer(s[i]), 4)
       else if (s[i] = ' ') then
         result := result + sp
       else
