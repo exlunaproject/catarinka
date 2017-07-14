@@ -1,7 +1,7 @@
 unit CatHTTP;
 {
   Catarinka - HTTP and HTML related functions
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -14,9 +14,9 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.Classes, System.SysUtils, Vcl.Graphics;
+  System.Classes, System.SysUtils, Vcl.Graphics, CatStringLoop;
 {$ELSE}
-  Classes, SysUtils, Graphics;
+  Classes, SysUtils, Graphics, CatStringLoop;
 {$ENDIF}
 
 type
@@ -40,6 +40,51 @@ type
   THTTPHostParts = record
     Name: string;
     Port: integer;
+  end;
+  
+{
+  THTTPHeaderLoop - Loops through a list of HTTP headers
+  Expects a list like
+  HTTP/1.1 200 OK
+  Date: Sun, 09 Jul 2017 16:35:05 GMT
+  Server: Apache
+  (...)
+}
+type
+  THTTPHeaderLoop = class(TStringLoop)
+  private
+    fFieldName:string;
+    fFieldNameLower:string;
+    fFieldValue:string;
+  public
+    constructor Create;
+    function Found: boolean;
+    procedure LoadFromResponse(const sl: tstrings); overload;
+    procedure LoadFromResponse(const s:string); overload;
+    property FieldName:string read fFieldName;
+    property FieldNameLower:string read fFieldNameLower;
+    property FieldValue:string read fFieldValue;
+  end;
+
+{
+  TURLParamsLoop - Loops through URL params
+  Expects a URL to be loaded with LoadFromURL()
+  Example:
+  obj.LoadFromURL('http://somehost/index.php?url=1&id=2');
+}
+
+type
+  TURLParamsLoop = class(TStringLoop)
+  private
+    fParamName:string;
+    fParamNameLower:string;
+    fParamValue:string;
+  public
+    function Found: boolean;
+    procedure LoadFromURL(const aURL:string);
+    property ParamName:string read fParamName;
+    property ParamNameLower:string read fParamNameLower;
+    property ParamValue:string read fParamValue;
   end;
 
   // HTML functions
@@ -85,7 +130,7 @@ function URLPathTitleCase(const s: string): string;
 implementation
 
 uses
-  CatStrings, CatStringLoop, CatJSON;
+  CatStrings, CatJSON;
 
 function BoolToDisplayState(const b: boolean): string;
 begin
@@ -569,6 +614,88 @@ begin
       if CharInSet(result[i + 1], ['a' .. 'z']) then
         result[i + 1] := char(ord(result[i + 1]) and not $20);
 end;
+
+{------------------------------------------------------------------------------}
+
+constructor THTTPHeaderLoop.Create;
+begin
+  inherited Create(nil);
+end;
+
+procedure THTTPHeaderLoop.LoadFromResponse(const s:string);
+var sl:tstringlist;
+begin
+  sl := TStringList.Create;
+  sl.Text := s;
+  Load(sl);
+  sl.Free;
+end;
+
+procedure THTTPHeaderLoop.LoadFromResponse(const sl: tstrings);
+var bs:string;
+begin
+    // Deletes the first line if it is not a field
+    // Handles a line like: HTTP/1.1 200 OK, GET / HTTP/1.1, etc
+    if sl.Count<>0 then begin
+      if pos(' ',sl[0])<> 0 then begin
+        bs := before(sl[0],' ');
+        if endswith(bs,':') = false then
+        sl.Delete(0);
+      end;
+    end;
+    // If there is an empty line, delete it and what comes after it
+    if pos(crlf+crlf, sl.text) <> 0 then
+    sl.text := before(sl.Text,crlf+crlf);
+  inherited Load(sl);
+end;
+
+function THTTPHeaderLoop.Found: boolean;
+const
+ cSep = ':';
+begin
+ result := inherited found;
+ fFieldName:=emptystr;
+ fFieldValue:=emptystr;
+ fFieldNameLower:=emptystr;
+ if pos(cSep,Current) <> 0 then begin
+   fFieldName:=trim(before(current,cSep));
+   fFieldValue:=trim(after(current,cSep));
+   fFieldNameLower:=lowercase(FieldName);
+ end;
+end;
+
+{------------------------------------------------------------------------------}
+
+procedure TURLParamsLoop.LoadFromURL(const aURL:string);
+var params,url:string;
+begin
+  url := trim(aURL);
+  url := replacestr(url, ' ','%20');
+  params := emptystr;
+  if occurs('?', url) <> 0 then begin
+    params := gettoken(url, '?', 2);
+    params := replacestr(params,'&',crlf);
+  end;
+  fList.CommaText := params;
+  Reset;
+end;
+
+function TURLParamsLoop.Found: boolean;
+const
+ cSep = '=';
+begin
+ result := inherited found;
+ fParamName:=emptystr;
+ fParamValue:=emptystr;
+ fParamNameLower:=emptystr;
+ if pos(cSep,Current) <> 0 then begin
+   fParamName:=trim(before(current,cSep));
+   fParamValue:=trim(after(current,cSep));
+   fParamNameLower:=lowercase(fParamName);
+ end;
+end;
+
+end.
 
 // ------------------------------------------------------------------------//
 end.
