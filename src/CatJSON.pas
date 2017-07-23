@@ -7,7 +7,9 @@ unit CatJSON;
   See https://github.com/felipedaragon/catarinka/ for details
 
   23.07.2017:
-  - Implemented Count property and fixed handling of integer types
+  - Added Count property and fixed handling of integer types
+  - Added SetValues() for setting the value of multiple paths at the same time
+  - Renamed the SetVal() to SetValue() and added result to IncValue()
   25.11.2015:
   - Set empty JSON string when calling SetText('')
   2013:
@@ -34,18 +36,19 @@ type
   TCatJSON = class
   private
     fObject: ISuperObject;
+    function GetCount:integer;
     function GetText: string;
     function GetTextUnquoted: string;
+    function GetValue_(const Name: string): Variant;
+    procedure SetText(const Text: string);
   public
-    function GetCount:integer;
-    function GetVal(const Name: string): Variant;
     function GetValue(const Name: string; DefaultValue: Variant): Variant;
     function HasPath(const Name: string): Boolean;
+    function IncValue(const Name: string; Int: integer = 1) : Integer;
     procedure LoadFromFile(const Filename: string);
     procedure SaveToFile(const Filename: string);
-    procedure SetText(const Text: string);
-    procedure SetVal(const Name: string; const Value: Variant);
-    procedure IncVal(const Name: string; Int: integer = 1);
+    procedure SetValue(const Name: string; const Value: Variant);
+    procedure SetValues(const Name:array of string; const Value: Variant);
     procedure Clear;
     constructor Create(JSON: string = '');
     destructor Destroy; override;
@@ -54,10 +57,10 @@ type
     property sObject: ISuperObject read fObject;
     property Text: string read GetText write SetText;
     property TextUnquoted:string read GetTextUnquoted; // JSON with UnquotedKeys
-    property Val[const Name: string]: Variant read GetVal write SetVal; default;
+    property Values[const Name: string]: Variant read GetValue_ write SetValue; default;
   end;
 
-function CatVariant(Text, ValName: string): Variant;
+function GetJSONVal(JSON, Name: string;DefaultValue: Variant): Variant;
 function IsValidJSONName(const S: string): Boolean;
 
 implementation
@@ -79,13 +82,12 @@ begin
     end;
 end;
 
-function CatVariant(Text, ValName: string): Variant;
+function GetJSONVal(JSON, Name: string;DefaultValue: Variant): Variant;
 var
   d: TCatJSON;
 begin
-  d := TCatJSON.Create;
-  d.Text := Text;
-  Result := d[ValName];
+  d := TCatJSON.Create(JSON);
+  Result := d.GetValue(Name, DefaultValue);
   d.Free;
 end;
 
@@ -167,12 +169,13 @@ begin
   inherited;
 end;
 
-procedure TCatJSON.IncVal(const Name: string; Int: integer = 1);
+function TCatJSON.IncValue(const Name: string; Int: integer = 1):integer;
 begin
-  fObject.I[name] := GetValue(Name,0) + Int;
+  result := GetValue(Name,0) + Int;
+  fObject.I[name] := result;
 end;
 
-procedure TCatJSON.SetVal(const Name: string; const Value: Variant);
+procedure TCatJSON.SetValue(const Name: string; const Value: Variant);
 begin
   case TVarData(Value).vType of
     varString, {$IFDEF UNICODE}varUString, {$ENDIF}varOleStr:
@@ -185,6 +188,14 @@ begin
     varDouble:
       fObject.d[name] := Value;
   end;
+end;
+
+procedure TCatJSON.SetValues(const Name:array of string; const Value: Variant);
+var b: Byte;
+begin
+  for b := Low(Name) to High(Name) do
+    if (Name[b] <> emptystr) then
+      SetValue(Name[b],Value);
 end;
 
 function TCatJSON.HasPath(const Name: string): Boolean;
@@ -217,7 +228,7 @@ begin
   end;
 end;
 
-function TCatJSON.GetVal(const Name: string): Variant;
+function TCatJSON.GetValue_(const Name: string): Variant;
 begin
   Result := GetValue(name, null);
 end;

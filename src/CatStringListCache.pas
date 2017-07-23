@@ -68,10 +68,10 @@ begin
   j := TCatJSON.Create;
   j.LoadFromFile(AFilename);
   slp := TStringLoop.Create;
-  slp.LoadFromString(j.Val[cIDListKey]);
+  slp.LoadFromString(j[cIDListKey]);
   while slp.Found do begin
     sl := GetList(slp.Current);
-    sl.Text:= j.Val[cCacheKeyPrefix+slp.Current];
+    sl.Text:= j[cCacheKeyPrefix+slp.Current];
   end;
   slp.Free;
   j.Free;
@@ -84,12 +84,12 @@ var
   m, c: integer;
 begin
   j := TCatJSON.Create;
-  j.SetVal(cIDListKey,fNameList.Text);
+  j.SetValue(cIDListKey,fNameList.Text);
   m := fCache.Count;
   for c := m - 1 downto 0 do
   begin
     csl := fCache.ObjectAt(c) as TCachedStringList;
-    j.SetVal(cCacheKeyPrefix+csl.ID, csl.text);
+    j.SetValue(cCacheKeyPrefix+csl.ID, csl.text);
   end;
   j.SaveToFile(AFilename);
   j.Free;
