@@ -7,15 +7,12 @@ unit CatJSON;
   See https://github.com/felipedaragon/catarinka/ for details
 
   23.07.2017:
-  - Implemented Count property
+  - Implemented Count property and fixed handling of integer types
   25.11.2015:
   - Set empty JSON string when calling SetText('')
   2013:
   - Added the HasPath method
   - Changed the default property from string to variant
-
-  TODO:
-  - IncVal(), & SetValInt() may need revision
 }
 
 interface
@@ -49,13 +46,11 @@ type
     procedure SetText(const Text: string);
     procedure SetVal(const Name: string; const Value: Variant);
     procedure IncVal(const Name: string; Int: integer = 1);
-    procedure SetValInt(const Name: string; const Value: integer);
     procedure Clear;
     constructor Create(JSON: string = '');
     destructor Destroy; override;
     // properties
     property Count: integer read GetCount;
-    property IntVal[const Name: string]: integer write SetValInt;
     property sObject: ISuperObject read fObject;
     property Text: string read GetText write SetText;
     property TextUnquoted:string read GetTextUnquoted; // JSON with UnquotedKeys
@@ -173,15 +168,8 @@ begin
 end;
 
 procedure TCatJSON.IncVal(const Name: string; Int: integer = 1);
-var
-  i: integer;
 begin
-  if fObject.S[name] = '' then
-    i := 0
-  else
-    i := strtoint(fObject.S[name]);
-  i := i + Int;
-  fObject.S[name] := inttostr(i);
+  fObject.I[name] := GetValue(Name,0) + Int;
 end;
 
 procedure TCatJSON.SetVal(const Name: string; const Value: Variant);
@@ -191,7 +179,8 @@ begin
       fObject.S[name] := Value;
     varBoolean:
       fObject.b[name] := Value;
-    varInteger, varInt64:
+    varInteger, varByte, varSmallInt, varShortInt, varWord, varLongWord,
+    {$IFDEF UNICODE}varUInt64, {$ENDIF} varInt64:
       fObject.i[name] := Value;
     varDouble:
       fObject.d[name] := Value;
@@ -231,11 +220,6 @@ end;
 function TCatJSON.GetVal(const Name: string): Variant;
 begin
   Result := GetValue(name, null);
-end;
-
-procedure TCatJSON.SetValInt(const Name: string; const Value: integer);
-begin
-  SetVal(name, inttostr(Value));
 end;
 
 end.
