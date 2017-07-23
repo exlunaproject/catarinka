@@ -2,7 +2,7 @@ unit CatListEditor;
 {
  Catarinka TCatListEditor
  A fork of super.pas (TSuperList 1.7) with enhancements
- Copyright (c) 2003-2014 Felipe Daragon
+ Copyright (c) 2003-2017 Felipe Daragon
 
  License: 4-clause BSD, same license as the original code by Spanware Inc.
  
@@ -28,6 +28,12 @@ type
   TListBoxAlignment = (lbBottom, lbLeft ,lbRight, lbTop);    //added all four alignments
   TEnabledButton = (Plus, Minus);
   FEnabledButtons = set of TEnabledButton;
+
+type TCatListEditorImageIndex = record // FD
+    AddImageIndex:integer;
+    DelImageIndex:integer;
+    MoreImageIndex:integer;
+  end;
 
 type
   TCatListEditor = class(TCustomControl)
@@ -68,11 +74,19 @@ type
     FAllowBlanks : boolean; //are blanks allowed in the listbox
     FUseKeyMaps : boolean; //use default key strokes for adding, editing and deleting???
 
+    FLabel : TLabel;
+    FStartingPoint : TPoint; // FD
+    FCustomImageList: TCustomImageList; // FD
+    FCustomImageIndex: TCatListEditorImageIndex;// FD
+
     procedure WMSize(var Message: TWMSize);  message WM_SIZE;
     procedure AddBtnClick(Sender : TObject);
     procedure DeleteBtnClick(Sender : TObject);
     procedure ListBoxDoubleClick(Sender : TObject);
     procedure ListBoxKeyDown(Sender : TObject; var Key : word; shift : TShiftState);
+    procedure ListBoxDragDrop(Sender, Source: TObject; X, Y: Integer); // FD
+    procedure ListBoxDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean); // FD
+    procedure ListBoxMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer); // FD
     procedure SaveToFileItemClick(Sender : TObject);
     procedure LoadFromFileItemClick(Sender : TObject);
     procedure ClearItemClick(Sender : TObject);
@@ -94,11 +108,6 @@ type
     procedure SetListBoxItemIndex(value : integer);
 
   public
-    FLabel : TLabel;
-    FCustomImageList: TCustomImageList; // FD
-    FAddImageIndex:integer;// FD
-    FDelImageIndex:integer;// FD
-    FMoreImageIndex:integer;// FD
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
     procedure Delete;
@@ -107,13 +116,17 @@ type
     property ListBox : TListBox read FListBox write FListBox;
     property ListBoxChanged : boolean read FListBoxChanged write FListBoxChanged default false;
     procedure AddItems(value : TStrings);
+    procedure SetCustomImageList(ilist:TCustomImageList); // FD
+    procedure SetCustomImageListAltIndex(ilist:TCustomImageList;imgindex:TCatListEditorImageIndex); // FD
   published
     property AddPrompt : string read FAddString write FAddString;
     property AddCaption : string read FAddCaption write FAddCaption;
     property Align;
     property AllowBlanks : boolean read FAllowBlanks write FAllowBlanks default false;
+    property CustomImageList: TCustomImageList read FCustomImageList write SetCustomImageList; // FD
     property EditPrompt : string read FEditString write FEditString;
     property EditCaption : string read FEditCaption write FEditCaption;
+    property EditLabel : TLabel read FLabel; // FD
     property ListBoxAlignment : TListBoxAlignment read FListBoxAlignment write SetAlignment default lbBottom;
     property ListBoxFont : TFont read GetListBoxFont write SetListBoxFont;
     property ListBoxItems : TStrings read GetListBoxItems write SetListBoxItems;
@@ -259,6 +272,26 @@ begin
 end;
 end;
 
+procedure TCatListEditor.SetCustomImageList(ilist:TCustomImageList);
+begin
+   FCustomImageList := ilist;
+   FAddButton.Glyph.Assign(nil);
+   FDeleteButton.Glyph.Assign(nil);
+   FMoreButton.Glyph.Assign(nil);
+   if FCustomImageList = nil then
+     exit;
+   with FCustomImageList do begin
+     GetBitmap(FCustomImageIndex.AddImageIndex, fAddButton.Glyph);
+     GetBitmap(FCustomImageIndex.DelImageIndex, fDeleteButton.Glyph);
+     GetBitmap(FCustomImageIndex.MoreImageIndex, fMoreButton.Glyph);
+   end;
+end;
+
+procedure TCatListEditor.SetCustomImageListAltIndex(ilist:TCustomImageList;imgindex:TCatListEditorImageIndex);
+begin
+   FCustomImageIndex := imgindex;
+   SetCustomImageList(ilist);
+end;
 
 constructor TCatListEditor.Create(AOwner : TComponent);
 begin
@@ -276,6 +309,14 @@ begin
   FListBox.Align := alClient;
   FListBox.OnDblClick := ListBoxDoubleClick;
   FListBox.OnKeyDown := ListBoxKeyDown;
+  FListBox.DragMode := dmAutomatic; // FD
+  FListBox.OnDragDrop := ListBoxDragDrop; // FD
+  FListBox.OnDragOver := ListBoxDragOver; // FD
+  FListBox.OnMouseDown := ListBoxMouseDown; // FD
+
+  FCustomImageIndex.AddImageIndex := 0;
+  FCustomImageIndex.DelImageIndex := 1;
+  FCustomImageIndex.MoreImageIndex := 2;
 
   CreatePanel;
   CreateButtons;
@@ -293,7 +334,7 @@ begin
   FPanel.Parent := Self;
   FPanel.Visible := true;
   FPanel.Align := alTop;
-  FPanel.Caption := '';
+  FPanel.Caption := emptystr;
   FPanel.BevelInner := bvNone;
   FPanel.BevelOuter := bvNone;
   FPanel.Height := 35;
@@ -302,10 +343,36 @@ begin
   FLabel.Parent := FPanel;
   Flabel.Font.Style:=[fsBold];
   FLabel.Visible := true;
-  Flabel.Caption:='';
+  Flabel.Caption:=emptystr;
   Flabel.Left:=0;
   Flabel.Top:=8;
 
+end;
+
+procedure TCatListEditor.ListBoxDragDrop(Sender, Source: TObject; X, Y: Integer);
+var
+  DropPosition, StartPosition: Integer;
+  DropPoint: TPoint;
+begin
+  DropPoint.X := X;
+  DropPoint.Y := Y;
+  with Source as TListBox do
+  begin
+    StartPosition := ItemAtPos(fStartingPoint,True) ;
+    DropPosition := ItemAtPos(DropPoint,True) ;
+    Items.Move(StartPosition, DropPosition) ;
+  end;
+end;
+
+procedure TCatListEditor.ListBoxDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
+begin
+  Accept := Source = fListBox;
+end;
+
+procedure TCatListEditor.ListBoxMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  fStartingPoint.X := X;
+  fStartingPoint.Y := Y;
 end;
 
 procedure TCatListEditor.LoadFromFileItemClick(Sender:TObject);
