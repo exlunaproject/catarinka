@@ -35,6 +35,7 @@ const
 type
   TCatJSON = class
   private
+    fDefaultValue: Variant;
     fObject: ISuperObject;
     function GetCount:integer;
     function GetText: string;
@@ -50,17 +51,18 @@ type
     procedure SetValue(const Name: string; const Value: Variant);
     procedure SetValues(const Name:array of string; const Value: Variant);
     procedure Clear;
-    constructor Create(JSON: string = '');
+    constructor Create(const JSON: string = '');
     destructor Destroy; override;
     // properties
     property Count: integer read GetCount;
+    property GlobalDefaultValue: Variant read fDefaultValue write fDefaultValue;
     property sObject: ISuperObject read fObject;
     property Text: string read GetText write SetText;
     property TextUnquoted:string read GetTextUnquoted; // JSON with UnquotedKeys
     property Values[const Name: string]: Variant read GetValue_ write SetValue; default;
   end;
 
-function GetJSONVal(JSON, Name: string;DefaultValue: Variant): Variant;
+function GetJSONVal(const JSON, Name: string;const DefaultValue: Variant): Variant;
 function IsValidJSONName(const S: string): Boolean;
 
 implementation
@@ -82,7 +84,7 @@ begin
     end;
 end;
 
-function GetJSONVal(JSON, Name: string;DefaultValue: Variant): Variant;
+function GetJSONVal(const JSON, Name: string;const DefaultValue: Variant): Variant;
 var
   d: TCatJSON;
 begin
@@ -157,9 +159,10 @@ begin
   fObject.Clear;
 end;
 
-constructor TCatJSON.Create(JSON: string = '');
+constructor TCatJSON.Create(const JSON: string = '');
 begin
   fObject := TSuperObject.Create(stObject);
+  fDefaultValue := null;
   Text := JSON;
 end;
 
@@ -230,7 +233,7 @@ end;
 
 function TCatJSON.GetValue_(const Name: string): Variant;
 begin
-  Result := GetValue(name, null);
+  Result := GetValue(name, fDefaultValue);
 end;
 
 end.
