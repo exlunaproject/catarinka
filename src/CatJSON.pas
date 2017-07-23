@@ -2,19 +2,19 @@ unit CatJSON;
 
 {
   Catarinka TCatJSON - JSON Manipulation Object
-  Copyright (c) 2010-2014 Felipe Daragon
+  Copyright (c) 2010-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  23.07.2017:
+  - Implemented Count property
   25.11.2015:
   - Set empty JSON string when calling SetText('')
-
   2013:
   - Added the HasPath method
   - Changed the default property from string to variant
 
   TODO:
-  - Count property not fully implemented.
   - IncVal(), & SetValInt() may need revision
 }
 
@@ -36,11 +36,11 @@ const
 type
   TCatJSON = class
   private
-    fCount: integer;
     fObject: ISuperObject;
     function GetText: string;
     function GetTextUnquoted: string;
   public
+    function GetCount:integer;
     function GetVal(const Name: string): Variant;
     function GetValue(const Name: string; DefaultValue: Variant): Variant;
     function HasPath(const Name: string): Boolean;
@@ -54,7 +54,7 @@ type
     constructor Create(JSON: string = '');
     destructor Destroy; override;
     // properties
-    property Count: integer read fCount;
+    property Count: integer read GetCount;
     property IntVal[const Name: string]: integer write SetValInt;
     property sObject: ISuperObject read fObject;
     property Text: string read GetText write SetText;
@@ -92,6 +92,18 @@ begin
   d.Text := Text;
   Result := d[ValName];
   d.Free;
+end;
+
+function TCatJSON.GetCount:integer;
+var
+  ite: TSuperObjectIter;
+begin
+  Result := 0;
+  if ObjectFindFirst(fObject, ite) then
+    repeat
+      Inc(Result)
+    until not ObjectFindNext(ite);
+  ObjectFindClose(ite);
 end;
 
 function TCatJSON.GetTextUnquoted: string;
@@ -140,14 +152,12 @@ begin
   if JSON = emptystr then
     JSON := EmptyJSONStr;
   fObject := nil;
-  fCount := 0;
   fObject := TSuperObject.ParseString(StrToPWideChar(JSON), False);
 end;
 
 procedure TCatJSON.Clear;
 begin
   fObject.Clear;
-  fCount := 0;
 end;
 
 constructor TCatJSON.Create(JSON: string = '');
@@ -172,7 +182,6 @@ begin
     i := strtoint(fObject.S[name]);
   i := i + Int;
   fObject.S[name] := inttostr(i);
-  inc(fCount);
 end;
 
 procedure TCatJSON.SetVal(const Name: string; const Value: Variant);
@@ -187,7 +196,6 @@ begin
     varDouble:
       fObject.d[name] := Value;
   end;
-  inc(fCount);
 end;
 
 function TCatJSON.HasPath(const Name: string): Boolean;
