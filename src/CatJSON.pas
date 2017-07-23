@@ -9,7 +9,10 @@ unit CatJSON;
   23.07.2017:
   - Added Count property and fixed handling of integer types
   - Added SetValues() for setting the value of multiple paths at the same time
-  - Renamed the SetVal() to SetValue() and added result to IncValue()
+    Renamed the SetVal() to SetValue() and added result to IncValue()
+  - Added TCatJSON_Bool and TCatJSON_Int classes (practical if you want to 
+    manipulate a JSON string that will only or mostly contain boolean or
+    integer types)
   25.11.2015:
   - Set empty JSON string when calling SetText('')
   2013:
@@ -60,6 +63,47 @@ type
     property Text: string read GetText write SetText;
     property TextUnquoted:string read GetTextUnquoted; // JSON with UnquotedKeys
     property Values[const Name: string]: Variant read GetValue_ write SetValue; default;
+  end;
+  
+type
+  TCatJSON_Bool = class
+  private
+    fDefaultValue: boolean;
+    fJSON: TCatJSON;
+    function GetValue_(const Name: string): boolean;
+  public
+    function GetValue(const Name: string; const DefaultValue: boolean): boolean;
+    procedure Clear;
+    procedure SetValue(const Name: string; const DefaultValue: boolean);
+    constructor Create(JSON: string = ''); overload;
+    constructor Create(const DefaultValue: boolean;
+      const JSON: string = ''); overload;
+    destructor Destroy; override;
+    // properties
+    property JSON: TCatJSON read fJSON;
+    property Values[const Name: string]: boolean read GetValue_
+      write SetValue; default;
+  end;
+
+type
+  TCatJSON_Int = class
+  private
+    fDefaultValue: integer;
+    fJSON: TCatJSON;
+    function GetValue_(const Name: string): integer;
+  public
+    function GetValue(const Name: string; const DefaultValue: integer): integer;
+    function IncValue(const Name: string; Int: integer = 1): integer;
+    procedure Clear;
+    procedure SetValue(const Name: string; const DefaultValue: integer);
+    constructor Create(JSON: string = ''); overload;
+    constructor Create(const DefaultValue: integer;
+      const JSON: string = ''); overload;
+    destructor Destroy; override;
+    // properties
+    property JSON: TCatJSON read fJSON;
+    property Values[const Name: string]: integer read GetValue_
+      write SetValue; default;
   end;
 
 function GetJSONVal(const JSON, Name: string;const DefaultValue: Variant): Variant;
@@ -234,6 +278,99 @@ end;
 function TCatJSON.GetValue_(const Name: string): Variant;
 begin
   Result := GetValue(name, fDefaultValue);
+end;
+
+// ----------------------------------------------------------------------------//
+
+procedure TCatJSON_Bool.Clear;
+begin
+  fJSON.Clear;
+end;
+
+procedure TCatJSON_Bool.SetValue(const Name: string;
+  const DefaultValue: boolean);
+begin
+  fJSON.SetValue(Name, DefaultValue);
+end;
+
+function TCatJSON_Bool.GetValue(const Name: string;
+  const DefaultValue: boolean): boolean;
+begin
+  result := fJSON.GetValue(Name, DefaultValue)
+end;
+
+function TCatJSON_Bool.GetValue_(const Name: string): boolean;
+begin
+  result := fJSON.GetValue(Name, fDefaultValue);
+end;
+
+constructor TCatJSON_Bool.Create(JSON: string = '');
+begin
+  inherited Create;
+  fJSON := TCatJSON.Create(JSON);
+  fDefaultValue := false;
+end;
+
+constructor TCatJSON_Bool.Create(const DefaultValue: boolean;
+  const JSON: string = '');
+begin
+  Create(JSON);
+  fDefaultValue := DefaultValue;
+end;
+
+destructor TCatJSON_Bool.Destroy;
+begin
+  fJSON.Free;
+  inherited;
+end;
+
+// ----------------------------------------------------------------------------//
+
+procedure TCatJSON_Int.Clear;
+begin
+  fJSON.Clear;
+end;
+
+procedure TCatJSON_Int.SetValue(const Name: string;
+  const DefaultValue: integer);
+begin
+  fJSON.SetValue(Name, DefaultValue);
+end;
+
+function TCatJSON_Int.GetValue(const Name: string;
+  const DefaultValue: integer): integer;
+begin
+  result := fJSON.GetValue(Name, DefaultValue)
+end;
+
+function TCatJSON_Int.GetValue_(const Name: string): integer;
+begin
+  result := fJSON.GetValue(Name, fDefaultValue);
+end;
+
+function TCatJSON_Int.IncValue(const Name: string; Int: integer = 1): integer;
+begin
+  result := fJSON.IncValue(Name, Int)
+end;
+
+constructor TCatJSON_Int.Create(JSON: string = '');
+begin
+  inherited Create;
+  fJSON := TCatJSON.Create(JSON);
+  fDefaultValue := 0;
+end;
+
+constructor TCatJSON_Int.Create(const DefaultValue: integer;
+  const JSON: string = '');
+begin
+  Create(JSON);
+  fDefaultValue := DefaultValue;
+end;
+
+destructor TCatJSON_Int.Destroy;
+begin
+  fJSON.Free;
+  inherited;
 end;
 
 end.
