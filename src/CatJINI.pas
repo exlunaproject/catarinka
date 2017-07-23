@@ -2,14 +2,12 @@ unit CatJINI;
 {
   Catarinka TJIniList - JSON INIList-Like component
 
-  Copyright (c) 2010-2014 Felipe Daragon
+  Copyright (c) 2010-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
   This component was made to replace the TIniList component.
   It is also similar to TStringList (with the property Values, Strings and Count).
-
-  TODO: Needs some cleanup
 }
 
 interface
@@ -31,13 +29,14 @@ type
     fFileName: string;
     fModified: Boolean;
     fObject: ISuperObject;
-    function GetVersion: string;
+    fVersion: string;
     function GetJSONLines: string;
     procedure SetJSONLines(json: string);
     function GetValue(const Key: string): string;
     procedure SetValue(const Key: string; const Value: string);
     function GetCount: integer;
-    function FixKeyValue(s: string): string;
+    function FixKeyName(s: string): string;
+    procedure FixKeySectionName(var Section,Key,Path:string);
   public
     constructor Create;
     destructor Destroy; override;
@@ -63,26 +62,34 @@ type
     property Text: string read GetJSONLines write SetJSONLines;
     property Values[const Key: string]: string read GetValue
       write SetValue; default;
-    property Version: string read GetVersion;
+    property Version: string read fVersion;
     property sObject: ISuperObject read fObject;
   end;
 
 implementation
 
-uses CatStrings;
+uses CatStrings, CatFiles;
 
 const
   cBase64 = 'base64';
   cFormatKey = '.format';
+  cKeySeparator = '.';
   cValuesSection = 'data';
   cVersion = '1.0';
 
   { TJIniList }
 
-function TJIniList.FixKeyValue(s: string): string;
+function TJIniList.FixKeyName(s: string): string;
 begin
-  Result := ReplaceStr(s, '.', '_dot_'); // dots not allowed
+  Result := ReplaceStr(s, cKeySeparator, '_dot_'); // dots not allowed
   Result := lowercase(Result);
+end;
+
+procedure TJIniList.FixKeySectionName(var Section,Key,Path:string);
+begin
+ Section := FixKeyName(Section);
+ Key := FixKeyName(Key);
+ Path := Section + cKeySeparator + Key;
 end;
 
 function TJIniList.GetValue(const Key: string): string;
@@ -110,6 +117,7 @@ constructor TJIniList.Create;
 begin
   inherited Create;
   fBackup := false;
+  fVersion := cVersion;
   fObject := TSuperObject.Create(stObject);
 end;
 
@@ -151,11 +159,6 @@ begin
   FLines.Free;
 end;
 
-function TJIniList.GetVersion: string;
-begin
-  Result := cVersion;
-end;
-
 function TJIniList.ReadBool(const Section, Key: string;
   default: Boolean): Boolean;
 begin
@@ -179,18 +182,18 @@ var
   Stream: TStream;
 begin
   Result := false;
-  if fBackup then
-    CopyFile(
-{$IFDEF UNICODE}PWideChar{$ELSE}Pchar{$ENDIF}(FileName),
-{$IFDEF UNICODE}PWideChar{$ELSE}Pchar{$ENDIF}(FileName + '.bak'), false);
   if FileName = emptystr then
     exit;
-  if fileexists(FileName) = false then
-  begin
+
+  if fileexists(FileName) then begin
+    if fBackup then
+      FileCopy(FileName,FileName + '.bak');
+  end else begin
     Stream := TFileStream.Create(FileName, fmCreate or fmOpenWrite or
       fmShareDenyWrite);
     Stream.Free;
   end;
+
   SL := TStringlist.Create;
   SL.Text := fObject.AsJson(true);
   Stream := TFileStream.Create(FileName, fmOpenWrite or fmShareDenyWrite);
@@ -220,37 +223,33 @@ end;
 procedure TJIniList.WriteString(Section, Key, Value: string;
   Format: string = '');
 var
-  sk: string;
+  path: string;
 begin
-  Section := FixKeyValue(Section);
-  Key := FixKeyValue(Key);
-  sk := Section + '.' + Key;
+  FixKeySectionName(Section, Key, path);
   if ReadString(Section, Key, emptystr) = Value then
     exit;
   if Format <> emptystr then
-    fObject.s[sk + cFormatKey] := Format;
+    fObject.s[path + cFormatKey] := Format;
   if Format = cBase64 then
     Value := Base64EnCode(Value);
-  fObject.s[sk] := Value;
+  fObject.s[path] := Value;
   fModified := true;
 end;
 
 function TJIniList.ReadString(Section, Key, default: string): string;
 var
   fmt: string;
-  sk: string;
+  path: string;
 begin
-  Section := FixKeyValue(Section);
-  Key := FixKeyValue(Key);
-  sk := Section + '.' + Key;
+  FixKeySectionName(Section, Key, path);
   Result := default;
-  if fObject.s[sk] <> emptystr then
-    Result := fObject.s[sk]
+  if fObject.s[path] <> emptystr then
+    Result := fObject.s[path]
   else
     Result := default;
-  if fObject.s[sk + cFormatKey] <> emptystr then
+  if fObject.s[path + cFormatKey] <> emptystr then
   begin
-    fmt := fObject.s[sk + cFormatKey];
+    fmt := fObject.s[path + cFormatKey];
     if fmt = cBase64 then
       Result := Base64DeCode(Result);
   end;
@@ -276,23 +275,30 @@ end;
 
 procedure TJIniList.DeleteSection(Section: string);
 begin
-  Section := FixKeyValue(Section);
+  Section := FixKeyName(Section);
   fObject.o[Section].Clear;
   fModified := true;
 end;
 
 procedure TJIniList.DeleteSectionKey(Section, Key: string);
+var
+  path: string;
 begin
-  Section := FixKeyValue(Section);
-  Key := FixKeyValue(Key);
-  fObject.o[Section + '.' + Key].Clear;
+  FixKeySectionName(Section, Key, path);
+  fObject.o[path].Clear;
   fModified := true;
 end;
 
 function TJIniList.GetCount: integer;
+var
+  ite: TSuperObjectIter;
 begin
   Result := 0;
-  // TODO: not implemented yet
+  if ObjectFindFirst(fObject, ite) then
+    repeat
+      Inc(Result)
+    until not ObjectFindNext(ite);
+  ObjectFindClose(ite);
 end;
 
 end.
