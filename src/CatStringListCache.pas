@@ -28,7 +28,8 @@ type
     fNameList: TStringList;
   public
     function GetList(const AName:string):TStringList;
-    procedure ClearLists(const Key:array of string);
+    procedure ClearLists; overload;
+    procedure ClearLists(const Key:array of string); overload;
     procedure LoadFromFile(const AFilename:string);
     procedure SaveToFile(const AFilename:string);
     constructor Create(ACapacity : Integer = 1000; OwnsObjects : boolean = true);
@@ -51,6 +52,19 @@ const
   cCacheKeyPrefix = 'cache.';
   cIDListKey = 'idlist';
 
+procedure TStringListCache.ClearLists;
+var
+  csl: TCachedStringList;
+  m, c: integer;
+begin
+  m := fCache.Count;
+  for c := m - 1 downto 0 do
+  begin
+    csl := fCache.ObjectAt(c) as TCachedStringList;
+    csl.Clear;
+  end;
+end;
+
 procedure TStringListCache.ClearLists(const Key:array of string);
 var X: Byte;
 begin
@@ -62,7 +76,6 @@ end;
 procedure TStringListCache.LoadFromFile(const AFilename:string);
 var slp:TStringLoop; sl:TStringList; j:TCatJSON;
 begin
-  if fileexists(AFilename) = false then exit;
   fCache.Clear;
   fNameList.Clear;
   j := TCatJSON.Create;
