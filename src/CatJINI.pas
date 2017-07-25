@@ -26,6 +26,7 @@ type
   TJIniList = class
   private
     fBackup: Boolean;
+    fCaseSensitive: Boolean;
     fFileName: string;
     fModified: Boolean;
     fObject: ISuperObject;
@@ -35,13 +36,15 @@ type
     function GetValue(const Key: string): string;
     procedure SetValue(const Key: string; const Value: string);
     function GetCount: integer;
-    function FixKeyName(s: string): string;
-    procedure FixKeySectionName(var Section,Key,Path:string);
+    function FilterPath(s: string): string;
+    procedure GetSectionKeyPath(var Section,Key,Path:string);
   public
     constructor Create;
     destructor Destroy; override;
     function SaveJSON: Boolean; overload;
     function SaveJSON(const FileName: string): Boolean; overload;
+    function SectionExists(Section:string):boolean;
+    function SectionKeyExists(Section, Key: string):boolean;
     procedure Clear;
     function LoadJSON: Boolean; overload;
     function LoadJSON(const FileName: string): Boolean; overload;
@@ -57,6 +60,7 @@ type
       AddIfRepeated: Boolean);
     // properties
     property Backup: Boolean read fBackup write fBackup;
+    property CaseSensitive: boolean read fCaseSensitive write fCaseSensitive;
     property Count: integer read GetCount;
     property FileName: string read fFileName write fFileName;
     property Text: string read GetJSONLines write SetJSONLines;
@@ -79,16 +83,17 @@ const
 
   { TJIniList }
 
-function TJIniList.FixKeyName(s: string): string;
+function TJIniList.FilterPath(s: string): string;
 begin
   Result := ReplaceStr(s, cKeySeparator, '_dot_'); // dots not allowed
-  Result := lowercase(Result);
+  if fCaseSensitive = false then
+    Result := lowercase(Result);
 end;
 
-procedure TJIniList.FixKeySectionName(var Section,Key,Path:string);
+procedure TJIniList.GetSectionKeyPath(var Section,Key,Path:string);
 begin
- Section := FixKeyName(Section);
- Key := FixKeyName(Key);
+ Section := FilterPath(Section);
+ Key := FilterPath(Key);
  Path := Section + cKeySeparator + Key;
 end;
 
@@ -113,23 +118,9 @@ begin
   fObject := TSuperObject.ParseString(StrToPWideChar(json), false)
 end;
 
-constructor TJIniList.Create;
-begin
-  inherited Create;
-  fBackup := false;
-  fVersion := cVersion;
-  fObject := TSuperObject.Create(stObject);
-end;
-
 procedure TJIniList.Clear;
 begin
   fObject.Clear;
-end;
-
-destructor TJIniList.Destroy;
-begin
-  fObject := nil;
-  inherited;
 end;
 
 function TJIniList.LoadJSON: Boolean;
@@ -225,7 +216,7 @@ procedure TJIniList.WriteString(Section, Key, Value: string;
 var
   path: string;
 begin
-  FixKeySectionName(Section, Key, path);
+  GetSectionKeyPath(Section, Key, path);
   if ReadString(Section, Key, emptystr) = Value then
     exit;
   if Format <> emptystr then
@@ -241,7 +232,7 @@ var
   fmt: string;
   path: string;
 begin
-  FixKeySectionName(Section, Key, path);
+  GetSectionKeyPath(Section, Key, path);
   Result := default;
   if fObject.s[path] <> emptystr then
     Result := fObject.s[path]
@@ -253,6 +244,24 @@ begin
     if fmt = cBase64 then
       Result := Base64DeCode(Result);
   end;
+end;
+
+function TJIniList.SectionExists(Section:string):boolean;
+begin
+  Section := FilterPath(Section);
+  Result := False;
+  if fObject.O[Section] <> nil then
+    Result := True;
+end;
+
+function TJIniList.SectionKeyExists(Section, Key: string):boolean;
+var
+  path: string;
+begin
+  GetSectionKeyPath(Section, Key, path);
+  Result := False;
+  if fObject.O[Section] <> nil then
+    Result := True;
 end;
 
 procedure TJIniList.AddString(const Section, Key, Value: String;
@@ -275,7 +284,7 @@ end;
 
 procedure TJIniList.DeleteSection(Section: string);
 begin
-  Section := FixKeyName(Section);
+  Section := FilterPath(Section);
   fObject.o[Section].Clear;
   fModified := true;
 end;
@@ -284,7 +293,7 @@ procedure TJIniList.DeleteSectionKey(Section, Key: string);
 var
   path: string;
 begin
-  FixKeySectionName(Section, Key, path);
+  GetSectionKeyPath(Section, Key, path);
   fObject.o[path].Clear;
   fModified := true;
 end;
@@ -299,6 +308,21 @@ begin
       Inc(Result)
     until not ObjectFindNext(ite);
   ObjectFindClose(ite);
+end;
+
+constructor TJIniList.Create;
+begin
+  inherited Create;
+  fBackup := false;
+  fCaseSensitive := false;
+  fVersion := cVersion;
+  fObject := TSuperObject.Create(stObject);
+end;
+
+destructor TJIniList.Destroy;
+begin
+  fObject := nil;
+  inherited;
 end;
 
 end.
