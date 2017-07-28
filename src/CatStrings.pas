@@ -37,16 +37,26 @@ function ASCIIToInt(const s: string): integer;
 function Base64Encode(const s: string): string;
 function Base64Decode(const s: string): string;
 function Before(const s, substr: string): string;
-function BeginsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
+function BeginsWith(const s, prefix: string; IgnoreCase: Boolean = false)
+  : Boolean; overload;
+function BeginsWith(const s: string; const prefixes: array of string;
+  IgnoreCase: Boolean = false): Boolean; overload;
 function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
 function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
   const casesensitive: Boolean = true): integer;
 function CatWrapText(const text: string; const chars: integer): TStringList;
+function CharSetToStr(const c: TSysCharSet): string;
 function CommaTextToStr(const s: string): string;
 function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
-function ContainsAnyOfStrings(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
-function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
+function ContainsAnyOfStrings(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+function ContainsAllOfStrings(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
+  : Boolean; overload;
+function EndsWith(const s: string; const prefixes: array of string;
+  IgnoreCase: Boolean = false): Boolean; overload;
 function ExtractFromString(const s, startstr, endstr: string): string;
 function ExtractFromTag(const s, tag: string): string;
 function GetLineByPos(const s: string; const Position: integer): integer;
@@ -64,19 +74,21 @@ function IsAlpha(const s: string): Boolean;
 function IsAlphaNumeric(const s: string): Boolean;
 function IsHexStr(const s: string): Boolean;
 function IsInteger(const s: string): Boolean;
-function IsLowercase(const s : string): boolean;
-function IsUppercase(const s : string): boolean;
-function IsRoman(const s:string):boolean;
+function IsLowercase(const s: string): Boolean;
+function IsUppercase(const s: string): Boolean;
+function IsRoman(const s: string): Boolean;
 function LastChar(const s: string): Char;
 function LeftPad(const s: string; const c: Char; const len: integer): string;
 function LeftStr(s: string; c: longword): string;
-function MatchIntInArray(const i:integer;aArray:array of integer):boolean;
-function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
+function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
+function MatchStrInArray(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): Boolean;
 function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MD5Hash(s: UTF8String): UTF8String;
 function Occurs(substr, s: string): integer;
-function RandomCase(const S: string; const ToUpperSet: TSysCharSet=['a'..'z'];
-  const ToLowerSet: TSysCharSet=['A'..'Z']): string;
+function RandomCase(const s: string;
+  const ToUpperSet: TSysCharSet = ['a' .. 'z'];
+  const ToLowerSet: TSysCharSet = ['A' .. 'Z']): string;
 function RandomString(const len: integer;
   const chars: string = 'abcdefghijklmnopqrstuvwxyz'): string;
 function RemoveLastChar(const s: string): string;
@@ -96,6 +108,7 @@ function StrMaxLen(const s: string; const MaxLen: integer;
   const AddEllipsis: Boolean = false): string;
 function StrToAlphaNum(const s: string): string;
 function StrToBool(const s: string): Boolean;
+function StrToCharSet(const s: string): TSysCharSet;
 function StrToCommaText(const s: string): string;
 function StrToHex(const s: string): string;
 function StrToHex16(const s: string): string;
@@ -166,7 +179,8 @@ begin
     result := Copy(s, 1, i - 1);
 end;
 
-function BeginsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
+function BeginsWith(const s, prefix: string;
+  IgnoreCase: Boolean = false): Boolean;
 var
   tmpstr: string;
 begin
@@ -177,10 +191,26 @@ begin
 {$ELSE}
   SetLength(tmpstr, StrLen(PAnsiChar(prefix)));
 {$ENDIF}
-  if ignorecase = false then
+  if IgnoreCase = false then
     result := AnsiCompareStr(tmpstr, prefix) = 0
   else
     result := AnsiCompareText(tmpstr, prefix) = 0;
+end;
+
+function BeginsWith(const s: string; const prefixes: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+var
+  b: Byte;
+begin
+  result := false;
+  for b := Low(prefixes) to High(prefixes) do
+  begin
+    if BeginsWith(s, prefixes[b], IgnoreCase) then
+    begin
+      result := true;
+      break;
+    end;
+  end;
 end;
 
 function BoolToStr(const b: Boolean): string;
@@ -203,27 +233,27 @@ end;
   A CaseOf function using arrays
   Usage Example:
 
-procedure TForm1.Button1Click(Sender: TObject);
-const
- ana = 1;
- roberto = 2;
- lucia = 3;
-const
- labels : array [1..3] of TCatCaseLabel =
- (
- (name:'ana';id:ana),
- (name:'roberto';id:roberto),
- (name:'lucia';id:lucia)
- );
-begin
+  procedure TForm1.Button1Click(Sender: TObject);
+  const
+  ana = 1;
+  roberto = 2;
+  lucia = 3;
+  const
+  labels : array [1..3] of TCatCaseLabel =
+  (
+  (name:'ana';id:ana),
+  (name:'roberto';id:roberto),
+  (name:'lucia';id:lucia)
+  );
+  begin
   case CatCaseOf(edit1.text,labels) of
-    ana: form1.caption:='ana!';
-    roberto: form1.caption:='roberto!';
-    lucia: form1.caption:='lucia!';
+  ana: form1.caption:='ana!';
+  roberto: form1.caption:='roberto!';
+  lucia: form1.caption:='lucia!';
   else
-    form1.Caption:=edit1.text+' not in case list!';
+  form1.Caption:=edit1.text+' not in case list!';
   end;
-end;
+  end;
 
 }
 function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
@@ -294,27 +324,73 @@ begin
   end;
 end;
 
-function ContainsAnyOfStrings(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
-var b: Byte;
+function ContainsAllOfStrings(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+var
+  b: Byte;
 begin
-  Result:=false;
-  if IgnoreCase then begin
-      s:=lowercase(s);
-      for b := Low(aArray) to High(aArray) do
-      aArray[b]:=lowercase(aArray[b]);
+  result := true;
+  if IgnoreCase then
+  begin
+    s := lowercase(s);
+    for b := Low(aArray) to High(aArray) do
+      aArray[b] := lowercase(aArray[b]);
   end;
-  for b := Low(aArray) to High(aArray) do begin
-     if pos(aArray[b],s)<>0 then
-     result:=True;
+  for b := Low(aArray) to High(aArray) do
+  begin
+    if pos(aArray[b], s) = 0 then
+    begin
+      result := false;
+      break;
+    end;
   end;
 end;
 
-function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
+function ContainsAnyOfStrings(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+var
+  b: Byte;
+begin
+  result := false;
+  if IgnoreCase then
+  begin
+    s := lowercase(s);
+    for b := Low(aArray) to High(aArray) do
+      aArray[b] := lowercase(aArray[b]);
+  end;
+  for b := Low(aArray) to High(aArray) do
+  begin
+    if pos(aArray[b], s) <> 0 then
+    begin
+      result := true;
+      break;
+    end;
+  end;
+end;
+
+function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
+  : Boolean;
 begin
   if IgnoreCase = false then
     result := AnsiEndsStr(prefix, s)
   else
     result := AnsiEndsText(prefix, s);
+end;
+
+function EndsWith(const s: string; const prefixes: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+var
+  b: Byte;
+begin
+  result := false;
+  for b := Low(prefixes) to High(prefixes) do
+  begin
+    if EndsWith(s, prefixes[b], IgnoreCase) then
+    begin
+      result := true;
+      break;
+    end;
+  end;
 end;
 
 function ExtractFromTag(const s, tag: string): string;
@@ -390,8 +466,9 @@ var
   i: integer;
 begin
   result := true;
-  for i := 1 to Length(s) do
-    if CharInSet(s[i], ['0' .. '9']) then begin
+  for i := 1 to length(s) do
+    if CharInSet(s[i], ['0' .. '9']) then
+    begin
       result := false;
       break;
     end;
@@ -404,7 +481,7 @@ var
 begin
   alpha := false;
   num := false;
-  for i := 1 to Length(s) do
+  for i := 1 to length(s) do
   begin
     if CharInSet(s[i], ['A' .. 'Z', 'a' .. 'z']) then
       alpha := true
@@ -439,36 +516,38 @@ begin
     end;
 end;
 
-function IsUppercase(const s : string): boolean;
-var
-  i : integer;
-begin
-  Result := false;
-  for I := 1 to length(S) do
-    if CharInSet(S[I],['a'..'z']) then exit;
-  Result := true;
-end;
-
-function IsLowercase(const s : string): boolean;
-var
-  i : integer;
-begin
-  Result := false;
-  for I := 1 to length(S) do
-    if CharInSet(S[I],['A'..'Z']) then exit;
-  Result := true;
-end;
-
-function IsRoman(const s:string):boolean;
+function IsUppercase(const s: string): Boolean;
 var
   i: integer;
 begin
-  Result := true;
-  for i := 1 to Length(s) do
+  result := false;
+  for i := 1 to length(s) do
+    if CharInSet(s[i], ['a' .. 'z']) then
+      Exit;
+  result := true;
+end;
+
+function IsLowercase(const s: string): Boolean;
+var
+  i: integer;
+begin
+  result := false;
+  for i := 1 to length(s) do
+    if CharInSet(s[i], ['A' .. 'Z']) then
+      Exit;
+  result := true;
+end;
+
+function IsRoman(const s: string): Boolean;
+var
+  i: integer;
+begin
+  result := true;
+  for i := 1 to length(s) do
   begin
-    if CharInSet(UpCase(s[i]),['I','V','X','L','C','D','M']) = false  then
+    if CharInSet(UpCase(s[i]), ['I', 'V', 'X', 'L', 'C', 'D', 'M']) = false then
     begin
-      Result := false;
+      result := false;
       Exit;
     end;
   end;
@@ -528,19 +607,20 @@ begin
       inc(result);
 end;
 
-function RandomCase(const S: string; const ToUpperSet: TSysCharSet=['a'..'z'];
-  const ToLowerSet: TSysCharSet=['A'..'Z']): string;
+function RandomCase(const s: string;
+  const ToUpperSet: TSysCharSet = ['a' .. 'z'];
+  const ToLowerSet: TSysCharSet = ['A' .. 'Z']): string;
 var
-  i : integer;
+  i: integer;
 begin
   Randomize();
-  Result := S;
-  for I := 1 to Length(Result) do
+  result := s;
+  for i := 1 to length(result) do
     if Random(2) = 1 then
-      if CharInset(Result[I], ToLowerSet) then
-       Inc(Result[I], 32) else
-      if CharInset(Result[I], ToUpperSet) then
-       Dec(Result[I], 32);
+      if CharInSet(result[i], ToLowerSet) then
+        inc(result[i], 32)
+      else if CharInSet(result[i], ToUpperSet) then
+        Dec(result[i], 32);
 end;
 
 function RandomString(const len: integer;
@@ -641,7 +721,7 @@ begin
   for i := 1 to length(s) do
   begin
     c := ord(s[i]);
-    dec(c, step);
+    Dec(c, step);
     tmpstr := tmpstr + widechar(c);
   end;
   result := tmpstr;
@@ -764,6 +844,31 @@ begin
     result := false;
 end;
 
+function StrToCharSet(const s: string): TSysCharSet;
+var
+  P: PAnsiChar;
+begin
+  result := [];
+  if s = emptystr then
+    Exit;
+  P := PAnsiChar(s);
+  while P^ <> #0 do
+  begin
+    Include(result, P^);
+    inc(P);
+  end;
+end;
+
+function CharSetToStr(const c: TSysCharSet): string;
+var
+  i: integer;
+begin
+  result := emptystr;
+  for i := 0 to 255 do
+    if Chr(i) in c then
+      result := result + Chr(i);
+end;
+
 function StrToHex(const s: string): string;
 var
   i: integer;
@@ -775,13 +880,13 @@ end;
 
 function StrToHex16(const s: string): string;
 var
-  i: Integer;
+  i: integer;
   str: string;
 begin
   str := emptystr;
-  for i := 1 to Length(s) do
-    str := str + IntToHex(Integer(s[i]), 4);
-  Result := str;
+  for i := 1 to length(s) do
+    str := str + IntToHex(integer(s[i]), 4);
+  result := str;
 end;
 
 function StrToIntSafe(const s: string; const FalseInt: integer = 0): integer;
@@ -816,16 +921,16 @@ end;
 
 function Hex16ToStr(const s: string): string;
 var
-  i: Integer;
+  i: integer;
   c: string;
 begin
-  Result := emptystr;
+  result := emptystr;
   i := 1;
-  while i < Length(s) do
+  while i < length(s) do
   begin
     c := Copy(s, i, 4);
-    Result := Result + Chr(StrToInt('$' + c));
-    Inc(i, 4);
+    result := result + Chr(StrToInt('$' + c));
+    inc(i, 4);
   end;
 end;
 
@@ -947,25 +1052,25 @@ end;
 function GetToken(const aString, SepChar: String; const TokenNum: Byte): String;
 var
   Token, tmpstr: String;
-  StrLen, Num, EndofToken: integer;
+  StrLen, num, EndofToken: integer;
 begin
   tmpstr := aString;
   StrLen := length(tmpstr);
-  Num := 1;
+  num := 1;
   EndofToken := StrLen;
-  while ((Num <= TokenNum) and (EndofToken <> 0)) do
+  while ((num <= TokenNum) and (EndofToken <> 0)) do
   begin
     EndofToken := pos(SepChar, tmpstr);
     if EndofToken <> 0 then
     begin
       Token := Copy(tmpstr, 1, EndofToken - 1);
       Delete(tmpstr, 1, EndofToken);
-      inc(Num);
+      inc(num);
     end
     else
       Token := tmpstr;
   end;
-  if Num >= TokenNum then
+  if num >= TokenNum then
     result := Token
   else
     result := emptystr;
@@ -999,28 +1104,34 @@ begin
   PosX := 0;
 end;
 
-function MatchIntInArray(const i:integer;aArray:array of integer):boolean;
-var b: Byte;
+function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
+var
+  b: Byte;
 begin
-  Result:=false;
-  for b := Low(aArray) to High(aArray) do begin
-     if i=aArray[b] then
-     result:=True;
+  result := false;
+  for b := Low(aArray) to High(aArray) do
+  begin
+    if i = aArray[b] then
+      result := true;
   end;
 end;
 
-function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
-var b: Byte;
+function MatchStrInArray(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+var
+  b: Byte;
 begin
-  Result:=false;
-  if IgnoreCase then begin
-      s:=lowercase(s);
-      for b := Low(aArray) to High(aArray) do
-      aArray[b]:=lowercase(aArray[b]);
+  result := false;
+  if IgnoreCase then
+  begin
+    s := lowercase(s);
+    for b := Low(aArray) to High(aArray) do
+      aArray[b] := lowercase(aArray[b]);
   end;
-  for b := Low(aArray) to High(aArray) do begin
-     if s=aArray[b] then
-     result:=True;
+  for b := Low(aArray) to High(aArray) do
+  begin
+    if s = aArray[b] then
+      result := true;
   end;
 end;
 
@@ -1178,7 +1289,7 @@ begin
     if c > 63 then
       continue;
     d := (d shl 6) or c;
-    dec(dl);
+    Dec(dl);
     if dl <> 0 then
       continue;
     result[P] := AnsiChar((d shr 16) and $FF);
