@@ -1,9 +1,9 @@
 # Catarinka Patterns
-##Pattern Validation for Pascal/Delphi
+## Pattern Validation for Pascal/Delphi
 
 This is a flexible string and integer validation engine for Pascal/Delphi with support for case sensitive or insensitive reusable chained validations. Currently over 30 chainable checks and custom checks are supported. It compiles under Delphi XE down to Delphi 7, both 32-bit and 64-bit.
 
-###How It Works
+### How It Works
 
 The Match() function ignites the validation and returns true if all checks passed, but if a check fails, it breaks the chain (not really executing the rest) and returns false.
 
@@ -13,11 +13,11 @@ The Match() function ignites the validation and returns true if all checks passe
 
 It is possible to determine the check that failed using the Index property - if you have, for example, three chained checks and the second one failed, the Index value will be 2.
 
-###Inspiration
+### Inspiration
 
 This project is inspired by Sailor's Valua (Validation for Lua) and Respect Validation for PHP. Be sure to check them later at: [valua](https://github.com/sailorproject/valua) and [Validation](https://github.com/Respect/Validation).
 
-###Usage Examples:
+### Usage Examples:
 
 ```pascal
   // chain validation way:
@@ -79,7 +79,7 @@ This project is inspired by Sailor's Valua (Validation for Lua) and Respect Vali
   v.free;
 ```
   
-###License
+### License
 
 Catarinka Patterns was developed by Felipe Daragon, [Syhunt](http://www.syhunt.com/).
 
