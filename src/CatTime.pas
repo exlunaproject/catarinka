@@ -2,7 +2,7 @@ unit CatTime;
 {
   Catarinka - Useful time-related functions
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -25,6 +25,7 @@ function DescribeTimeDiff(const t: string): string;
 function DiffDate(const day1, day2: TDateTime): integer;
 function GetDayOfWeekAsNumber: integer;
 function GetDayOfWeekAsText: string;
+function IsValidDate(const S: string;const format:string='mm/dd/yyyy';const sep:Char='/'): boolean;
 function UnixToDateTime(const sec: Longint): TDateTime;
 
 implementation
@@ -170,6 +171,19 @@ begin
     7:
       Result := 'Saturday';
   end;
+end;
+
+function IsValidDate(const S: string;const format:string='mm/dd/yyyy';const sep:Char='/'): boolean;
+var
+  dt: TDateTime;
+  fs: TFormatSettings;
+begin
+  fs.ShortDateFormat := format;
+  fs.DateSeparator := sep;
+  if TryStrToDate(s, dt, fs) then
+    result:=true
+  else
+    result:=false;
 end;
 
 function UnixToDateTime(const sec: Longint): TDateTime;

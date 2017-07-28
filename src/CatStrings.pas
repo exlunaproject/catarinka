@@ -37,7 +37,7 @@ function ASCIIToInt(const s: string): integer;
 function Base64Encode(const s: string): string;
 function Base64Decode(const s: string): string;
 function Before(const s, substr: string): string;
-function BeginsWith(const s, prefix: string): Boolean;
+function BeginsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
 function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
 function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
@@ -46,7 +46,7 @@ function CatWrapText(const text: string; const chars: integer): TStringList;
 function CommaTextToStr(const s: string): string;
 function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
 function ContainsAnyOfStrings(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
-function EndsWith(const s, prefix: string): Boolean;
+function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
 function ExtractFromString(const s, startstr, endstr: string): string;
 function ExtractFromTag(const s, tag: string): string;
 function GetLineByPos(const s: string; const Position: integer): integer;
@@ -60,11 +60,17 @@ function IIF(const Cond: Boolean; const TrueStr: String;
 function IIF(const Cond: Boolean; const TrueInt: integer;
   const FalseInt: integer = 0): integer; overload;
 function IScan(ch: Char; const s: string; fromPos: integer): integer;
+function IsAlpha(const s: string): Boolean;
+function IsAlphaNumeric(const s: string): Boolean;
 function IsHexStr(const s: string): Boolean;
 function IsInteger(const s: string): Boolean;
+function IsLowercase(const s : string): boolean;
+function IsUppercase(const s : string): boolean;
+function IsRoman(const s:string):boolean;
 function LastChar(const s: string): Char;
 function LeftPad(const s: string; const c: Char; const len: integer): string;
 function LeftStr(s: string; c: longword): string;
+function MatchIntInArray(const i:integer;aArray:array of integer):boolean;
 function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;
 function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MD5Hash(s: UTF8String): UTF8String;
@@ -160,7 +166,7 @@ begin
     result := Copy(s, 1, i - 1);
 end;
 
-function BeginsWith(const s, prefix: string): Boolean;
+function BeginsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
 var
   tmpstr: string;
 begin
@@ -171,7 +177,10 @@ begin
 {$ELSE}
   SetLength(tmpstr, StrLen(PAnsiChar(prefix)));
 {$ENDIF}
-  result := AnsiCompareText(tmpstr, prefix) = 0;
+  if ignorecase = false then
+    result := AnsiCompareStr(tmpstr, prefix) = 0
+  else
+    result := AnsiCompareText(tmpstr, prefix) = 0;
 end;
 
 function BoolToStr(const b: Boolean): string;
@@ -300,9 +309,12 @@ begin
   end;
 end;
 
-function EndsWith(const s, prefix: string): Boolean;
+function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false): Boolean;
 begin
-  result := AnsiEndsStr(prefix, s);
+  if IgnoreCase = false then
+    result := AnsiEndsStr(prefix, s)
+  else
+    result := AnsiEndsText(prefix, s);
 end;
 
 function ExtractFromTag(const s, tag: string): string;
@@ -373,6 +385,35 @@ begin
     result := FalseInt;
 end;
 
+function IsAlpha(const s: string): Boolean;
+var
+  i: integer;
+begin
+  result := true;
+  for i := 1 to Length(s) do
+    if CharInSet(s[i], ['0' .. '9']) then begin
+      result := false;
+      break;
+    end;
+end;
+
+function IsAlphaNumeric(const s: string): Boolean;
+var
+  i: integer;
+  alpha, num: Boolean;
+begin
+  alpha := false;
+  num := false;
+  for i := 1 to Length(s) do
+  begin
+    if CharInSet(s[i], ['A' .. 'Z', 'a' .. 'z']) then
+      alpha := true
+    else if CharInSet(s[i], ['0' .. '9']) then
+      num := true;
+  end;
+  result := alpha and num;
+end;
+
 function IsInteger(const s: string): Boolean;
 var
   v, c: integer;
@@ -396,6 +437,41 @@ begin
       result := false;
       break;
     end;
+end;
+
+function IsUppercase(const s : string): boolean;
+var
+  i : integer;
+begin
+  Result := false;
+  for I := 1 to length(S) do
+    if CharInSet(S[I],['a'..'z']) then exit;
+  Result := true;
+end;
+
+function IsLowercase(const s : string): boolean;
+var
+  i : integer;
+begin
+  Result := false;
+  for I := 1 to length(S) do
+    if CharInSet(S[I],['A'..'Z']) then exit;
+  Result := true;
+end;
+
+function IsRoman(const s:string):boolean;
+var
+  i: integer;
+begin
+  Result := true;
+  for i := 1 to Length(s) do
+  begin
+    if CharInSet(UpCase(s[i]),['I','V','X','L','C','D','M']) = false  then
+    begin
+      Result := false;
+      Exit;
+    end;
+  end;
 end;
 
 function LastChar(const s: string): Char;
@@ -921,6 +997,16 @@ begin
     end;
   end;
   PosX := 0;
+end;
+
+function MatchIntInArray(const i:integer;aArray:array of integer):boolean;
+var b: Byte;
+begin
+  Result:=false;
+  for b := Low(aArray) to High(aArray) do begin
+     if i=aArray[b] then
+     result:=True;
+  end;
 end;
 
 function MatchStrInArray(s:string;aArray:array of string; IgnoreCase: Boolean = false):boolean;

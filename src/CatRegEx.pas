@@ -1,8 +1,8 @@
 unit CatRegex;
 {
-  Catarinka - Regular Expression functions
+  Catarinka - Regular Expression and some other useful matching functions
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -22,6 +22,7 @@ uses
 function RegExpFind(const s, re: string): string;
 function RegExpReplace(const s, re, sreplacement: string): string;
 function CatMatch(const substr, s: string): boolean;
+function IsValidEmail(email: string): boolean;
 
 implementation
 
@@ -76,6 +77,46 @@ begin
     if (pos(tmpsub, s) <> 0) then
       result := true;
   end;
+end;
+
+// Thanks ffert2907
+function IsValidEmail(email: string): boolean;
+const
+  charslist = ['_', '-', '.', '0'..'9', 'A'..'Z', 'a'..'z'];
+var
+  Arobasc, lastpoint : boolean;
+  i, n : integer;
+  c : char;
+begin
+  n := Length(email);
+  i := 1;
+  Arobasc := false;
+  lastpoint := false;
+  result := true;
+  while (i <= n) do begin
+    c := email[i];
+    if c = '@' then
+    begin
+      if Arobasc then  // Only 1 Arobasc
+      begin
+        result := false;
+        exit;
+      end;
+      Arobasc := true;
+    end
+    else if (c = '.') and Arobasc then  // at least 1 . after arobasc
+    begin
+      lastpoint := true;
+    end
+    else if not(c in charslist) then  // valid chars
+    begin
+      result := false;
+      exit;
+    end;
+    inc(i);
+  end;
+  if not(lastpoint) or (email[n] = '.')then  // not finish by . and have a . after arobasc
+    result := false;
 end;
 
 // ------------------------------------------------------------------------//
