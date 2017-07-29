@@ -21,30 +21,41 @@ uses
   CatJSON;
 
 type
+  TCatPrefsCustomOption = record
+    HideInOptionList: boolean;
+    Tags: string; // comma separated tags
+  end;
+
+type
   TCatPreferences = class
   private
     fCurrent: TCatJSON;
     fDefault: TCatJSON;
     fFilename: string;
-    fLockedOptions: TStringList;
     fOptionList: TStringList;
+    fTags: TCatJSON;
     function Encrypt(const CID: string; const Value: Variant): Variant;
     function Decrypt(const CID: string; const Value: Variant): Variant;
     function FGetValue(const CID: string): Variant;
     function GetCIDList: string;
   public
+    function GetCIDListByTag(const aTag: string): string;
     function GetValue(const CID: string): Variant; overload;
     function GetValue(const CID: string; const DefaultValue: Variant)
       : Variant; overload;
     function GetRegValue(const CID: string;
       const DefaultValue: Variant): Variant;
-    procedure Lock(const CID: string);
     procedure SetValue(const CID: string; const Value: Variant);
     procedure SetValues(const CIDs: array of string; const Value: Variant);
+    procedure SetValuesByTag(const Tag: string; const Value: Variant);
     procedure LoadFromFile(const f: string);
     procedure LoadFromString(const s: string);
+    procedure RegisterDefault(const CID: string;
+      const DefaultValue: Variant); overload;
     procedure RegisterDefault(const CID: string; const DefaultValue: Variant;
-      const AddToOptionList: boolean = true);
+      const Tags: array of string); overload;
+    procedure RegisterDefault(const CID: string; const DefaultValue: Variant;
+      const Custom: TCatPrefsCustomOption); overload;
     procedure RestoreDefaults;
     procedure SaveToFile(const f: string);
     constructor Create;
@@ -54,7 +65,6 @@ type
     property Current: TCatJSON read fCurrent;
     property Default: TCatJSON read fDefault;
     property Filename: string read fFilename write fFilename;
-    property LockedOptions: TStringList read fLockedOptions;
     property OptionList: TStringList read fOptionList;
     property Values[const CID: string]: Variant read FGetValue
       write SetValue; default;
@@ -62,7 +72,7 @@ type
 
 implementation
 
-uses CatDCP, CatStrings, CatDCPKey;
+uses CatDCP, CatStrings, CatStringLoop, CatDCPKey;
 
 function IsEncryptedCID(CID: string): boolean;
 begin
@@ -77,7 +87,7 @@ function TCatPreferences.Encrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := strtoaes(Value,GetDCPKey(CATKEY_PASSWORD),false)
+    result := strtoaes(Value, GetDCPKey(CATKEY_PASSWORD), false)
   else
     result := Value;
 end;
@@ -86,7 +96,7 @@ function TCatPreferences.Decrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := aestostr(Value,GetDCPKey(CATKEY_PASSWORD),false)
+    result := aestostr(Value, GetDCPKey(CATKEY_PASSWORD), false)
   else
     result := Value;
 end;
@@ -97,9 +107,38 @@ begin
   result := fOptionList.text;
 end;
 
+// Returns a CID list by a specific tag
+function TCatPreferences.GetCIDListByTag(const aTag: string): string;
+var
+  CID: TStringLoop;
+  Tag: TSepStringLoop;
+  list: TStringList;
+  cidtags: string;
+begin
+  list := TStringList.Create;
+  CID := TStringLoop.Create(fOptionList);
+  while CID.Found do
+  begin
+    cidtags := fTags.GetValue(CID.Current, emptystr);
+    if cidtags <> emptystr then
+    begin
+      Tag := TSepStringLoop.Create(cidtags, ',');
+      while Tag.Found do
+      begin
+        if Tag.Current = aTag then
+          list.Add(CID.Current);
+      end;
+      Tag.Free;
+    end;
+  end;
+  CID.Free;
+  result := list.text;
+  list.Free;
+end;
+
 function TCatPreferences.FGetValue(const CID: string): Variant;
 begin
-  result := fCurrent.GetValue(CID, fdefault [CID]);
+  result := fCurrent.GetValue(CID, fDefault[CID]);
   result := Decrypt(CID, result);
 end;
 
@@ -128,29 +167,72 @@ begin
   fCurrent[CID] := Encrypt(CID, Value);
 end;
 
-procedure TCatPreferences.SetValues(const CIDs: array of string; const Value: Variant);
-var X: Byte;
+procedure TCatPreferences.SetValues(const CIDs: array of string;
+  const Value: Variant);
+var
+  b: Byte;
 begin
-  for X := Low(CIDs) to High(CIDs) do
-    if not (CIDs[X] = '') then
-      SetValue(CIDs[X],Value);
+  for b := Low(CIDs) to High(CIDs) do
+    if (CIDs[b] <> emptystr) then
+      SetValue(CIDs[b], Value);
+end;
+
+procedure TCatPreferences.SetValuesByTag(const Tag: string;
+  const Value: Variant);
+var
+  CID: TStringLoop;
+begin
+  CID := TStringLoop.Create;
+  CID.LoadFromString(GetCIDListByTag(Tag));
+  while CID.Found do
+    SetValue(CID.Current, Value);
+  CID.Free;
 end;
 
 // Reverts to the default configuration
 procedure TCatPreferences.RestoreDefaults;
 begin
-  fCurrent.text := fdefault.text;
+  fCurrent.text := fDefault.text;
 end;
 
 procedure TCatPreferences.RegisterDefault(const CID: string;
-  const DefaultValue: Variant; const AddToOptionList: boolean = true);
+  const DefaultValue: Variant);
 begin
-  if AddToOptionList then
+  if fOptionList.indexof(CID) = -1 then
+    fOptionList.Add(CID);
+  fDefault[CID] := DefaultValue;
+end;
+
+procedure TCatPreferences.RegisterDefault(const CID: string;
+  const DefaultValue: Variant; const Tags: array of string);
+var
+  b: Byte;
+  taglist: string;
+begin
+  RegisterDefault(CID, DefaultValue);
+  taglist := emptystr;
+  for b := Low(Tags) to High(Tags) do
+    if (Tags[b] <> emptystr) then
+    begin
+      if taglist = emptystr then
+        taglist := Tags[b]
+      else
+        taglist := taglist + ',' + Tags[b];
+    end;
+  fTags[CID] := taglist;
+end;
+
+procedure TCatPreferences.RegisterDefault(const CID: string;
+  const DefaultValue: Variant; const Custom: TCatPrefsCustomOption);
+begin
+  if Custom.HideInOptionList = false then
   begin
     if fOptionList.indexof(CID) = -1 then
       fOptionList.Add(CID);
   end;
-  fDefault [CID] := DefaultValue;
+  if Custom.Tags <> emptystr then
+    fTags[CID] := Custom.Tags;
+  fDefault[CID] := DefaultValue;
 end;
 
 procedure TCatPreferences.LoadFromFile(const f: string);
@@ -167,12 +249,6 @@ begin
     fCurrent.text := s;
 end;
 
-procedure TCatPreferences.Lock(const CID: string);
-begin
-  if flockedoptions.IndexOf(CID) = -1 then
-    flockedoptions.Add(CID);
-end;
-
 procedure TCatPreferences.SaveToFile(const f: string);
 begin
   fCurrent.SaveToFile(f);
@@ -183,16 +259,16 @@ begin
   inherited Create;
   fCurrent := TCatJSON.Create;
   fDefault := TCatJSON.Create;
+  fTags := TCatJSON.Create;
   fOptionList := TStringList.Create;
-  fLockedOptions := TStringList.Create;
 end;
 
 destructor TCatPreferences.Destroy;
 begin
-  fLockedOptions.free;
-  fOptionList.free;
-  fDefault.free;
-  fCurrent.free;
+  fOptionList.Free;
+  fTags.Free;
+  fDefault.Free;
+  fCurrent.Free;
   inherited;
 end;
 

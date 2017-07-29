@@ -19,13 +19,13 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 * `TCatJSON` - JSON Manipulation component built on top of the SuperObject.
 * `TCatListEditor` - A list editor based on SuperList by David Koretzky.
 * `TCatMsg`, `TCatMsgCromis` - Easy to deploy IPC components.
-* `TStringPattern` and `TIntegerPattern` - Flexible pattern validation engine using method chaining.
+* `TStringPattern`, `TIntegerPattern` - Flexible pattern validation engine using method chaining.
 * `TCatPreferences` - JSON-Based settings management component
 * `TCatStorage` - VFS/Cache component that uses the Structured Storage library by Primoz Gabrijelcic.
 * `TCatSynEdit` - Enhanced SynEdit with popup menu and improved scrolling.
 * `TJIniList` - INIList-Like component using JSON
 * `TStringListCache` - Caches multiple string lists, allowing them to be loaded or saved together to a file.
-* `TStringLoop` - A simple component for looping through a string list
+* `TStringLoop`, `TSepStringLoop` - Simple components for looping through a string list or a separated string.
 * Several libraries with string manipulation functions, file system functions and more.
 
 ## Compatibility
