@@ -18,10 +18,10 @@ uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls,
-  Vcl.StdCtrls, Vcl.ImgList, Vcl.Buttons, Vcl.Menus, System.Types;
+  Vcl.StdCtrls, Vcl.ImgList, Vcl.Buttons, Vcl.Menus, Vcl.Clipbrd, System.Types;
 {$ELSE}
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, ImgList, Buttons, Menus, Types;
+  ExtCtrls, StdCtrls, ImgList, Buttons, Menus, Clipbrd, Types;
 {$ENDIF}
 
 type
@@ -53,7 +53,10 @@ type
     FMorePopupMenu : TPopupMenu;
     FLoadFromFileItem:TMenuItem;
     FSaveToFileItem:TMenuItem;
+    FPasteFromClipboardItem:TMenuItem;
+    FSortItem:TMenuItem;
     FClearItemSeparator:TMenuItem;
+    FPasteItemSeparator:TMenuItem;
     FClearItem:TMenuItem;
     FSaveDialog:TSaveDialog;
     FOpenDialog:TOpenDialog;
@@ -91,6 +94,8 @@ type
     procedure LoadFromFileItemClick(Sender : TObject);
     procedure ClearItemClick(Sender : TObject);
     procedure MoreBtnClick(Sender:TObject);
+    procedure PasteFromClipboardItemClick(Sender:TObject);
+    procedure SortItemClick(Sender:TObject);
 
     procedure CreateButtons;
     procedure CreatePanel;
@@ -393,13 +398,26 @@ begin
  Flistbox.Items.clear;
 end;
 
+procedure TCatListEditor.PasteFromClipboardItemClick(Sender:TObject);
+begin
+ if FListbox.Items.Text = emptystr then
+   FListbox.Items.Text := Clipboard.AsText
+ else
+   Flistbox.Items.Text := FListbox.Items.Text + #13 + #10 + Clipboard.AsText;
+end;
+
+procedure TCatListEditor.SortItemClick(Sender:TObject);
+begin
+  FListbox.Sorted := false; FListbox.Sorted := true;
+end;
+
 procedure TCatListEditor.MoreBtnClick(Sender:TObject);
 var
   P : TPoint;
 begin
   P := FmoreButton.ClientToScreen(Point(0, FmoreButton.Height));
   FMorePopupMenu.Popup(P.x, P.y);
-end;
+end;                
 
 procedure TCatListEditor.CreateButtons;
 const
@@ -412,15 +430,26 @@ begin
   FSaveToFileItem:=tmenuitem.create(FMorePopupMenu);
   FSaveToFileItem.Caption:='Save to file...';
   FSaveToFileItem.OnClick:=SaveToFileItemClick;
+  FPasteFromClipboardItem:=tmenuitem.create(FMorePopupMenu);
+  FPasteFromClipboardItem.Caption:='Paste from Clipboard';
+  FPasteFromClipboardItem.OnClick:=PasteFromClipboardItemClick;
+  FSortItem := tmenuitem.create(FMorePopupMenu);
+  FSortItem.Caption := 'Sort';
+  FSortItem.OnClick := SortItemClick;
   FClearItem:=tmenuitem.create(FMorePopupMenu);
   FClearItem.Caption:='Clear';
   FClearItem.OnClick:=ClearItemClick;
   FClearItemSeparator:=tmenuitem.create(FMorePopupMenu);
   FClearItemSeparator.Caption:='-';
+  FPasteItemSeparator:=tmenuitem.create(FMorePopupMenu);
+  FPasteItemSeparator.Caption:='-';
   FMorePopupMenu.Items.Add(FLoadFromFileItem);
   FMorePopupMenu.Items.Add(FSaveToFileItem);
-  FMorePopupMenu.items.add(FClearItemSeparator);
-  FMorePopupMenu.items.add(FClearItem);
+  FMorePopupMenu.items.Add(FPasteItemSeparator);
+  FMorePopupMenu.Items.Add(FPasteFromClipboardItem);
+  FMorePopupMenu.Items.Add(FSortItem);
+  FMorePopupMenu.items.Add(FClearItemSeparator);
+  FMorePopupMenu.items.Add(FClearItem);
   FSaveDialog:=TSaveDialog.Create(Self);
   FOpenDialog:=TOpenDialog.Create(Self);
   FOpenDialog.DefaultExt:='lst'; FSaveDialog.DefaultExt:=FOpenDialog.DefaultExt;
@@ -464,6 +493,9 @@ begin
   FOpenDialog.free;
   FLoadFromFileItem.free;
   FSaveToFileItem.free;
+  FSortItem.Free;
+  FPasteFromClipboardItem.free;
+  FPasteItemSeparator.free;
   FClearItemSeparator.free;
   FClearItem.free;
   FMorePopupMenu.free;
