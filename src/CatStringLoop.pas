@@ -36,7 +36,8 @@ type
     procedure SetCurrent(const s: string);
     procedure SetLine(const l: integer; const v: string);
   public
-    constructor Create(const sl: tstrings = nil);
+    constructor Create(const sl: tstrings = nil); overload;
+    constructor Create(const list:string); overload;
     destructor Destroy; override;
     procedure Load(const sl: tstrings);
     procedure LoadFromString(const s: string);
@@ -251,6 +252,12 @@ begin
   if sl <> nil then
     Load(sl);
   Reset;
+end;
+
+constructor TStringLoop.Create(const list:string);
+begin
+  Create;
+  LoadFromString(list);
 end;
 
 destructor TStringLoop.Destroy;
