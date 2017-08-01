@@ -105,7 +105,7 @@ function DescribeTimeDiff(const t: string): string;
   end;
 
 var
-  h, m, s: string;
+  h, m, s, ms: string;
   t1, t2, ft: ttime;
 const
   zero = '0';
@@ -116,6 +116,7 @@ begin
   h := FormatDateTime('h', ft);
   m := FormatDateTime('n', ft);
   s := FormatDateTime('s', ft);
+  ms := FormatDateTime('z', ft);
   if h <> zero then
   begin
     Result := 'about ' + TimeExt(h, 'hour ago', 'hours ago');
@@ -129,7 +130,8 @@ begin
     else
     begin
       if s <> zero then
-        Result := TimeExt(s, 'second ago', 'seconds ago');
+        Result := TimeExt(s, 'second ago', 'seconds ago') else
+        Result := TimeExt(ms, 'millisecond ago', 'milliseconds ago');
     end;
   end;
 end;
