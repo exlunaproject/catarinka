@@ -833,12 +833,8 @@ begin
 end;
 
 function StrToBool(const s: string): Boolean;
-var
-  tmpstr: string;
 begin
-  tmpstr := Trim(lowercase(s));
-  if (tmpstr = 'true') or (tmpstr = '1') or (tmpstr = 'yes') or (tmpstr = 'y')
-  then
+  if MatchStrInArray(Trim(lowercase(s)), ['true', '1', 'yes', 't', 'y', 'on']) then
     result := true
   else
     result := false;
@@ -1111,8 +1107,10 @@ begin
   result := false;
   for b := Low(aArray) to High(aArray) do
   begin
-    if i = aArray[b] then
+    if i = aArray[b] then begin
       result := true;
+      break;
+    end;
   end;
 end;
 
@@ -1130,8 +1128,10 @@ begin
   end;
   for b := Low(aArray) to High(aArray) do
   begin
-    if s = aArray[b] then
+    if s = aArray[b] then begin
       result := true;
+      break;
+    end;
   end;
 end;
 
