@@ -78,6 +78,7 @@ type
     constructor Create(const tags: string = ''; const asep: string = '|');
     destructor Destroy; override;
     function Found: boolean;
+    procedure Reset;
     property Count: integer read fCount;
     property Current: string read fCurrent;
     property Position: integer read fPos;
@@ -283,12 +284,17 @@ begin
   end;
 end;
 
+procedure TSepStringLoop.Reset;
+begin
+  fCurrent := emptystr;
+  fPos := 0;
+end;
+
 constructor TSepStringLoop.Create(const tags: string = '';
   const asep: string = '|');
 begin
   fTags := tags;
-  fCurrent := emptystr;
-  fPos := 0;
+  Reset;
   fSeparator := asep;
 end;
 
