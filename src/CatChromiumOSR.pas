@@ -1050,8 +1050,7 @@ begin
   begin
     Map := TCefStringMultiMapOwn.Create;
     r.GetHeaderMap(Map);
-    slp := TStringLoop.Create;
-    slp.LoadFromString(req.Headers);
+    slp := TStringLoop.Create(req.Headers);
     while slp.found do
     begin
       if MatchStrings(slp.current, '*:*') then

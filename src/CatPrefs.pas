@@ -182,8 +182,7 @@ procedure TCatPreferences.SetValuesByTag(const Tag: string;
 var
   CID: TStringLoop;
 begin
-  CID := TStringLoop.Create;
-  CID.LoadFromString(GetCIDListByTag(Tag));
+  CID := TStringLoop.Create(GetCIDListByTag(Tag));
   while CID.Found do
     SetValue(CID.Current, Value);
   CID.Free;

@@ -85,8 +85,7 @@ var
 begin
   foundcontent := false;
   foundheader := false;
-  slp := TStringLoop.Create;
-  slp.LoadFromString(HTML);
+  slp := TStringLoop.Create(HTML);
   while slp.Found do
   begin
     if beginswith(slp.current, cHexPos) then
@@ -156,8 +155,7 @@ var
 begin
   hdr := emptystr;
   isheader := false;
-  slp := TStringLoop.Create;
-  slp.LoadFromString(HTML);
+  slp := TStringLoop.Create(HTML);
   while slp.Found do
   begin
     if beginswith(slp.current, 'HTTP/') then

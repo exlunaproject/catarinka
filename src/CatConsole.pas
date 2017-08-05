@@ -340,8 +340,7 @@ begin
     fConsole.BeginExternalOutput;
   if pos(crlf, ALine) <> 0 then
   begin
-    slp := TStringLoop.Create;
-    slp.LoadFromString(ALine);
+    slp := TStringLoop.Create(ALine);
     while slp.Found do
       fConsole.Writeln(slp.Current);
     slp.free;

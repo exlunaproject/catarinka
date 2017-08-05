@@ -400,8 +400,7 @@ begin
   afield := lowercase(Field);
   if pos(afield, lowercase(ReqStr)) = 0 then
     Exit; // not found
-  slp := TStringLoop.Create;
-  slp.LoadFromString(ReqStr);
+  slp := TStringLoop.Create(ReqStr);
   while slp.Found do
   begin
     if beginswith(trim(slp.CurrentLower), afield + ':') then

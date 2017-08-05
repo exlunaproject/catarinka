@@ -80,8 +80,7 @@ begin
   fNameList.Clear;
   j := TCatJSON.Create;
   j.LoadFromFile(AFilename);
-  slp := TStringLoop.Create;
-  slp.LoadFromString(j[cIDListKey]);
+  slp := TStringLoop.Create(j[cIDListKey]);
   while slp.Found do begin
     sl := GetList(slp.Current);
     sl.Text:= j[cCacheKeyPrefix+slp.Current];

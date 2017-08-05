@@ -1,10 +1,55 @@
 {
   Catarinka TStringLoop, TSepStringLoop
-  Loops through a string list or a separated string
-  
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
+
+  Tired of limited for-to loops? TStringLoop makes it easy to iterate over each
+  string in a string list while, optionally, looking for defined patterns.
+
+  Usage Examples:
+
+  Use TStringLoop to iterate over each string in a string list:
+
+    s := TStringLoop.Create(listbox1.items);
+    while s.found do
+      showmessage(s.current);
+    s.free;
+
+  Use TSepStringLoop instead to do the same with a separated string:
+
+    s := TSepStringLoop.Create('str1;str2;str3',';');
+    while s.found do
+      showmessage(s.current);
+    s.free;
+
+  Call Stop, Stop(aVariant) or Break to end the loop:
+
+    while s.found do
+      if s.currentlower = 'somestring' then
+        result := s.stop(true); // stops the loop, returning true
+
+  Use the Pattern property to call a variety of chainable pattern matching
+  methods:
+
+    while s.found do
+      if s.pattern.begins(['http://','https://']).ends('.com').match then
+        showmessage(s.current);
+
+  Call Reset if you want to repeat from the beginning:
+    while s.found do
+      showmessage(s.current);
+    s.reset;
+    while s.found do
+      showmessage(s.current);
+
+  ChangeLog:
+    05.08.2017:
+  - Added Pattern property that allows to call pattern matching functions
+  - Removed Contains() which now can be called through Pattern property.
+    Example:
+      Pattern.Contains().Match or .MatchI
+  - Added overloaded Stop() with result.
 }
 
 unit CatStringLoop;
@@ -15,10 +60,11 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.Classes, System.SysUtils;
+  System.Classes, System.SysUtils, System.Variants,
 {$ELSE}
-  Classes, SysUtils;
+  Classes, SysUtils, Variants,
 {$ENDIF}
+  CatPatterns;
 
 type
   TStringLoop = class
@@ -27,6 +73,7 @@ type
     fCurrent: string;
     fIsCSV: boolean;
     fList: TStringList;
+    fPattern: TStringPattern;
     fPosition: integer;
     function GetCount: integer;
     function GetCountAsStr: string;
@@ -34,6 +81,7 @@ type
     function GetCurrentUpper: string;
     function GetLine(const l: integer): string;
     procedure SetCurrent(const s: string);
+    procedure SetCurrentLine(const s: string);
     procedure SetLine(const l: integer; const v: string);
   public
     constructor Create(const sl: tstrings = nil); overload;
@@ -43,7 +91,8 @@ type
     procedure LoadFromString(const s: string);
     procedure LoadFromFile(const filename: string);
     procedure Reset;
-    procedure Stop;
+    procedure Stop; overload;
+    function Stop(aReturn:Variant):Variant; overload;
     procedure Clear;
     function Found: boolean;
     function GetValue(const s: string): string;
@@ -51,19 +100,19 @@ type
     function Index(const zerostart: boolean = true): integer;
     function IndexAsStr: string;
     function IndexOf(const s: string): integer;
-    function Contains(const s: string; const casesensitive: boolean = true): boolean;
     procedure Delete;
+  // properties
     property Lines[const l: integer]: string read GetLine write SetLine;
     property Values[const s: string]: string read GetValue
       write SetValue; default;
-  // properties
     property Count: integer read GetCount;
     property CountAsStr:string read GetCountAsStr;
-    property Current: string read fCurrent write SetCurrent;
+    property Current: string read fCurrent write SetCurrentLine;
     property CurrentLower: string read GetCurrentLower;
     property CurrentUpper: string read GetCurrentUpper;
     property IsCSV: boolean read fIsCSV write fIsCSV;
     property List: TStringList read FList;
+    property Pattern: TStringPattern read fPattern;
   end;
   
 type
@@ -71,19 +120,25 @@ type
   protected
     fCount: integer;
     fCurrent: string;
+    fPattern: TStringPattern;
     fPos: integer;
     fTags: string; // a separated string
     fSeparator: string;
+    procedure SetCurrent(const s: string);
   public
     constructor Create(const tags: string = ''; const asep: string = '|');
     destructor Destroy; override;
     function Found: boolean;
     procedure Reset;
+    procedure Stop; overload;
+    function Stop(aReturn:Variant):Variant; overload;
+  // properties
     property Count: integer read fCount;
     property Current: string read fCurrent;
+    property Pattern: TStringPattern read fPattern;
     property Position: integer read fPos;
     property Separator: string read fSeparator write fSeparator;
-    property tags: string read fTags write fTags;
+    property Tags: string read fTags write fTags;
   end;
 
 implementation
@@ -100,27 +155,15 @@ begin
   fList.Delete(FPosition - 1);
 end;
 
-function TStringLoop.Contains(const s: string;
-  const casesensitive: boolean = true): boolean;
-  procedure check(substr, str: string);
-  begin
-    if pos(substr, str) <> 0 then
-      result := true;
-  end;
-
-begin
-  result := false;
-  case casesensitive of
-    false:
-      check(uppercase(s), uppercase(FCurrent));
-    true:
-      check(s, FCurrent);
-  end;
-end;
-
 procedure TStringLoop.Stop;
 begin
   FPosition := fList.Count;
+end;
+
+function TStringLoop.Stop(aReturn:Variant):Variant;
+begin
+  Result := aReturn;
+  Stop;
 end;
 
 function TStringLoop.GetCurrentUpper: string;
@@ -173,7 +216,7 @@ begin
   if isCSV = false then
     fcsv.commatext := FCurrent;
   fcsv.Values[s] := v;
-  SetCurrent(fcsv.commatext);
+  SetCurrentLine(fcsv.commatext);
 end;
 
 function TStringLoop.GetLine(const l: integer): string;
@@ -194,13 +237,20 @@ begin
     fcsv[l] := v;
   except
   end;
-  SetCurrent(fcsv.commatext);
+  SetCurrentLine(fcsv.commatext);
+end;
+
+// Replaces the content of the current line with a new string
+procedure TStringLoop.SetCurrentLine(const s: string);
+begin
+  SetCurrent(s);
+  fList[FPosition - 1] := s;
 end;
 
 procedure TStringLoop.SetCurrent(const s: string);
 begin
   FCurrent := s;
-  fList[FPosition - 1] := s;
+  FPattern.Text := s;
 end;
 
 function TStringLoop.Found: boolean;
@@ -212,7 +262,7 @@ begin
   if i < fList.Count then
   begin
     result := true;
-    FCurrent := fList[i];
+    SetCurrent(fList[i]);
     // If each line is a CSV string and the IsCSV property is set
     // to true, it should be faster to retrive a value (via GetValue).
     if isCSV then
@@ -224,7 +274,7 @@ end;
 procedure TStringLoop.Reset;
 begin
   FPosition := 0;
-  FCurrent := emptystr;
+  SetCurrent(emptystr);
   fcsv.Clear;
 end;
 
@@ -250,6 +300,8 @@ begin
   isCSV := false;
   fList := tstringlist.Create;
   fcsv := tstringlist.Create;
+  fPattern := TStringPattern.Create;
+  fPattern.AllowLock := false;
   if sl <> nil then
     Load(sl);
   Reset;
@@ -263,6 +315,7 @@ end;
 
 destructor TStringLoop.Destroy;
 begin
+  fPattern.Free;
   fList.free;
   fcsv.free;
   inherited;
@@ -279,20 +332,39 @@ begin
   if fPos < fCount then
   begin
     fPos := fPos + 1;
-    fCurrent := gettoken(fTags, fSeparator, fPos);
+    SetCurrent(gettoken(fTags, fSeparator, fPos));
     result := true;
   end;
 end;
 
 procedure TSepStringLoop.Reset;
 begin
-  fCurrent := emptystr;
+  SetCurrent(emptystr);
   fPos := 0;
+end;
+
+procedure TSepStringLoop.SetCurrent(const s: string);
+begin
+  fCurrent := s;
+  fPattern.Text := s;
+end;
+
+procedure TSepStringLoop.Stop;
+begin
+  fPos := fCount;
+end;
+
+function TSepStringLoop.Stop(aReturn:Variant):Variant;
+begin
+  Result := aReturn;
+  Stop;
 end;
 
 constructor TSepStringLoop.Create(const tags: string = '';
   const asep: string = '|');
 begin
+  fPattern := TStringPattern.Create;
+  fPattern.AllowLock := false;
   fTags := tags;
   Reset;
   fSeparator := asep;
@@ -300,6 +372,7 @@ end;
 
 destructor TSepStringLoop.Destroy;
 begin
+  fPattern.Free;
   inherited;
 end;
 

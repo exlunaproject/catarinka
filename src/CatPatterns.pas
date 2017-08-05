@@ -125,12 +125,14 @@ type
     fLastMethod: TValidationMethod;
     fLocked: boolean;
     fMatched: boolean;
+    fText : string;
     fValue: string;
     function AddCheck(const ID: integer; f: TValidationMethod): TStringPattern;
     function AddCheckS(const ID: integer; const param1: string = '')
       : TStringPattern;
     function InList_StringList(const value, listtext: string): boolean;
     function Contains_AnyOfStringList(const value, listtext: string): boolean;
+    function FMatch(value: string): boolean;
     function GetLastMethod: TValidationMethod;
     function GetResultAsString: string;
     procedure MethodParamsToLower;
@@ -172,9 +174,11 @@ type
     function Roman: TStringPattern;
     // main functions
     function Lock: TStringPattern;
-    function Match(value: string): boolean; // case sensitive
-    function MatchI(value: string): boolean; // case insensitive
-    constructor Create;
+    function Match: boolean; overload; // case sensitive
+    function Match(value: string): boolean; overload; // case sensitive
+    function MatchI: boolean; overload; // case insensitive
+    function MatchI(value: string): boolean; overload; // case insensitive
+    constructor Create(const aText:string='');
     destructor Destroy; override;
     // properties
     property AllowLock: boolean read fAllowLock write fAllowLock;
@@ -184,9 +188,13 @@ type
     property Index: integer read fLastIndex;
     property Result: boolean read fMatched;
     property ResultAsStr: string read GetResultAsString;
-    property value: string read fValue;
+    // Value returns the latest string validated through Match functions
+    property Value: string read fValue;
+    // Text allows to set a string to be validated through Match or MatchI when
+    // called with no arguments
+    property Text:string read fText write fText;
     // Match() shorthand
-    property _MatchShortHand[s: string]: boolean read Match; default;
+    property _MatchShortHand[s: string]: boolean read FMatch; default;
   end;
 
 type
@@ -563,13 +571,14 @@ begin
   SetLength(fFuncs, 0);
 end;
 
-constructor TStringPattern.Create;
+constructor TStringPattern.Create(const aText:string='');
 begin
-  inherited;
+  inherited Create;
   fMatched := true;
   fValue := emptystr;
   fLocked := false;
   fAllowLock := true;
+  fText := aText;
   Reset;
 end;
 
@@ -612,16 +621,10 @@ var
   slp: TStringLoop;
 begin
   Result := false;
-  slp := TStringLoop.Create;
-  slp.LoadFromString(listtext);
+  slp := TStringLoop.Create(listtext);
   while slp.Found do
-  begin
     if pos(slp.current, value) <> 0 then
-    begin
-      Result := true;
-      slp.Stop;
-    end;
-  end;
+      Result := slp.Stop(true);
   slp.free;
 end;
 
@@ -732,11 +735,26 @@ begin
   fMatched := Result;
 end;
 
+function TStringPattern.Match: boolean;
+begin
+  result := Match(fText);
+end;
+
 function TStringPattern.MatchI(value: string): boolean;
 begin
   fIgnoreCase := true;
   Result := Match(value);
   fIgnoreCase := false;
+end;
+
+function TStringPattern.MatchI: boolean;
+begin
+  result := MatchI(fText);
+end;
+
+function TStringPattern.FMatch(value: string): boolean;
+begin
+  result := Match(value);
 end;
 
 // ------------------------------------------------------------------------//
