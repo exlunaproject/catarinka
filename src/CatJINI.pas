@@ -130,24 +130,15 @@ end;
 
 function TJIniList.LoadJSON(const FileName: string): Boolean;
 var
-  Stream: TStream;
-  FLines: TStringlist;
+  sl: TStringlist;
 begin
   Result := false;
-  FLines := TStringlist.Create;
-  if FileName <> emptystr then
-  begin
-    Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
-    try
-      FLines.LoadFromStream(Stream);
-      SetJSONLines(FLines.Text);
-      Result := true;
-    except
-      Result := false;
-    end;
-    Stream.Free;
+  sl := TStringlist.Create;
+  if SL_LoadFromFile(sl, Filename) then begin
+    SetJSONLines(sl.Text);
+    Result := true;
   end;
-  FLines.Free;
+  sl.Free;
 end;
 
 function TJIniList.ReadBool(const Section, Key: string;
@@ -175,30 +166,16 @@ begin
   Result := false;
   if FileName = emptystr then
     exit;
-
-  if fileexists(FileName) then begin
-    if fBackup then
-      FileCopy(FileName,FileName + '.bak');
-  end else begin
-    Stream := TFileStream.Create(FileName, fmCreate or fmOpenWrite or
-      fmShareDenyWrite);
-    Stream.Free;
-  end;
-
+  if fBackup and FileExists(filename) then
+    FileCopy(FileName,FileName + '.bak');
+    
   SL := TStringlist.Create;
   SL.Text := fObject.AsJson(true);
-  Stream := TFileStream.Create(FileName, fmOpenWrite or fmShareDenyWrite);
-  Stream.size := 0;
-  try
-    SL.SaveToStream(Stream);
+  if SL_SaveToFile(SL, Filename) then begin
     Result := true;
-  except
-    Result := false;
+    fModified := false;
   end;
-  Stream.Free;
   SL.Free;
-
-  fModified := false;
 end;
 
 procedure TJIniList.WriteBool(const Section, Key: string; Value: Boolean);
