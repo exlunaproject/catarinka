@@ -15,18 +15,23 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.Classes, System.SysUtils;
+  System.Classes, System.SysUtils, RegExpr;
 {$ELSE}
-  Classes, SysUtils;
+  Classes, SysUtils, RegExpr;
 {$ENDIF}
+
+type
+  TCatRegExpr = TRegExpr;
+
 function RegExpFind(const s, re: string): string;
-function RegExpReplace(const s, re, sreplacement: string): string;
-function CatMatch(const substr, s: string): boolean;
+function RegExpReplace(const s, re, sreplacement: string): string; overload;
+function RegExpReplace(const s, re: string; refunc: TRegExprReplaceFunction): string; overload;
+function CatMatch(const sigpattern, s: string): boolean;
 function IsValidEmail(email: string): boolean;
 
 implementation
 
-uses CatStrings, RegExpr;
+uses CatStrings;
 
 function RegExpReplace(const s, re, sreplacement: string): string;
 var
@@ -36,6 +41,19 @@ begin
   try
     r.Expression := re;
     result := r.Replace(s, sreplacement, true);
+  finally
+    r.Free;
+  end;
+end;
+
+function RegExpReplace(const s, re: string; refunc: TRegExprReplaceFunction): string;
+var
+  r: TRegExpr;
+begin
+  r := TRegExpr.Create;
+  try
+    r.Expression := re;
+    result := r.ReplaceEx(s, refunc);
   finally
     r.Free;
   end;
@@ -58,24 +76,42 @@ begin
   end;
 end;
 
-function CatMatch(const substr, s: string): boolean;
+// Allows to match a string using different methods:
+// [somestring] -- case sensitive contains
+// wild:[somestring] -- case sensitive wild match
+// regexp:[expression] -- regular expression
+// icase:[somestring] -- case insensitive contains
+// icase:wild:[somestring] -- case insensitive wild match (* and ?)
+function CatMatch(const sigpattern, s: string): boolean;
 const
+  cIgnoreCase = 'icase:';
   cReEx = 'regexp:';
+  cWild = 'wild:';
 var
-  tmpsub: string;
+  sig, content, pat: string;
 begin
-  result := false;
-  tmpsub := substr;
-  if (pos(cReEx, tmpsub) <> 0) then
+  sig := sigpattern;
+  content := s;
+  if BeginsWith(sig,cIgnoreCase) then
   begin
-    tmpsub := after(tmpsub, cReEx);
-    if (RegExpFind(s, tmpsub) <> emptystr) then
-      result := true;
+    sig := after(sig, cIgnoreCase);
+    sig := lowercase(sig);
+    content := lowercase(content);
+  end;
+  if BeginsWith(sig,cReEx) then
+  begin
+    pat := after(sig, cReEx);
+    result := (RegExpFind(content, pat) <> emptystr);
+  end
+  else
+  if BeginsWith(sig,cWild) then
+  begin
+    pat := after(sig, cWild);
+    result := MatchStrings(content, pat);
   end
   else
   begin
-    if (pos(tmpsub, s) <> 0) then
-      result := true;
+    result := (pos(sig, content) <> 0);
   end;
 end;
 

@@ -92,6 +92,7 @@ function BoolToDisplayState(const b: boolean): string;
 function ColorToHTMLColor(const Color: TColor): string;
 function DequoteHTMLAttribValue(const s: string): string;
 function HtmlColorToColor(const Color: string): TColor;
+function HtmlEntityEncode(const s: string): string;
 function HtmlEntityDecode(const s: string): string;
 function HtmlEscape(const s: string): string;
 function HtmlUnescape(const s: string): string;
@@ -133,7 +134,7 @@ function URLPathTitleCase(const s: string): string;
 implementation
 
 uses
-  CatStrings, CatJSON;
+  CatStrings, CatJSON, CatEntities;
 
 function BoolToDisplayState(const b: boolean): string;
 begin
@@ -372,22 +373,46 @@ begin
   end;
 end;
 
+// Converts special characters to their HTML entity encoded counterparts
 function HtmlEscape(const s: string): string;
 begin
   result := replacestr(s, '&', '&amp;');
   result := replacestr(result, '<', '&lt;');
   result := replacestr(result, '>', '&gt;');
   result := replacestr(result, '"', '&quot;');
-  result := replacestr(result, '''', '&#x27;');
+  result := replacestr(result, '''', '&#x27;'); // same as &apos;
+  // The symbolic entity &apos; was originally not included in the HTML spec and
+  // might therefore not be supported by all browsers
 end;
 
+// Reverts HTML escape of special characters
 function HtmlUnescape(const s: string): string;
 begin
-  result := replacestr(s, '&amp;', '&');
-  result := replacestr(result, '&lt;', '<');
+  result := replacestr(s, '&lt;', '<');
   result := replacestr(result, '&gt;', '>');
   result := replacestr(result, '&quot;', '"');
+  result := replacestr(result, '&apos;', '''');
   result := replacestr(result, '&#x27;', '''');
+  result := replacestr(result, '&#39;', '''');
+  result := replacestr(result, '&amp;', '&');
+end;
+
+function HtmlEntityDecode(const s: string): string;
+var
+  d:THTMLEntities;
+begin
+  d := THTMLEntities.Create;
+  result := d.Decode(s);
+  d.Free;
+end;
+
+function HtmlEntityEncode(const s: string): string;
+var
+  d:THTMLEntities;
+begin
+  d := THTMLEntities.Create;
+  result := d.Encode(s);
+  d.Free;
 end;
 
 // Returns the value of field from a request/response header
@@ -520,14 +545,6 @@ begin
   end;
   result := postdata;
   slp.free;
-end;
-
-function HtmlEntityDecode(const s: string): string;
-begin
-  result := replacestr(s, '&lt;', '<');
-  result := replacestr(result, '&gt;', '>');
-  result := replacestr(result, '&quot;', '"');
-  result := replacestr(result, '&amp;', '&');
 end;
 
 function ExtractHTTPRequestPath(const r: string): string;
@@ -723,8 +740,6 @@ begin
    fParamNameLower:=lowercase(fParamName);
  end;
 end;
-
-end.
 
 // ------------------------------------------------------------------------//
 end.

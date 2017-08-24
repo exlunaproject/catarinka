@@ -84,3 +84,7 @@ This project is inspired by Sailor's Valua (Validation for Lua) and Respect Vali
 Catarinka Patterns was developed by Felipe Daragon, [Syhunt](http://www.syhunt.com/).
 
 This project is licensed under a 3-clause BSD license - see the LICENSE file for details.
+
+### See Also
+
+* [FluentQuery](https://github.com/malcolmgroves/FluentQuery)
