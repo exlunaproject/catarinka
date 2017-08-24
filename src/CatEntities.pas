@@ -392,6 +392,9 @@ var
   i: integer;
 begin
   result := replacestr(s, '&', '&amp;');
+  // The symbolic entity &apos; was originally not included in the HTML spec and
+  // might therefore not be supported by all browsers, so use &#x27;
+  result := replacestr(result, '''', '&#x27;');
   for i := Low(THTMLEntityMap) to High(THTMLEntityMap) do
     if CanEncodeEntity(THTMLEntityMap[I]) then
     result := ReplaceStr(result, THTMLEntityMap[I].char, '&'+THTMLEntityMap[I].name+';');
