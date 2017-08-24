@@ -391,7 +391,7 @@ function THTMLEntities.Encode(const s:string):string;
 var
   i: integer;
 begin
-  result := s;
+  result := replacestr(s, '&', '&amp;');
   for i := Low(THTMLEntityMap) to High(THTMLEntityMap) do
     if CanEncodeEntity(THTMLEntityMap[I]) then
     result := ReplaceStr(result, THTMLEntityMap[I].char, '&'+THTMLEntityMap[I].name+';');
