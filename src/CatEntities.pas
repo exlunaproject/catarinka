@@ -443,7 +443,7 @@ function THTMLEntities.HextoDec(ARegExpr : TCatRegExpr): string;
 var
   code:string;
 begin
-  code := StripChars(aregexpr.Match[0], ['&','#','x',';']);
+  code := StripChars(aregexpr.Match[0], ['&','#','x','X',';']);
   result := '&#'+InttoStr(HexToInt(code))+';';
 end;
 
