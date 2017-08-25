@@ -15,7 +15,8 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 * `TCatChromium` - A web browser component built on top of WACEF3/DCEF3.
 * `TCatConsole` - Console component built on top of a modified version of the Console component by Michael Elsd�rfer.
 * `TCatHighlighters` - Provides quick access to multiple SynEdit highlighters with a color scheme adapted from the CodeRay project.
-* `TCatHTMLParser` - HTML Parser based on a component by Przemyslaw Jankowski
+* `THTMLEntities` - HTML Entity Encoder and Decoder.
+* `TCatHTMLParser` - HTML Parser based on a component by Przemyslaw Jankowski.
 * `TCatJSON` - JSON Manipulation component built on top of the SuperObject.
 * `TCatListEditor` - A list editor based on SuperList by David Koretzky.
 * `TCatMsg`, `TCatMsgCromis` - Easy to deploy IPC components.
