@@ -47,6 +47,7 @@
   ChangeLog:
     26.08.2017:
   - Moved TStringLoop's CSV methods to a separate class (TCSVLoop)
+  - Reset TSepStringLoop when setting a new string
     05.08.2017:
   - Added Pattern property that allows to call pattern matching functions
   - Removed Contains() which now can be called through Pattern property.
@@ -120,6 +121,7 @@ type
     fPos: integer;
     fTags: string; // a separated string
     fSeparator: string;
+    procedure SetTags(const s: string);
     procedure SetCurrent(const s: string);
   public
     constructor Create(const tags: string = ''; const asep: string = '|');
@@ -134,7 +136,7 @@ type
     property Pattern: TStringPattern read fPattern;
     property Position: integer read fPos;
     property Separator: string read fSeparator write fSeparator;
-    property Tags: string read fTags write fTags;
+    property Tags: string read fTags write SetTags;
   end;
 
 { TCSVLoop loops through a comma-separated value (CSV) list }
@@ -367,6 +369,12 @@ begin
   end;
 end;
 
+procedure TSepStringLoop.SetTags(const s: string);
+begin
+  fTags := s;
+  Reset;
+end;
+
 procedure TSepStringLoop.Reset;
 begin
   SetCurrent(emptystr);
@@ -395,8 +403,7 @@ constructor TSepStringLoop.Create(const tags: string = '';
 begin
   fPattern := TStringPattern.Create;
   fPattern.AllowLock := false;
-  fTags := tags;
-  Reset;
+  SetTags(tags);
   fSeparator := asep;
 end;
 
