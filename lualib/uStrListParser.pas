@@ -115,10 +115,13 @@ end;
 
 function method_getvalue(L: PLua_State): Integer; cdecl;
 var
-  ht: TCatarinkaStrListParser;
+  ht: TCatarinkaStrListParser; sl: TStringList;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  lua_pushstring(L, ht.obj.getvalue(lua_tostring(L, 2)));
+  sl := TStringList.Create;
+  sl.CommaText := ht.obj.Current;
+  lua_pushstring(L, sl.values[lua_tostring(L, 2)]);
+  sl.Free;
   result := 1;
 end;
 
@@ -201,8 +204,6 @@ begin
   end
   else if CompareText(propName, 'current') = 0 then
     obj.Current := AValue
-  else if CompareText(propName, 'iscsv') = 0 then
-    obj.iscsv := AValue
   else if CompareText(propName, 'text') = 0 then
     obj.loadfromstring(AValue)
   else
