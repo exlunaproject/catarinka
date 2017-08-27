@@ -722,7 +722,7 @@ begin
     params := gettoken(url, '?', 2);
     params := replacestr(params,'&',crlf);
   end;
-  fList.CommaText := params;
+  LoadFromString(params);
   Reset;
 end;
 
