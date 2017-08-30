@@ -260,20 +260,19 @@ function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
   const casesensitive: Boolean = true): integer;
 var
   i: integer;
+  astr: string;
 begin
   result := -1; // label not found
-  for i := 0 to high(labels) do
+  astr := s;
+  if casesensitive = false then begin
+    astr := lowercase(astr);
+    for i := low(labels) to high(labels) do
+      labels[i].name := lowercase(labels[i].name);
+  end;
+  for i := low(labels) to high(labels) do
   begin
-    if casesensitive then
-    begin
-      if s = labels[i].name then
-        result := labels[i].id;
-    end
-    else
-    begin
-      if lowercase(s) = lowercase(labels[i].name) then
-        result := labels[i].id;
-    end;
+    if astr = labels[i].name then
+      result := labels[i].id;
     if result <> -1 then
       break;
   end;
