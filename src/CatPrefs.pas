@@ -87,7 +87,7 @@ function TCatPreferences.Encrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := strtoaes(Value, GetDCPKey(CATKEY_PASSWORD), false)
+    result := ansistrtoaes(Value, GetDCPKey(CATKEY_PASSWORD))
   else
     result := Value;
 end;
@@ -96,7 +96,7 @@ function TCatPreferences.Decrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := aestostr(Value, GetDCPKey(CATKEY_PASSWORD), false)
+    result := aestoansistr(Value, GetDCPKey(CATKEY_PASSWORD))
   else
     result := Value;
 end;
