@@ -121,7 +121,7 @@ uses
   ExtPascalUtils, synacode, pLua, pLuaTable,
   uStrList, uStrListParser, uHTMLParser, uJSON, uTarman,
   CatStrings, CatJSON, CatRegex, CatFiles, CatHTTP, CatUtils,
-  CatInet, CatTasks, CatCLUtils, CatCSUtils;
+  CatInet, CatTasks, CatCLUtils, CatCSUtils, CatHashes;
 
 function console_printgreen(L: plua_State): integer; cdecl;
 begin

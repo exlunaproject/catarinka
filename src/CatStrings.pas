@@ -6,7 +6,6 @@ unit CatStrings;
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
-  Base64 encode and decode functions by Lukas Gebauer (BSD license, included below)
   MD5 function by Stijn Sanders (MIT license, included at the end of this file)
   IScan, SplitString, GetTextBetweenTags functions by Peter Below
   MatchStrings and PosX functions by Arsne von Wyss
@@ -85,7 +84,6 @@ function MatchStrInArray(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MemStreamToStr(m: TMemoryStream): String;
-function MD5Hash(s: UTF8String): UTF8String;
 function Occurs(substr, s: string): integer;
 function RandomCase(const s: string;
   const ToUpperSet: TSysCharSet = ['a' .. 'z'];
@@ -132,6 +130,9 @@ const
 
 implementation
 
+uses
+  CatBase64;
+
 {$IFDEF CHARINSET_UNAVAILABLE}
 
 // Before D2009
@@ -167,6 +168,16 @@ begin
     c := s[i];
     result := result + ord(c) shl ((len - i) shl 8);
   end;
+end;
+
+function Base64Encode(const s: string): string;
+begin
+  Result := CatBase64.Base64Encode(s);
+end;
+
+function Base64Decode(const s: string): string;
+begin
+  Result := CatBase64.Base64Decode(s);
 end;
 
 function Before(const s, substr: string): string;
@@ -1184,280 +1195,6 @@ end;
 function MemStreamToStr(m: TMemoryStream): String;
 begin
   SetString(Result, PAnsiChar(AnsiString(m.Memory)), M.Size);
-end;
-
-// CONTRIBUTED ------------------------------------------------------------//
-// Base64 encoder and decoder taken from Ararat Synapse's synacode.pas
-{
-  | Copyright (c)1999-2007, Lukas Gebauer                                        |
-  | All rights reserved.                                                         |
-  |                                                                              |
-  | Redistribution and use in source and binary forms, with or without           |
-  | modification, are permitted provided that the following conditions are met:  |
-  |                                                                              |
-  | Redistributions of source code must retain the above copyright notice, this  |
-  | list of conditions and the following disclaimer.                             |
-  |                                                                              |
-  | Redistributions in binary form must reproduce the above copyright notice,    |
-  | this list of conditions and the following disclaimer in the documentation    |
-  | and/or other materials provided with the distribution.                       |
-  |                                                                              |
-  | Neither the name of Lukas Gebauer nor the names of its contributors may      |
-  | be used to endorse or promote products derived from this software without    |
-  | specific prior written permission.                                           |
-  |                                                                              |
-  | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  |
-  | AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    |
-  | IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE   |
-  | ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR  |
-  | ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL       |
-  | DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR   |
-  | SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER   |
-  | CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT           |
-  | LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY    |
-  | OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH  |
-  | DAMAGE.                                                                      |
-}
-function Encode3to4(const Value, Table: AnsiString): AnsiString;
-var
-  c: Byte;
-  n, l: integer;
-  count: integer;
-  DOut: array [0 .. 3] of Byte;
-begin
-  SetLength(result, ((length(Value) + 2) div 3) * 4);
-  l := 1;
-  count := 1;
-  while count <= length(Value) do
-  begin
-    c := ord(Value[count]);
-    inc(count);
-    DOut[0] := (c and $FC) shr 2;
-    DOut[1] := (c and $03) shl 4;
-    if count <= length(Value) then
-    begin
-      c := ord(Value[count]);
-      inc(count);
-      DOut[1] := DOut[1] + (c and $F0) shr 4;
-      DOut[2] := (c and $0F) shl 2;
-      if count <= length(Value) then
-      begin
-        c := ord(Value[count]);
-        inc(count);
-        DOut[2] := DOut[2] + (c and $C0) shr 6;
-        DOut[3] := (c and $3F);
-      end
-      else
-      begin
-        DOut[3] := $40;
-      end;
-    end
-    else
-    begin
-      DOut[2] := $40;
-      DOut[3] := $40;
-    end;
-    for n := 0 to 3 do
-    begin
-      if (DOut[n] + 1) <= length(Table) then
-      begin
-        result[l] := Table[DOut[n] + 1];
-        inc(l);
-      end;
-    end;
-  end;
-  SetLength(result, l - 1);
-end;
-
-function Decode4to3Ex(const Value, Table: AnsiString): AnsiString;
-var
-  x, y, lv: integer;
-  d: integer;
-  dl: integer;
-  c: Byte;
-  P: integer;
-begin
-  lv := length(Value);
-  SetLength(result, lv);
-  x := 1;
-  dl := 4;
-  d := 0;
-  P := 1;
-  while x <= lv do
-  begin
-    y := ord(Value[x]);
-    if y in [33 .. 127] then
-      c := ord(Table[y - 32])
-    else
-      c := 64;
-    inc(x);
-    if c > 63 then
-      continue;
-    d := (d shl 6) or c;
-    Dec(dl);
-    if dl <> 0 then
-      continue;
-    result[P] := AnsiChar((d shr 16) and $FF);
-    inc(P);
-    result[P] := AnsiChar((d shr 8) and $FF);
-    inc(P);
-    result[P] := AnsiChar(d and $FF);
-    inc(P);
-    d := 0;
-    dl := 4;
-  end;
-  case dl of
-    1:
-      begin
-        d := d shr 2;
-        result[P] := AnsiChar((d shr 8) and $FF);
-        inc(P);
-        result[P] := AnsiChar(d and $FF);
-        inc(P);
-      end;
-    2:
-      begin
-        d := d shr 4;
-        result[P] := AnsiChar(d and $FF);
-        inc(P);
-      end;
-  end;
-  SetLength(result, P - 1);
-end;
-
-function Base64Encode(const s: string): string;
-const
-  TableBase64 =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-begin
-  result := string(Encode3to4(AnsiString(s), TableBase64));
-end;
-
-function Base64Decode(const s: string): string;
-const
-  ReTablebase64 = #$40 + #$40 + #$40 + #$40 + #$40 + #$40 + #$40 + #$40 + #$40 +
-    #$40 + #$3E + #$40 + #$40 + #$40 + #$3F + #$34 + #$35 + #$36 + #$37 + #$38 +
-    #$39 + #$3A + #$3B + #$3C + #$3D + #$40 + #$40 + #$40 + #$40 + #$40 + #$40 +
-    #$40 + #$00 + #$01 + #$02 + #$03 + #$04 + #$05 + #$06 + #$07 + #$08 + #$09 +
-    #$0A + #$0B + #$0C + #$0D + #$0E + #$0F + #$10 + #$11 + #$12 + #$13 + #$14 +
-    #$15 + #$16 + #$17 + #$18 + #$19 + #$40 + #$40 + #$40 + #$40 + #$40 + #$40 +
-    #$1A + #$1B + #$1C + #$1D + #$1E + #$1F + #$20 + #$21 + #$22 + #$23 + #$24 +
-    #$25 + #$26 + #$27 + #$28 + #$29 + #$2A + #$2B + #$2C + #$2D + #$2E + #$2F +
-    #$30 + #$31 + #$32 + #$33 + #$40 + #$40 + #$40 + #$40 + #$40 + #$40;
-begin
-  result := string(Decode4to3Ex(AnsiString(s), ReTablebase64));
-end;
-
-{
-
-  Taken from md5.pas v1.0.3
-  Copyright 2012-2013 Stijn Sanders
-  License: MIT (http://opensource.org/licenses/mit-license.php)
-
-  https://github.com/stijnsanders/TMongoWire/blob/master/mongoAuth.pas
-
-  Based on http://www.ietf.org/rfc/rfc1321.txt
-
-}
-
-function MD5Hash(s: UTF8String): UTF8String;
-const
-  roll1: array [0 .. 3] of cardinal = (7, 12, 17, 22);
-  roll2: array [0 .. 3] of cardinal = (5, 9, 14, 20);
-  roll3: array [0 .. 3] of cardinal = (4, 11, 16, 23);
-  roll4: array [0 .. 3] of cardinal = (6, 10, 15, 21);
-  base1: array [0 .. 15] of cardinal = ($D76AA478, $E8C7B756, $242070DB,
-    $C1BDCEEE, $F57C0FAF, $4787C62A, $A8304613, $FD469501, $698098D8, $8B44F7AF,
-    $FFFF5BB1, $895CD7BE, $6B901122, $FD987193, $A679438E, $49B40821);
-  base2: array [0 .. 15] of cardinal = ($F61E2562, $C040B340, $265E5A51,
-    $E9B6C7AA, $D62F105D, $02441453, $D8A1E681, $E7D3FBC8, $21E1CDE6, $C33707D6,
-    $F4D50D87, $455A14ED, $A9E3E905, $FCEFA3F8, $676F02D9, $8D2A4C8A);
-  base3: array [0 .. 15] of cardinal = ($FFFA3942, $8771F681, $6D9D6122,
-    $FDE5380C, $A4BEEA44, $4BDECFA9, $F6BB4B60, $BEBFBC70, $289B7EC6, $EAA127FA,
-    $D4EF3085, $04881D05, $D9D4D039, $E6DB99E5, $1FA27CF8, $C4AC5665);
-  base4: array [0 .. 15] of cardinal = ($F4292244, $432AFF97, $AB9423A7,
-    $FC93A039, $655B59C3, $8F0CCC92, $FFEFF47D, $85845DD1, $6FA87E4F, $FE2CE6E0,
-    $A3014314, $4E0811A1, $F7537E82, $BD3AF235, $2AD7D2BB, $EB86D391);
-  Hex: array [0 .. 15] of AnsiChar = '0123456789abcdef';
-var
-  a: cardinal;
-  dl, i, J, k, l: integer;
-  d: array of cardinal;
-  g, h: array [0 .. 3] of cardinal;
-begin
-  a := length(s);
-  dl := a + 9;
-  if (dl and $3F) <> 0 then
-    dl := (dl and $FFC0) + $40;
-  i := dl;
-  dl := dl shr 2;
-  SetLength(d, dl);
-  SetLength(s, i);
-  J := a + 1;
-  s[J] := #$80;
-  while J < i do
-  begin
-    inc(J);
-    s[J] := #0;
-  end;
-  Move(s[1], d[0], i);
-  d[dl - 2] := a shl 3;
-  h[0] := $67452301;
-  h[1] := $EFCDAB89;
-  h[2] := $98BADCFE;
-  h[3] := $10325476;
-  i := 0;
-  while i < dl do
-  begin
-    g := h;
-    J := i;
-    for k := 0 to 15 do
-    begin
-      l := k * 3;
-      a := h[l and 3] + ((h[(l + 1) and 3] and h[(l + 2) and 3]) or
-        (not(h[(l + 1) and 3]) and h[(l + 3) and 3])) + d[J] + base1[k];
-      h[l and 3] := h[(l + 1) and 3] +
-        ((a shl roll1[k and 3]) or (a shr (32 - roll1[k and 3])));
-      inc(J);
-    end;
-    J := 1;
-    for k := 0 to 15 do
-    begin
-      l := k * 3;
-      a := h[l and 3] + ((h[(l + 3) and 3] and h[(l + 1) and 3]) or
-        (not(h[(l + 3) and 3]) and h[(l + 2) and 3])) + d[i or (J and $F)]
-        + base2[k];
-      h[l and 3] := h[(l + 1) and 3] +
-        ((a shl roll2[k and 3]) or (a shr (32 - roll2[k and 3])));
-      inc(J, 5);
-    end;
-    J := 5;
-    for k := 0 to 15 do
-    begin
-      l := k * 3;
-      a := h[l and 3] + (h[(l + 1) and 3] xor h[(l + 2) and 3] xor h[(l + 3) and
-        3]) + d[i or (J and $F)] + base3[k];
-      h[l and 3] := h[(l + 1) and 3] +
-        ((a shl roll3[k and 3]) or (a shr (32 - roll3[k and 3])));
-      inc(J, 3);
-    end;
-    J := 0;
-    for k := 0 to 15 do
-    begin
-      l := k * 3;
-      a := h[l and 3] + (h[(l + 2) and 3] xor (h[(l + 1) and 3] or
-        not h[(l + 3) and 3])) + d[i or (J and $F)] + base4[k];
-      h[l and 3] := h[(l + 1) and 3] +
-        ((a shl roll4[k and 3]) or (a shr (32 - roll4[k and 3])));
-      inc(J, 7);
-    end;
-    for k := 0 to 3 do
-      inc(h[k], g[k]);
-    inc(i, 16);
-  end;
-  SetLength(result, 32);
-  for k := 0 to 31 do
-    result[k + 1] := Hex[h[k shr 3] shr ((k xor 1) shl 2) and $F];
 end;
 
 // ------------------------------------------------------------------------//
