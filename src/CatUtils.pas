@@ -3,7 +3,7 @@ unit CatUtils;
 {
   Catarinka - Utils
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -14,11 +14,13 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  Winapi.Windows, Vcl.Forms;
+  Winapi.Windows, System.SysUtils, Vcl.Forms;
 {$ELSE}
-  Windows, Forms;
+  Windows, SysUtils, Forms;
 {$ENDIF}
 procedure CatDelay(const ms: Integer);
+procedure OutDebug(const s: string);
+procedure SetShortDateFormat(const s: string);
 
 implementation
 
@@ -26,9 +28,9 @@ procedure CatDelay(const ms: Integer);
 var
   c, te: Integer;
 begin
-  c := integer(GetTickCount);
+  c := Integer(GetTickCount);
   repeat
-    te := integer(GetTickCount) - c;
+    te := Integer(GetTickCount) - c;
     if te < 0 then
       te := te + MaxInt;
 
@@ -38,6 +40,24 @@ begin
     else
       break;
   until False;
+end;
+
+procedure OutDebug(const s: string);
+begin
+{$IFDEF UNICODE}
+  OutputDebugString(pWideChar(WideString(s)));
+{$ELSE}
+  OutputDebugString(pAnsiChar(AnsiString(s)));
+{$ENDIF}
+end;
+
+procedure SetShortDateFormat(const s: string);
+begin
+{$IFDEF DXE2_OR_UP}
+  FormatSettings.SHORTDATEFORMAT := s;
+{$ELSE}
+  SHORTDATEFORMAT := s;
+{$ENDIF}
 end;
 
 // ------------------------------------------------------------------------//

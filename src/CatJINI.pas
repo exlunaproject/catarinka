@@ -161,7 +161,6 @@ end;
 function TJIniList.SaveJSON(const FileName: string): Boolean;
 var
   SL: TStringlist;
-  Stream: TStream;
 begin
   Result := false;
   if FileName = emptystr then

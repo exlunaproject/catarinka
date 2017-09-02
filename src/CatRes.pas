@@ -4,7 +4,7 @@ unit CatRes;
   Catarinka - Catarinka Resources Library
   Useful functions for reading or saving resources
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -19,22 +19,29 @@ uses
 {$ELSE}
   SysUtils, Windows, Jpeg, Classes;
 {$ENDIF}
-
-type
-  MyPWideChar = {$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF};
-
-function GetResourceAsPointer(const ResName, ResType: MyPWideChar;
-  out Size: longword): pointer;
-function GetResourceAsString(const ResName, ResType: MyPWideChar): string;
 function GetResourceAsJpeg(const ResName: string): TJPEGImage;
-procedure SaveResourceAsFile(const ResName: string; const ResType: MyPWideChar;
-  const FileName: string);
-function SaveResourceAsTempFile(const ResName: string;
-  const ResType: MyPWideChar): string;
+function GetResourceAsPointer(const ResName, ResType: string;
+  out Size: longword): pointer;
+function GetResourceAsString(const ResName, ResType: string): string;
+function SaveResourceAsTempFile(const ResName, ResType: string): string;
+procedure SaveResourceAsFile(const ResName, ResType, FileName: string);
 
 implementation
 
-uses CatFiles;
+uses CatFiles, CatStrings;
+
+{$IFDEF UNICODE}
+
+function StrToResType(const s: string): PWideChar;
+begin
+  result := StrToPWideChar(s);
+end;
+{$ELSE}
+
+function StrToResType(const s: string): PAnsiChar;
+result := PAnsiChar(AnsiString(s));
+end;
+{$ENDIF}
 
 // Usage Example:
 // Jpg := GetResourceAsJpeg('sample_jpg');
@@ -45,27 +52,26 @@ var
 begin
   rs := TResourceStream.Create(hInstance, ResName, 'JPEG');
   try
-    Result := TJPEGImage.Create;
-    Result.LoadFromStream(rs);
+    result := TJPEGImage.Create;
+    result.LoadFromStream(rs);
   finally
     rs.Free;
   end;
 end;
 
 // Example: Memo1.Lines.Text := GetResourceAsString('sample_txt', 'text');
-function GetResourceAsString(const ResName, ResType: MyPWideChar): string;
+function GetResourceAsString(const ResName, ResType: string): string;
 var
-  rd: pansichar; // resource data
+  rd: PAnsiChar; // resource data
   sz: longword; // resource size
 begin
   rd := GetResourceAsPointer(ResName, ResType, sz);
-  SetString(Result, rd, sz);
+  SetString(result, rd, sz);
 end;
 
-procedure SaveResourceAsFile(const ResName: string; const ResType: MyPWideChar;
-  const FileName: string);
+procedure SaveResourceAsFile(const ResName, ResType, FileName: string);
 begin
-  with TResourceStream.Create(hInstance, ResName, ResType) do
+  with TResourceStream.Create(hInstance, ResName, StrToResType(ResType)) do
     try
       SaveToFile(FileName);
     finally
@@ -73,23 +79,23 @@ begin
     end;
 end;
 
-{ 
+{
   Usage Example:
   procedure TForm1.FormCreate(Sender: TObject);
   var size: longword; sample_wav: pointer;
   begin
-   sample_wav := GetResourceAsPointer('sample_wav', 'wave', size);
-   sndPlaySound(sample_wav, SND_MEMORY or SND_NODEFAULT or SND_ASYNC);
+  sample_wav := GetResourceAsPointer('sample_wav', 'wave', size);
+  sndPlaySound(sample_wav, SND_MEMORY or SND_NODEFAULT or SND_ASYNC);
   end;
-} 
+}
 // Based on an example from the Pascal Newsletter #25
-function GetResourceAsPointer(const ResName, ResType: MyPWideChar;
+function GetResourceAsPointer(const ResName, ResType: string;
   out Size: longword): pointer;
 var
   ib: HRSRC; // InfoBlock
   gmb: HGLOBAL; // GlobalMemoryBlock
 begin
-  ib := FindResource(hInstance, ResName, ResType);
+  ib := FindResource(hInstance, StrToResType(ResName), StrToResType(ResType));
   if ib = 0 then
     raise Exception.Create(SysErrorMessage(GetLastError));
   Size := SizeofResource(hInstance, ib);
@@ -98,16 +104,15 @@ begin
   gmb := LoadResource(hInstance, ib);
   if gmb = 0 then
     raise Exception.Create(SysErrorMessage(GetLastError));
-  Result := LockResource(gmb);
-  if Result = nil then
+  result := LockResource(gmb);
+  if result = nil then
     raise Exception.Create(SysErrorMessage(GetLastError));
 end;
 
-function SaveResourceAsTempFile(const ResName: string;
-  const ResType: MyPWideChar): string;
+function SaveResourceAsTempFile(const ResName, ResType: string): string;
 begin
-  Result := GetWindowsTempDir + 'temp_' + ResName;
-  SaveResourceAsFile(ResName, ResType, Result);
+  result := GetWindowsTempDir + 'temp_' + ResName;
+  SaveResourceAsFile(ResName, ResType, result);
 end;
 
 // ------------------------------------------------------------------------//

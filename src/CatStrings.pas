@@ -84,6 +84,7 @@ function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
 function MatchStrInArray(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
+function MemStreamToStr(m: TMemoryStream): String;
 function MD5Hash(s: UTF8String): UTF8String;
 function Occurs(substr, s: string): integer;
 function RandomCase(const s: string;
@@ -846,7 +847,7 @@ begin
   result := [];
   if s = emptystr then
     Exit;
-  P := PAnsiChar(s);
+  P := PAnsiChar(AnsiString(s));
   while P^ <> #0 do
   begin
     Include(result, P^);
@@ -1178,6 +1179,11 @@ begin
     Max := length(s);
   end;
   MatchStrings := true;
+end;
+
+function MemStreamToStr(m: TMemoryStream): String;
+begin
+  SetString(Result, PAnsiChar(AnsiString(m.Memory)), M.Size);
 end;
 
 // CONTRIBUTED ------------------------------------------------------------//

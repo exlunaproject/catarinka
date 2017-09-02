@@ -91,7 +91,7 @@ end;
 
 procedure TStringListCache.SaveToFile(const AFilename:string);
 var
-  slp:TStringLoop; j:TCatJSON;
+  j:TCatJSON;
   csl: TCachedStringList;
   m, c: integer;
 begin

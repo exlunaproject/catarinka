@@ -2,7 +2,7 @@ unit CatZIP;
 {
   Catarinka - ZIP Compression/Decompression
 
-  Copyright (c) 2013-2015 Felipe Daragon
+  Copyright (c) 2013-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -21,9 +21,8 @@ procedure ExtractZIPFile(const zipname, filename, outfilename: string);
 procedure ExtractZIPFileToStream(const zipname, filename: string;
   ms: TMemoryStream);
 procedure GUnZipStream(Document: TMemoryStream);
-procedure GUnZipTStream(var Document: TStream);
 procedure GZipAFile(const outzipname, infilename, filetozip: string);
-procedure GZipTStream(var Document: TStream);
+procedure GZipStream(Document: TStream);
 function GetTextFileFromZIP(const zipname, filename: string): string;
 function ZIPFileExists(const zipname, filename: string): boolean;
 
@@ -31,10 +30,6 @@ implementation
 
 uses CatStrings, AbZipKit, AbUtils, AbGzTyp;
 
-// WIP: Functions marked as untested need testing to make sure that they
-// are working properly.
-
-// working
 procedure GUnZipStream(Document: TMemoryStream);
 var
   kit: TAbGzipStreamHelper;
@@ -53,26 +48,7 @@ begin
   kit.free;
 end;
 
-// untested
-procedure GUnZipTStream(var Document: TStream);
-var
-  kit: TAbGzipStreamHelper;
-  outms: TMemoryStream;
-begin
-  kit := TAbGzipStreamHelper.Create(Document);
-  if kit.FindFirstItem then
-  begin
-    outms := TMemoryStream.Create;
-    kit.ExtractItemData(outms);
-    outms.Position := 0;
-    outms.SaveToStream(Document);
-    outms.free;
-  end;
-  kit.free;
-end;
-
-// untested
-procedure GZipTStream(var Document: TStream);
+procedure GZipStream(Document: TStream);
 var
   kit: TAbZipKit;
   ms: TMemoryStream;
@@ -88,7 +64,6 @@ begin
   kit.free;
 end;
 
-// working
 procedure GZipAFile(const outzipname, infilename, filetozip: string);
 var
   kit: TAbZipKit;
@@ -123,7 +98,6 @@ begin
   ms.Position := 0;
 end;
 
-// working
 procedure ExtractZIPFile(const zipname, filename, outfilename: string);
 var
   kit: TAbZipKit;
@@ -142,7 +116,6 @@ begin
   ms.free;
 end;
 
-// working
 function GetTextFileFromZIP(const zipname, filename: string): string;
 var
   kit: TAbZipKit;
@@ -165,7 +138,6 @@ begin
   ms.free;
 end;
 
-// working
 function ZIPFileExists(const zipname, filename: string): boolean;
 var
   kit: TAbZipKit;
