@@ -24,7 +24,7 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 * `TCatPreferences` - JSON-Based settings management component
 * `TCatStorage` - VFS/Cache component that uses the Structured Storage library by Primoz Gabrijelcic.
 * `TCatSynEdit` - Enhanced SynEdit with popup menu and improved scrolling.
-* `TJIniList` - INIList-Like component using JSON
+* `TJIniList` - INI-Like component using JSON
 * `TStringListCache` - Caches multiple string lists, allowing them to be loaded or saved together to a file.
 * `TStringLoop`, `TSepStringLoop` - Simple components for looping through a string list or a separated string.
 * Several libraries with string manipulation functions, file system functions and more.

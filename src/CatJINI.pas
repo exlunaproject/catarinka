@@ -1,13 +1,16 @@
 unit CatJINI;
 {
-  Catarinka TJIniList - JSON INIList-Like component
+  Catarinka TJIniList - JSON-Based INI-Like component
 
   Copyright (c) 2010-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
-  This component was made to replace the TIniList component.
-  It is also similar to TStringList (with the property Values, Strings and Count).
+  This component was made as an alternative to the TIniList component (by
+  Simon Reinhardt) and, for this reason, it shares many of its properties.
+  Like TIniList, it holds all the values in memory, not in a file. With
+  SaveToFile and LoadFromFile the values are written or read to/from a file
+  using the JSON format.
 }
 
 interface
@@ -31,23 +34,23 @@ type
     fModified: Boolean;
     fObject: ISuperObject;
     fVersion: string;
-    function GetJSONLines: string;
-    procedure SetJSONLines(json: string);
+    function GetJSON: string;
+    procedure SetJSON(json: string);
     function GetValue(const Key: string): string;
     procedure SetValue(const Key: string; const Value: string);
     function GetCount: integer;
     function FilterPath(s: string): string;
-    procedure GetSectionKeyPath(var Section,Key,Path:string);
+    procedure GetSectionKeyPath(var Section, Key, Path: string);
   public
     constructor Create;
     destructor Destroy; override;
-    function SaveJSON: Boolean; overload;
-    function SaveJSON(const FileName: string): Boolean; overload;
-    function SectionExists(Section:string):boolean;
-    function SectionKeyExists(Section, Key: string):boolean;
+    function SaveToFile: Boolean; overload;
+    function SaveToFile(const FileName: string): Boolean; overload;
+    function SectionExists(Section: string): Boolean;
+    function SectionKeyExists(Section, Key: string): Boolean;
     procedure Clear;
-    function LoadJSON: Boolean; overload;
-    function LoadJSON(const FileName: string): Boolean; overload;
+    function LoadFromFile: Boolean; overload;
+    function LoadFromFile(const FileName: string): Boolean; overload;
     function ReadString(Section, Key, default: string): string;
     procedure WriteString(Section, Key, Value: string; Format: string = '');
     function ReadInteger(const Section, Key: string; default: integer): integer;
@@ -60,10 +63,10 @@ type
       AddIfRepeated: Boolean);
     // properties
     property Backup: Boolean read fBackup write fBackup;
-    property CaseSensitive: boolean read fCaseSensitive write fCaseSensitive;
+    property CaseSensitive: Boolean read fCaseSensitive write fCaseSensitive;
     property Count: integer read GetCount;
     property FileName: string read fFileName write fFileName;
-    property Text: string read GetJSONLines write SetJSONLines;
+    property Text: string read GetJSON write SetJSON;
     property Values[const Key: string]: string read GetValue
       write SetValue; default;
     property Version: string read fVersion;
@@ -75,6 +78,7 @@ implementation
 uses CatStrings, CatFiles;
 
 const
+  cBackupExt = '.bak';
   cBase64 = 'base64';
   cFormatKey = '.format';
   cKeySeparator = '.';
@@ -90,11 +94,11 @@ begin
     Result := lowercase(Result);
 end;
 
-procedure TJIniList.GetSectionKeyPath(var Section,Key,Path:string);
+procedure TJIniList.GetSectionKeyPath(var Section, Key, Path: string);
 begin
- Section := FilterPath(Section);
- Key := FilterPath(Key);
- Path := Section + cKeySeparator + Key;
+  Section := FilterPath(Section);
+  Key := FilterPath(Key);
+  Path := Section + cKeySeparator + Key;
 end;
 
 function TJIniList.GetValue(const Key: string): string;
@@ -107,12 +111,12 @@ begin
   WriteString(cValuesSection, Key, Value);
 end;
 
-function TJIniList.GetJSONLines: string;
+function TJIniList.GetJSON: string;
 begin
   Result := fObject.AsJson(true);
 end;
 
-procedure TJIniList.SetJSONLines(json: string);
+procedure TJIniList.SetJSON(json: string);
 begin
   fObject := nil;
   fObject := TSuperObject.ParseString(StrToPWideChar(json), false)
@@ -123,19 +127,20 @@ begin
   fObject.Clear;
 end;
 
-function TJIniList.LoadJSON: Boolean;
+function TJIniList.LoadFromFile: Boolean;
 begin
-  Result := LoadJSON(fFileName);
+  Result := LoadFromFile(fFileName);
 end;
 
-function TJIniList.LoadJSON(const FileName: string): Boolean;
+function TJIniList.LoadFromFile(const FileName: string): Boolean;
 var
   sl: TStringlist;
 begin
   Result := false;
   sl := TStringlist.Create;
-  if SL_LoadFromFile(sl, Filename) then begin
-    SetJSONLines(sl.Text);
+  if SL_LoadFromFile(sl, FileName) then
+  begin
+    SetJSON(sl.Text);
     Result := true;
   end;
   sl.Free;
@@ -153,28 +158,29 @@ begin
   Result := StrToInt(ReadString(Section, Key, IntToStr(default)));
 end;
 
-function TJIniList.SaveJSON: Boolean;
+function TJIniList.SaveToFile: Boolean;
 begin
-  Result := SaveJSON(fFileName);
+  Result := SaveToFile(fFileName);
 end;
 
-function TJIniList.SaveJSON(const FileName: string): Boolean;
+function TJIniList.SaveToFile(const FileName: string): Boolean;
 var
-  SL: TStringlist;
+  sl: TStringlist;
 begin
   Result := false;
   if FileName = emptystr then
     exit;
-  if fBackup and FileExists(filename) then
-    FileCopy(FileName,FileName + '.bak');
-    
-  SL := TStringlist.Create;
-  SL.Text := fObject.AsJson(true);
-  if SL_SaveToFile(SL, Filename) then begin
+  if fBackup and FileExists(FileName) then
+    FileCopy(FileName, FileName + cBackupExt);
+
+  sl := TStringlist.Create;
+  sl.Text := fObject.AsJson(true);
+  if SL_SaveToFile(sl, FileName) then
+  begin
     Result := true;
     fModified := false;
   end;
-  SL.Free;
+  sl.Free;
 end;
 
 procedure TJIniList.WriteBool(const Section, Key: string; Value: Boolean);
@@ -190,87 +196,87 @@ end;
 procedure TJIniList.WriteString(Section, Key, Value: string;
   Format: string = '');
 var
-  path: string;
+  Path: string;
 begin
-  GetSectionKeyPath(Section, Key, path);
+  GetSectionKeyPath(Section, Key, Path);
   if ReadString(Section, Key, emptystr) = Value then
     exit;
   if Format <> emptystr then
-    fObject.s[path + cFormatKey] := Format;
+    fObject.s[Path + cFormatKey] := Format;
   if Format = cBase64 then
     Value := Base64EnCode(Value);
-  fObject.s[path] := Value;
+  fObject.s[Path] := Value;
   fModified := true;
 end;
 
 function TJIniList.ReadString(Section, Key, default: string): string;
 var
   fmt: string;
-  path: string;
+  Path: string;
 begin
-  GetSectionKeyPath(Section, Key, path);
+  GetSectionKeyPath(Section, Key, Path);
   Result := default;
-  if fObject.s[path] <> emptystr then
-    Result := fObject.s[path]
+  if fObject.s[Path] <> emptystr then
+    Result := fObject.s[Path]
   else
     Result := default;
-  if fObject.s[path + cFormatKey] <> emptystr then
+  if fObject.s[Path + cFormatKey] <> emptystr then
   begin
-    fmt := fObject.s[path + cFormatKey];
+    fmt := fObject.s[Path + cFormatKey];
     if fmt = cBase64 then
       Result := Base64DeCode(Result);
   end;
 end;
 
-function TJIniList.SectionExists(Section:string):boolean;
+function TJIniList.SectionExists(Section: string): Boolean;
 begin
   Section := FilterPath(Section);
-  Result := False;
+  Result := false;
   if fObject.O[Section] <> nil then
-    Result := True;
+    Result := true;
 end;
 
-function TJIniList.SectionKeyExists(Section, Key: string):boolean;
+function TJIniList.SectionKeyExists(Section, Key: string): Boolean;
 var
-  path: string;
+  Path: string;
 begin
-  GetSectionKeyPath(Section, Key, path);
-  Result := False;
+  GetSectionKeyPath(Section, Key, Path);
+  Result := false;
   if fObject.O[Section] <> nil then
-    Result := True;
+    Result := true;
 end;
 
 procedure TJIniList.AddString(const Section, Key, Value: String;
   AddIfRepeated: Boolean);
 var
-  SL: TStringlist;
+  sl: TStringlist;
 begin
-  SL := TStringlist.Create;
-  SL.commatext := ReadString(Section, Key, emptystr);
+  sl := TStringlist.Create;
+  sl.commatext := ReadString(Section, Key, emptystr);
   if AddIfRepeated = true then
-    SL.Add(Value)
+    sl.Add(Value)
   else
   begin
-    if SL.indexof(Value) = -1 then
-      SL.Add(Value);
+    if sl.indexof(Value) = -1 then
+      sl.Add(Value);
   end;
-  WriteString(Section, Key, SL.commatext);
-  SL.Free;
+  WriteString(Section, Key, sl.commatext);
+  sl.Free;
 end;
 
 procedure TJIniList.DeleteSection(Section: string);
 begin
   Section := FilterPath(Section);
-  fObject.o[Section].Clear;
+  fObject.O[Section].Clear;
   fModified := true;
 end;
 
 procedure TJIniList.DeleteSectionKey(Section, Key: string);
 var
-  path: string;
+  Path: string;
 begin
-  GetSectionKeyPath(Section, Key, path);
-  fObject.o[path].Clear;
+  GetSectionKeyPath(Section, Key, Path);
+  fObject.O[Path].Clear;
   fModified := true;
 end;
 
