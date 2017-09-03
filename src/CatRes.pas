@@ -34,7 +34,7 @@ uses CatFiles, CatStrings;
 
 function StrToResType(const s: string): PWideChar;
 begin
-  result := StrToPWideChar(s);
+  result := PWideChar(s);
 end;
 {$ELSE}
 
