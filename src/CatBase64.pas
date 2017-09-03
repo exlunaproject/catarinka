@@ -18,7 +18,7 @@ uses
   System.Classes, System.SysUtils;
 {$ELSE}
   Classes, SysUtils;
-{$IFEND}
+{$ENDIF}
 
 function Base64Encode(const s: string): string;
 function Base64Decode(const s: string): string;

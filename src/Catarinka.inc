@@ -10,6 +10,12 @@
  {$IF CompilerVersion >= 24} // Delphi XE3 or higher
   {$DEFINE DXE3_OR_UP}
  {$IFEND}
+ {$IF CompilerVersion >= 15} // Delphi 7 or higher
+  {$DEFINE D7_OR_UP}
+ {$IFEND}
+ {$IF CompilerVersion >= 14} // Delphi 6 or higher
+  {$DEFINE D6_OR_UP}
+ {$IFEND}
  {$IF CompilerVersion < 20} // Before D2009
   {$DEFINE CHARINSET_UNAVAILABLE}
  {$IFEND}
