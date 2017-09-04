@@ -160,7 +160,7 @@ var
 begin
   s := ReadString(Section, Key, IntToStr(default));
  // if not an integer, return default
-  Result := StrToIntSafe(s, default);
+  Result := StrToIntDef(s, default);
 end;
 
 function TJIniList.SaveToFile: Boolean;
