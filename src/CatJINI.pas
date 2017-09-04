@@ -90,6 +90,7 @@ const
 function TJIniList.FilterPath(s: string): string;
 begin
   Result := ReplaceStr(s, cKeySeparator, '_dot_'); // dots not allowed
+  Result := ReplaceStr(result, '"', emptystr); // quote not allowed
   if fCaseSensitive = false then
     Result := lowercase(Result);
 end;
@@ -154,8 +155,12 @@ end;
 
 function TJIniList.ReadInteger(const Section, Key: string;
   default: integer): integer;
+var
+  s:string;
 begin
-  Result := StrToInt(ReadString(Section, Key, IntToStr(default)));
+  s := ReadString(Section, Key, IntToStr(default));
+ // if not an integer, return default
+  Result := StrToIntSafe(s, default);
 end;
 
 function TJIniList.SaveToFile: Boolean;
