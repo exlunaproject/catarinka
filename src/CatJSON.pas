@@ -195,7 +195,7 @@ begin
   if JSON = emptystr then
     JSON := EmptyJSONStr;
   fObject := nil;
-  fObject := TSuperObject.ParseString(StrToPWideChar(JSON), False);
+  fObject := TSuperObject.ParseString(PWideChar(WideString(JSON)), False);
 end;
 
 procedure TCatJSON.Clear;

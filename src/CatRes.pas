@@ -39,6 +39,7 @@ end;
 {$ELSE}
 
 function StrToResType(const s: string): PAnsiChar;
+begin
 result := PAnsiChar(AnsiString(s));
 end;
 {$ENDIF}

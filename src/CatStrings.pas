@@ -111,7 +111,6 @@ function StrToCharSet(const s: string): TSysCharSet;
 function StrToCommaText(const s: string): string;
 function StrToHex(const s: string): string;
 function StrToHex16(const s: string): string;
-function StrToPWideChar(const s: string): PWideChar;
 function TitleCase(const s: string): string;
 procedure GetTextBetweenTags(const s, tag1, tag2: string; const list: TStrings;
   const includetags: Boolean = false);
@@ -893,11 +892,6 @@ begin
   for i := 1 to length(s) do
     str := str + IntToHex(integer(s[i]), 4);
   result := str;
-end;
-
-function StrToPWideChar(const s: string): PWideChar;
-begin
-  result := PWideChar(WideString(s));
 end;
 
 function HexToStr(const s: string): string;

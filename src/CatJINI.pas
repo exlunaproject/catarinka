@@ -80,17 +80,19 @@ uses CatStrings, CatFiles;
 const
   cBackupExt = '.bak';
   cBase64 = 'base64';
-  cFormatKey = '.format';
+  cFormatKey = '_format.';
   cKeySeparator = '.';
   cValuesSection = 'data';
-  cVersion = '1.0';
+  cVersion = '1.01';
 
   { TJIniList }
 
 function TJIniList.FilterPath(s: string): string;
 begin
-  Result := ReplaceStr(s, cKeySeparator, '_dot_'); // dots not allowed
-  Result := ReplaceStr(result, '"', emptystr); // quote not allowed
+  // Replaces some chars (dots, quote and spaces are not allowed)
+  Result := ReplaceStr(s, cKeySeparator, '_dot_');
+  Result := ReplaceStr(result, '"', emptystr);
+  Result := ReplaceStr(result, ' ', '_');
   if fCaseSensitive = false then
     Result := lowercase(Result);
 end;
@@ -120,7 +122,7 @@ end;
 procedure TJIniList.SetJSON(json: string);
 begin
   fObject := nil;
-  fObject := TSuperObject.ParseString(StrToPWideChar(json), false)
+  fObject := TSuperObject.ParseString(PWideChar(WideString(json)), false)
 end;
 
 procedure TJIniList.Clear;
@@ -207,7 +209,7 @@ begin
   if ReadString(Section, Key, emptystr) = Value then
     exit;
   if Format <> emptystr then
-    fObject.s[Path + cFormatKey] := Format;
+    fObject.s[cFormatKey + Path] := Format;
   if Format = cBase64 then
     Value := Base64EnCode(Value);
   fObject.s[Path] := Value;
@@ -225,9 +227,9 @@ begin
     Result := fObject.s[Path]
   else
     Result := default;
-  if fObject.s[Path + cFormatKey] <> emptystr then
+  if fObject.s[cFormatKey + Path] <> emptystr then
   begin
-    fmt := fObject.s[Path + cFormatKey];
+    fmt := fObject.s[cFormatKey + Path];
     if fmt = cBase64 then
       Result := Base64DeCode(Result);
   end;
