@@ -29,14 +29,6 @@ uses
   CatJSON, CatMsg, CatMsgCromis, CatChromiumLib;
 
 type
-  TCatCustomJavaScript = record
-   Code: string;
-   URL: string;
-   StartLine: integer;
-   ReportErrors: Boolean;
-  end;
-
-type
   TCatSourceVisitorOwn = class(TCefStringVisitorOwn)
   private
     fCriticalSection: TCriticalSection;
@@ -189,8 +181,9 @@ type
     procedure LoadBlank(const WaitLoad: Boolean = false);
     procedure LoadFromString(const s, url: string);
     procedure LoadSettings(settings, DefaultSettings: TCatJSON);
-    procedure RunJavaScript(const Script: string); overload;
-    procedure RunJavaScript(const Script: TCatCustomJavaScript); overload;
+    procedure RunJavaScript(const script: string;
+      const aURL:string = '';const StartLine:integer = 0); overload;
+    procedure RunJavaScript(const Script: TCatCustomJSCall); overload;
     procedure RegisterNewV8Extension(const v8js: string);
     procedure Reload(const IgnoreCache: Boolean = false);
     procedure SendMessage(const msg: integer; const msgstr: string);
@@ -452,18 +445,19 @@ begin
   end;
 end;
 
-procedure TCatChromium.RunJavaScript(const Script: string);
+procedure TCatChromium.RunJavaScript(const script: string;
+      const aURL:string = '';const StartLine:integer = 0);
 var
-  s:TCatCustomJavaScript;
+  s: TCatCustomJSCall;
 begin
-  s.code := script;
-  s.URL := emptystr;
-  s.StartLine := 0;
-  s.ReportErrors := false;
+  s.Code := script;
+  s.URL := aURL;
+  s.StartLine := StartLine;
+  s.ReportErrors := true;
   RunJavaScript(s);
 end;
 
-procedure TCatChromium.RunJavaScript(const Script: TCatCustomJavaScript);
+procedure TCatChromium.RunJavaScript(const Script: TCatCustomJSCall);
 begin
   if script.ReportErrors then
     fLogJavaScriptErrors := true;

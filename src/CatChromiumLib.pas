@@ -70,6 +70,14 @@ type
     out Result: Boolean) of object;
 
 type
+  TCatCustomJSCall = record
+   Code: string;
+   URL: string;
+   StartLine: integer;
+   ReportErrors: Boolean;
+  end;
+
+type
   TCatRequestHeaders = record
     StatusCode: string;
     SentHead: string;

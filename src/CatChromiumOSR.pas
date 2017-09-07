@@ -184,9 +184,9 @@ type
     procedure LoadBlank(const WaitLoad: Boolean = false);
     procedure LoadFromString(const s, url: string);
     procedure LoadSettings(settings, DefaultSettings: TCatJSON);
-    procedure RunJavaScript(const Script: string); overload;
-    procedure RunJavaScript(const Script: string; const ScriptURL: string;
-      const StartLine: integer; const ReportErrors: Boolean = false); overload;
+    procedure RunJavaScript(const script: string;
+      const aURL:string = '';const StartLine:integer = 0); overload;
+    procedure RunJavaScript(const Script: TCatCustomJSCall); overload;
     procedure RegisterNewV8Extension(const v8js: string);
     procedure Reload(const IgnoreCache: Boolean = false);
     procedure SendMessage(const msg: integer; const msgstr: string);
@@ -444,26 +444,31 @@ begin
   end;
 end;
 
-procedure TCatChromiumOSR.RunJavaScript(const Script: string);
+procedure TCatChromiumOSR.RunJavaScript(const script: string;
+      const aURL:string = '';const StartLine:integer = 0);
+var
+  s: TCatCustomJSCall;
 begin
-  RunJavaScript(Script, emptystr, 0, false);
+  s.Code := script;
+  s.URL := aURL;
+  s.StartLine := StartLine;
+  s.ReportErrors := true;
+  RunJavaScript(s);
 end;
 
-procedure TCatChromiumOSR.RunJavaScript(const Script: string;
-  const ScriptURL: string; const StartLine: integer;
-  const ReportErrors: Boolean = false);
+procedure TCatChromiumOSR.RunJavaScript(const Script: TCatCustomJSCall);
 begin
+  if script.ReportErrors then
+    fLogJavaScriptErrors := true;
   // CEF will not execute the JS if no URL is loaded,
   // so we load a blank URL before
-  if ReportErrors then
-    fLogJavaScriptErrors := true;
   if GetURL = emptystr then
     LoadBlank;
   if fCrm.Browser = nil then
     exit;
   if fCrm.Browser.GetMainFrame = nil then
     exit;
-  fCrm.Browser.GetMainFrame.ExecuteJavaScript(Script, ScriptURL, StartLine);
+  fCrm.Browser.GetMainFrame.ExecuteJavaScript(script.code, script.URL, script.StartLine);
 end;
 
 procedure TCatChromiumOSR.crmGetAuthCredentials(Sender: TObject;
