@@ -74,7 +74,7 @@ type
    Code: string;
    URL: string;
    StartLine: integer;
-   ReportErrors: Boolean;
+   Silent: Boolean;
   end;
 
 type

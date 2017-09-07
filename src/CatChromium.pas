@@ -453,14 +453,13 @@ begin
   s.Code := script;
   s.URL := aURL;
   s.StartLine := StartLine;
-  s.ReportErrors := true;
+  s.Silent := false;
   RunJavaScript(s);
 end;
 
 procedure TCatChromium.RunJavaScript(const Script: TCatCustomJSCall);
 begin
-  if script.ReportErrors then
-    fLogJavaScriptErrors := true;
+  fLogJavaScriptErrors := not script.silent;
   // CEF will not execute the JS if no URL is loaded,
   // so we load a blank URL before
   if GetURL = emptystr then
