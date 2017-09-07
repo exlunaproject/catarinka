@@ -29,6 +29,14 @@ uses
   CatJSON, CatMsg, CatMsgCromis, CatChromiumLib;
 
 type
+  TCatCustomJavaScript = record
+   Code: string;
+   URL: string;
+   StartLine: integer;
+   ReportErrors: Boolean;
+  end;
+
+type
   TCatSourceVisitorOwn = class(TCefStringVisitorOwn)
   private
     fCriticalSection: TCriticalSection;
@@ -182,8 +190,7 @@ type
     procedure LoadFromString(const s, url: string);
     procedure LoadSettings(settings, DefaultSettings: TCatJSON);
     procedure RunJavaScript(const Script: string); overload;
-    procedure RunJavaScript(const Script: string; const ScriptURL: string;
-      const StartLine: integer; const ReportErrors: Boolean = false); overload;
+    procedure RunJavaScript(const Script: TCatCustomJavaScript); overload;
     procedure RegisterNewV8Extension(const v8js: string);
     procedure Reload(const IgnoreCache: Boolean = false);
     procedure SendMessage(const msg: integer; const msgstr: string);
@@ -446,25 +453,29 @@ begin
 end;
 
 procedure TCatChromium.RunJavaScript(const Script: string);
+var
+  s:TCatCustomJavaScript;
 begin
-  RunJavaScript(Script, emptystr, 0, false);
+  s.code := script;
+  s.URL := emptystr;
+  s.StartLine := 0;
+  s.ReportErrors := false;
+  RunJavaScript(s);
 end;
 
-procedure TCatChromium.RunJavaScript(const Script: string;
-  const ScriptURL: string; const StartLine: integer;
-  const ReportErrors: Boolean = false);
+procedure TCatChromium.RunJavaScript(const Script: TCatCustomJavaScript);
 begin
+  if script.ReportErrors then
+    fLogJavaScriptErrors := true;
   // CEF will not execute the JS if no URL is loaded,
   // so we load a blank URL before
-  if ReportErrors then
-    fLogJavaScriptErrors := true;
   if GetURL = emptystr then
     LoadBlank;
   if fCrm.Browser = nil then
     exit;
   if fCrm.Browser.GetMainFrame = nil then
     exit;
-  fCrm.Browser.GetMainFrame.ExecuteJavaScript(Script, ScriptURL, StartLine);
+  fCrm.Browser.GetMainFrame.ExecuteJavaScript(script.code, script.URL, script.StartLine);
 end;
 
 procedure TCatChromium.crmGetAuthCredentials(Sender: TObject;
