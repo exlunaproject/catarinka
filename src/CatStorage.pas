@@ -37,13 +37,14 @@ type
     procedure Open(const cachefilename: string);
     procedure ExtractFile(const f, outfilename: string);
     procedure SaveToFile(const cachefilename: string);
-    procedure SaveFolderToFile(const cachefilename: string; const folder: string = '/');
+    procedure SaveFolderToFile(const cachefilename: string; const vfs_folder: string = '/');
     procedure StoreFile(const vfs_filename, fs_filename: string);
     procedure StoreString(const f, content: string);
     constructor Create;
     destructor Destroy; override;
     // properties
     property Filename: string read fFilename write fFilename;
+    property VFS: IGPStructuredStorage read fVFS;
   end;
 
 implementation
@@ -58,6 +59,7 @@ begin
   fVFS.Initialize(Filename, fmCreate);
 end;
 
+// Checks if a file exists within the VFS cache
 function TCatStorage.CachedFileExists(const f: string): boolean;
 begin
   result := fVFS.FileExists(f);
@@ -90,7 +92,7 @@ begin
   sl.Free;
 end;
 
-// Stores a disk file in the cache
+// Imports a file to the cache
 procedure TCatStorage.StoreFile(const vfs_filename, fs_filename: string);
 var
   v: TStream;
@@ -103,7 +105,7 @@ begin
   FreeAndNil(fs);
 end;
 
-// Stores a string as a file in the cache
+// Stores a string as a VFS file
 procedure TCatStorage.StoreString(const f, content: string);
 var
   v: TStream;
@@ -119,6 +121,7 @@ begin
   // showmessage('storing: '+f+' size:'+inttostr(length(content)));
 end;
 
+// Loads the VFS from a file
 procedure TCatStorage.LoadFromFile(const cachefilename: string);
 begin
   if FileExists(cachefilename) = false then
@@ -129,6 +132,7 @@ begin
   fVFS.Initialize(Filename, fmOpenReadWrite);
 end;
 
+// Saves the VFS to a file
 procedure TCatStorage.SaveToFile(const cachefilename: string);
 begin
   fVFS := nil; // releases the storage or we cannot copy the file
@@ -137,8 +141,9 @@ begin
   fVFS.Initialize(Filename, fmOpenReadWrite); // reopens the storage file
 end;
 
+// Exports the contents of a VFS folder to an external cache file
 procedure TCatStorage.SaveFolderToFile(const cachefilename: string;
-  const folder: string = '/');
+  const vfs_folder: string = '/');
 var
   slp: TStringLoop;
   exportvfs: IGPStructuredStorage;
@@ -149,11 +154,11 @@ begin
   exportvfs := CreateStructuredStorage;
   exportvfs.Initialize(tempcachefilename, fmCreate);
   slp := TStringLoop.Create;
-  fVFS.FileNames(folder, slp.List);
+  fVFS.FileNames(vfs_folder, slp.List);
   while slp.Found do
   begin
-    dest := exportvfs.OpenFile(folder + slp.current, fmCreate);
-    source := fVFS.OpenFile(folder + slp.current, fmOpenRead);
+    dest := exportvfs.OpenFile(vfs_folder + slp.current, fmCreate);
+    source := fVFS.OpenFile(vfs_folder + slp.current, fmOpenRead);
     dest.CopyFrom(source, source.Size);
     FreeAndNil(source);
     FreeAndNil(dest);

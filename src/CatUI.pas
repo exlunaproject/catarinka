@@ -3,7 +3,7 @@ unit CatUI;
 {
   Catarinka - User Interface related functions
 
-  Copyright (c) 2003-2015 Felipe Daragon
+  Copyright (c) 2003-2017 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -26,39 +26,46 @@ uses
   CommCtrl, Messages, ShlObj, TypInfo, Clipbrd;
 {$ENDIF}
 function AskYN(const question: string): Boolean;
-function GetLVItemAsString(lv: TListView; li: TListItem;
-  copytoclipboard: Boolean = false): string;
 function GetWindowState: integer;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 function GetWindowClassHandle(const Title: string): integer;
-function GetFullPath(N: TTreeNode; Sep: string = '\'): string;
-function GetFullPathData(N: TTreeNode): string;
-function GetLVCheckedItems(lvcomp: TListView): string;
-function GetLVCheckedItemsSingleLn(lvcomp: TListView): string;
 function GetPercentage(const percent, Value: integer): Int64;
 function GetSpecialFolderPath(const Folder: integer;
   const CanCreate: Boolean): string;
 function MakeNotifyEvent(forObject: TObject; const procname: string)
   : TNotifyEvent;
-function TreeItemSearch(tv: ttreeview; const SearchItem: string): TTreeNode;
+procedure ApplyWindowState(const i: integer);
+procedure CloseWindowByClass(const classname: string);
+procedure FlashUI(const times: integer = 2; const delay: integer = 500);
+procedure NilComponentMethods(Component: TComponent);
+procedure SaveMemStreamToStrings(Stream: TMemoryStream; List: TStrings);
+procedure ShowPopupMenu(PopupMenu: TPopupMenu; const AppHandle: integer);
 
+// listview manipulation functions
+function GetLVCheckedItems(lvcomp: TListView): string;
+function GetLVCheckedItemsSingleLn(lvcomp: TListView): string;
+function GetLVItemAsString(lv: TListView; li: TListItem;
+  copytoclipboard: Boolean = false): string;
 procedure AddListViewItem(lv: TListView; const capt: string; const ii: integer;
   const mv: Boolean);
 procedure AddMultipleListViewItems(lv: TListView; const captlist: string;
   const ii: integer; const mv: Boolean);
-procedure ApplyWindowState(const i: integer);
 procedure CommaToLVItems(lvcomp: TListView; const commastring: string);
-procedure CloseWindowByClass(const classname: string);
 procedure DisableLVToolTips(H: THandle);
-procedure ExpandTreeViewItems(tv: ttreeview);
-procedure FlashUI(const times: integer = 2; const delay: integer = 500);
 procedure LoadListviewStrings(listview: TListView; const filename: string);
-procedure NilComponentMethods(Component: TComponent);
-procedure QuickSortTreeViewItems(tv: ttreeview);
-procedure ShowPopupMenu(PopupMenu: TPopupMenu; const AppHandle: integer);
 procedure SaveListviewStrings(listview: TListView; const filename: string);
-procedure SaveMemStreamToStrings(Stream: TMemoryStream; List: TStrings);
+
+// treeview manipulation functions
+function FindOrAddNode(tv: TTreeView; ParentNode: TTreeNode;
+  const Caption: String): TTreeNode;
+function GetFullPath(N: TTreeNode; Sep: string = '\'): string;
+function GetFullPathData(N: TTreeNode): string;
+function TreeItemSearch(tv: TTreeView; const SearchItem: string): TTreeNode;
+procedure ExpandTreeViewItems(tv: TTreeView);
+procedure QuickSortTreeViewItems(tv: TTreeView);
 procedure SetNodeBoldState(Node: TTreeNode; const Value: Boolean);
+procedure TreeAddPath(tv: TTreeView; const AString, ADelimiter: String);
+procedure TreeAddPathList(tv: TTreeView; const AList, ADelimiter: String);
 
 type
   TCanvasPanel = class(TPanel)
@@ -241,7 +248,7 @@ begin
   ListView_SetExtendedListViewStyle(H, styles);
 end;
 
-procedure ExpandTreeViewItems(tv: ttreeview);
+procedure ExpandTreeViewItems(tv: TTreeView);
 var
   i, c: integer;
 begin
@@ -452,12 +459,20 @@ begin
   end;
 end;
 
-procedure QuickSortTreeViewItems(tv: ttreeview);
+procedure QuickSortTreeViewItems(tv: TTreeView);
+var
+  i: integer;
 begin
-  tv.Items.BeginUpdate;
-  tv.sorttype := stnone;
-  tv.sorttype := sttext;
-  tv.Items.EndUpdate;
+  try
+    tv.Items.BeginUpdate;
+    i := tv.TopItem.Index;
+    // tv.sorttype := stnone;
+    // tv.sorttype := sttext;
+    tv.AlphaSort(true);
+    tv.TopItem := tv.Items[i];
+  finally
+    tv.Items.EndUpdate;
+  end;
 end;
 
 procedure SaveListviewStrings(listview: TListView; const filename: string);
@@ -533,7 +548,7 @@ begin
   end;
 end;
 
-function TreeItemSearch(tv: ttreeview; const SearchItem: string): TTreeNode;
+function TreeItemSearch(tv: TTreeView; const SearchItem: string): TTreeNode;
 var
   i: integer;
   sitem: string;
@@ -553,6 +568,86 @@ begin
       result := nil;
   end;
 end;
+
+function SplitStrVar(var s: String; Delimiter: String): String;
+var
+  p: integer;
+begin
+  result := emptystr;
+  if s = emptystr then
+    Exit;
+
+  p := pos(Delimiter, s);
+  if p > 0 then
+  begin
+    result := Copy(s, 1, p - 1);
+    s := Copy(s, p + length(Delimiter), maxLongInt);
+  end
+  else
+  begin
+    result := s;
+    s := emptystr;
+  end;
+end;
+
+function FindOrAddNode(tv: TTreeView; ParentNode: TTreeNode;
+  const Caption: String): TTreeNode;
+var
+  Node: TTreeNode;
+  Root: Boolean;
+begin
+  Root := not Assigned(ParentNode);
+  if Root = true then
+  begin
+    Node := tv.TopItem;
+    if Node <> nil then
+      Node := tv.Items[0];
+  end
+  else
+    Node := ParentNode.getFirstChild;
+  while (Assigned(Node)) and (Caption <> Node.text) do
+    Node := Node.getNextSibling;
+  if not Assigned(Node) then
+  begin
+    if Root = true then
+      result := tv.Items.Add(nil, Caption)
+    else
+      result := tv.Items.AddChild(ParentNode, Caption);
+  end
+  else
+    result := Node;
+end;
+
+procedure TreeAddPath(tv: TTreeView; const AString, ADelimiter: String);
+var
+  s, Caption: string;
+  CurrentNode: TTreeNode;
+begin
+  s := AString;
+  if BeginsWith(s, ADelimiter) then
+    s := after(s, ADelimiter);
+  CurrentNode := nil;
+  while s <> emptystr do
+  begin
+    Caption := SplitStrVar(s, ADelimiter);
+    CurrentNode := FindOrAddNode(tv, CurrentNode, Caption);
+  end;
+end;
+
+// Updates a tree from a list of separated strings
+procedure TreeAddPathList(tv: TTreeView; const AList, ADelimiter: String);
+var
+  i: integer;
+  sl: TStringlist;
+begin
+  sl := TStringlist.Create;
+  sl.text := AList;
+  for i := 0 to sl.count - 1 do
+    TreeAddPath(tv, sl[i], ADelimiter);
+  sl.free;
+end;
+
+// CONTRIBUTED ------------------------------------------------------------//
 
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 const
