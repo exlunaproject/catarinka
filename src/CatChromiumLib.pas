@@ -2,7 +2,7 @@ unit CatChromiumLib;
 
 {
   Catarinka Browser Component
-  Copyright (c) 2011-2015 Syhunt Informatica
+  Copyright (c) 2011-2017 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -26,7 +26,7 @@ uses
 {$ELSE}
   cefgui, cefvcl, ceflib,
 {$ENDIF}
-  superobject, CatJSON, CatMsg;
+  superobject, CatJSON, CatMsg, CatPanels;
 
 {$IFDEF USEWACEF}
 
@@ -125,8 +125,7 @@ type
 {$IFNDEF USEWACEF}
     fDevTools: TChromiumDevTools;
 {$ENDIF}
-    fTitlePanel: TPanel;
-    fCloseBtn: TButton;
+    fTitlePanel: TBarTitlePanel;
     fSplitter: TSplitter;
     procedure CloseBtnClick(Sender: TObject);
   public
@@ -659,21 +658,11 @@ begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls];
   Color := clWindow;
-  fTitlePanel := TPanel.Create(self);
+  fTitlePanel := TBarTitlePanel.Create(self);
   fTitlePanel.Parent := self;
   fTitlePanel.Align := alTop;
-  fTitlePanel.height := 24;
   fTitlePanel.Caption := 'DevTools';
-  fTitlePanel.Color := clBtnShadow;
-  fTitlePanel.ParentBackground := false;
-  fTitlePanel.Font.Color := clWhite;
-  fCloseBtn := TButton.Create(self);
-  fCloseBtn.Parent := fTitlePanel;
-  fCloseBtn.Align := alright;
-  fCloseBtn.OnClick := CloseBtnClick;
-  fCloseBtn.Font.Style := fCloseBtn.Font.Style + [fsBold];
-  fCloseBtn.Width := 22;
-  fCloseBtn.Caption := 'x';
+  fTitlePanel.CloseButton.OnClick := CloseBtnClick;
 end;
 
 destructor TCatDevTools.Destroy;
@@ -682,7 +671,6 @@ begin
   if fDevTools <> nil then
     fDevTools.Free;
 {$ENDIF}
-  fCloseBtn.Free;
   fTitlePanel.Free;
   inherited Destroy;
 end;

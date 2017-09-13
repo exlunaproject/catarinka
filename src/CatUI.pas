@@ -18,11 +18,11 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  Winapi.Windows, Vcl.Forms, Vcl.Menus, Vcl.ExtCtrls, System.SysUtils,
-  System.Classes, Vcl.Controls, Vcl.ComCtrls, Vcl.Clipbrd,
+  Winapi.Windows, Vcl.Forms, Vcl.Menus, System.SysUtils,
+  System.Classes, Vcl.ComCtrls, Vcl.Clipbrd,
   Winapi.CommCtrl, Winapi.Messages, Winapi.ShlObj, System.TypInfo;
 {$ELSE}
-  Windows, Forms, Menus, ExtCtrls, SysUtils, Classes, Controls, ComCtrls,
+  Windows, Forms, Menus, SysUtils, Classes, ComCtrls,
   CommCtrl, Messages, ShlObj, TypInfo, Clipbrd;
 {$ENDIF}
 function AskYN(const question: string): Boolean;
@@ -66,12 +66,6 @@ procedure QuickSortTreeViewItems(tv: TTreeView);
 procedure SetNodeBoldState(Node: TTreeNode; const Value: Boolean);
 procedure TreeAddPath(tv: TTreeView; const AString, ADelimiter: String);
 procedure TreeAddPathList(tv: TTreeView; const AList, ADelimiter: String);
-
-type
-  TCanvasPanel = class(TPanel)
-  public
-    property Canvas;
-  end;
 
   {
     CSIDL_DESKTOPDIRECTORY returns the path to the current desktop

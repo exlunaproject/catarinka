@@ -39,9 +39,9 @@ function GetTextFileLinesCount(const filename: string): integer;
 function GetTempFile(const ext: string): string;
 function GetWindowsTempDir: string;
 function SendToLog(const filename: TFilename; const s: string): boolean;
-function SL_LoadFromFile(const SL: TStringList; const filename: string)
+function SL_LoadFromFile(const SL: TStrings; const filename: string)
   : boolean;
-function SL_SaveToFile(const SL: TStringList; const filename: string): boolean;
+function SL_SaveToFile(const SL: TStrings; const filename: string): boolean;
 procedure CatReadLn(const f: Text; var s: string);
 procedure CopyAfterFirstLine(const sourcefile, targetfile: string;
   appendln: boolean = false; lnstr: string = '');
@@ -379,7 +379,7 @@ begin
   end;
 end;
 
-function SL_SaveToFile(const SL: TStringList; const filename: string): boolean;
+function SL_SaveToFile(const SL: TStrings; const filename: string): boolean;
 var
   fs: TStream;
 begin
@@ -403,7 +403,7 @@ begin
   fs.Free;
 end;
 
-function SL_LoadFromFile(const SL: TStringList; const filename: string)
+function SL_LoadFromFile(const SL: TStrings; const filename: string)
   : boolean;
 var
   fs: TStream;

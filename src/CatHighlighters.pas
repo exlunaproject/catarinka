@@ -53,6 +53,7 @@ type
     WebHTML: TSynWebHtmlSyn;
     function GetByFileExtension(const fileext: string): TSynCustomHighlighter;
     function GetByContentType(const contenttype: string): TSynCustomHighlighter;
+    function GetByResponseText(const s: string): TSynCustomHighlighter;
     function HighlightSourceByFileExt(const Source, fileext: string): string;
     procedure SetCodeRayColors(const e: TSynWebEngine);
     constructor Create(AOwner: TObject);
@@ -75,10 +76,18 @@ begin
     result := WebHTML;
   if pos('javascript', ct) <> 0 then
     result := WebJS;
+  if pos('json', ct) <> 0 then
+    result := WebJS;
   if pos('xml', ct) <> 0 then
     result := WebXML;
   if pos('css', ct) <> 0 then
     result := WebCSS;
+end;
+
+function TCatHighlighters.GetByResponseText(const s: string): TSynCustomHighlighter;
+begin
+  if pos('<html', s) <> 0 then
+    result := WebHTML;
 end;
 
 type
