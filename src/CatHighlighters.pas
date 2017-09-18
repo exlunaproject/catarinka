@@ -38,19 +38,19 @@ type
   TCatHighlighters = class
   private
     fSynWebEngine: TSynWebEngine;
-    WebJS: TSynWebESSyn;
-    WebCSS: TSynWebCSSSyn;
-    WebXML: TSynWebXMLSyn;
-    WebPHP: TSynWebPHPPlainSyn;
-    Ruby: TSynRubySyn;
-    Pascal: TSynPasSyn;
-    Perl: TSynPerlSyn;
-    Python: TSynPythonSyn;
-    SQLSyn: TSynSQLSyn;
-    VBScript: TSynVBScriptSyn;
+    fWebJS: TSynWebESSyn;
+    fWebCSS: TSynWebCSSSyn;
+    fWebHTML: TSynWebHtmlSyn;
+    fWebXML: TSynWebXMLSyn;
+    fWebPHP: TSynWebPHPPlainSyn;
+    fRuby: TSynRubySyn;
+    fPascal: TSynPasSyn;
+    fPerl: TSynPerlSyn;
+    fPython: TSynPythonSyn;
+    fSQLSyn: TSynSQLSyn;
+    fVBScript: TSynVBScriptSyn;
     function GetSynExport(HL: TSynCustomHighlighter; Source: string): string;
   public
-    WebHTML: TSynWebHtmlSyn;
     function GetByFileExtension(const fileext: string): TSynCustomHighlighter;
     function GetByContentType(const contenttype: string): TSynCustomHighlighter;
     function GetByResponseText(const s: string): TSynCustomHighlighter;
@@ -58,6 +58,7 @@ type
     procedure SetCodeRayColors(const e: TSynWebEngine);
     constructor Create(AOwner: TObject);
     destructor Destroy; override;
+    property WebHTML: TSynWebHtmlSyn read fWebHTML;
   end;
 
 implementation
@@ -73,21 +74,21 @@ begin
   result := nil;
   ct := lowercase(contenttype);
   if pos('html', ct) <> 0 then
-    result := WebHTML;
+    result := fWebHTML;
   if pos('javascript', ct) <> 0 then
-    result := WebJS;
+    result := fWebJS;
   if pos('json', ct) <> 0 then
-    result := WebJS;
+    result := fWebJS;
   if pos('xml', ct) <> 0 then
-    result := WebXML;
+    result := fWebXML;
   if pos('css', ct) <> 0 then
-    result := WebCSS;
+    result := fWebCSS;
 end;
 
 function TCatHighlighters.GetByResponseText(const s: string): TSynCustomHighlighter;
 begin
   if pos('<html', s) <> 0 then
-    result := WebHTML;
+    result := fWebHTML;
 end;
 
 type
@@ -99,7 +100,7 @@ function TCatHighlighters.GetByFileExtension(const fileext: string)
 var
   ext: string;
 begin
-  result := WebHTML;
+  result := fWebHTML;
   ext := lowercase(fileext);
   if beginswith(ext, '.') then
     ext := after(ext, '.');
@@ -107,29 +108,29 @@ begin
     exit;
   case TWebExts(GetEnumValue(TypeInfo(TWebExts), ext)) of
     htm, html:
-      result := WebHTML;
+      result := fWebHTML;
     lua, lp:
       result := nil;
     js, json, jsie, tis:
-      result := WebJS;
+      result := fWebJS;
     css:
-      result := WebCSS;
+      result := fWebCSS;
     php:
-      result := WebPHP;
+      result := fWebPHP;
     rb:
-      result := Ruby;
+      result := fRuby;
     pas, dpr, pasrem:
-      result := Pascal;
+      result := fPascal;
     pl:
-      result := Perl;
+      result := fPerl;
     py:
-      result := Python;
+      result := fPython;
     sql:
-      result := SQLSyn;
+      result := fSQLSyn;
     vbs:
-      result := VBScript;
+      result := fVBScript;
     xml:
-      result := WebXML;
+      result := fWebXML;
   end;
 end;
 
@@ -222,31 +223,43 @@ end;
 constructor TCatHighlighters.Create(AOwner: TObject);
 begin
   inherited Create;
-  Ruby := TSynRubySyn.Create(nil);
-  Pascal := TSynPasSyn.Create(nil);
-  Perl := TSynPerlSyn.Create(nil);
-  Python := TSynPythonSyn.Create(nil);
-  VBScript := TSynVBScriptSyn.Create(nil);
-  SQLSyn := TSynSQLSyn.Create(nil);
+  fRuby := TSynRubySyn.Create(nil);
+  fPascal := TSynPasSyn.Create(nil);
+  fPerl := TSynPerlSyn.Create(nil);
+  fPython := TSynPythonSyn.Create(nil);
+  fVBScript := TSynVBScriptSyn.Create(nil);
+  fSQLSyn := TSynSQLSyn.Create(nil);
   fSynWebEngine := TSynWebEngine.Create(nil);
   fSynWebEngine.Options.CssVersion := scvCSS3;
-  WebHTML := TSynWebHtmlSyn.Create(nil);
-  WebHTML.Engine := fSynWebEngine;
-  WebHTML.Options.PhpEmbeded := false;
-  WebPHP := TSynWebPHPPlainSyn.Create(nil);
-  WebPHP.Engine := fSynWebEngine;
-  WebJS := TSynWebESSyn.Create(nil);
-  WebJS.Engine := fSynWebEngine;
-  WebCSS := TSynWebCSSSyn.Create(nil);
-  WebCSS.Engine := fSynWebEngine;
-  WebCSS.Options.CssVersion := scvCSS3;
-  WebXML := TSynWebXMLSyn.Create(nil);
-  WebXML.Engine := fSynWebEngine;
+  fWebHTML := TSynWebHtmlSyn.Create(nil);
+  fWebHTML.Engine := fSynWebEngine;
+  fWebHTML.Options.PhpEmbeded := false;
+  fWebPHP := TSynWebPHPPlainSyn.Create(nil);
+  fWebPHP.Engine := fSynWebEngine;
+  fWebJS := TSynWebESSyn.Create(nil);
+  fWebJS.Engine := fSynWebEngine;
+  fWebCSS := TSynWebCSSSyn.Create(nil);
+  fWebCSS.Engine := fSynWebEngine;
+  fWebCSS.Options.CssVersion := scvCSS3;
+  fWebXML := TSynWebXMLSyn.Create(nil);
+  fWebXML.Engine := fSynWebEngine;
   SetCodeRayColors(fSynWebEngine);
 end;
 
 destructor TCatHighlighters.Destroy;
 begin
+  fSynWebEngine.Free;
+  fWebHTML.Free;
+  fWebPHP.Free;
+  fWebJS.Free;
+  fWebCSS.Free;
+  fWebXML.Free;
+  fSQLSyn.Free;
+  fVBScript.Free;
+  fPython.Free;
+  fPerl.Free;
+  fPascal.Free;
+  fRuby.Free;
   inherited;
 end;
 

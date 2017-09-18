@@ -67,10 +67,10 @@ procedure SetNodeBoldState(Node: TTreeNode; const Value: Boolean);
 procedure TreeAddPath(tv: TTreeView; const AString, ADelimiter: String);
 procedure TreeAddPathList(tv: TTreeView; const AList, ADelimiter: String);
 
-  {
-    CSIDL_DESKTOPDIRECTORY returns the path to the current desktop
-    CSIDL_PERSONAL is the My Documents directory
-    CSIDL___LOCAL_APPDATA is the (user name)\Local Settings\Application Data directory }
+{
+  CSIDL_DESKTOPDIRECTORY returns the path to the current desktop
+  CSIDL_PERSONAL is the My Documents directory
+  CSIDL___LOCAL_APPDATA is the (user name)\Local Settings\Application Data directory }
 const
   CSIDL_DESKTOP = $0000; { <desktop> }
   CSIDL_INTERNET = $0001; { Internet Explorer (icon on desktop) }
@@ -356,8 +356,13 @@ function GetPercentage(const percent, Value: integer): Int64;
 var
   p: Real;
 begin
-  p := ((percent / Value) * 100);
-  result := Round(p);
+  if Value <> 0 then
+  begin
+    p := ((percent / Value) * 100);
+    result := Round(p);
+  end
+  else
+    result := 0;
 end;
 
 // Gets the path of special system folders
