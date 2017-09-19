@@ -19,13 +19,14 @@ uses
 {$ENDIF}
 function CalcAge(const StartDate, Date: TDate): integer;
 function DateTimeToUnix(const Date: TDateTime): Longint;
-function DescribeDateDiff(const t, d: string): string;
-function DescribePassedTime(const starttime: TDateTime): string;
-function DescribeTimeDiff(const t: string): string;
+function DescribePassedDays(const aNow, aThen: TDateTime): string;
+function DescribePassedDateTime(const starttime: TDateTime): string;
+function DescribePassedTime(const t: string): string;
 function DiffDate(const day1, day2: TDateTime): integer;
 function GetDayOfWeekAsNumber: integer;
 function GetDayOfWeekAsText: string;
-function IsValidDate(const S: string;const format:string='mm/dd/yyyy';const sep:Char='/'): boolean;
+function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';
+  const sep: Char = '/'): boolean;
 function UnixToDateTime(const sec: Longint): TDateTime;
 
 implementation
@@ -66,21 +67,22 @@ begin
   Result := Round((Date - UnixStartDate) * 86400);
 end;
 
-function DescribeDateDiff(const t, d: string): string;
+function DescribePassedDays(const aNow, aThen: TDateTime): string;
 var
   dif: integer;
-  d1, d2: TDate;
 begin
-  d1 := Date;
-  d2 := strtodate(d);
-  dif := trunc(d1) - trunc(d2);
-  if dif = 1 then
-    Result := t + ' Yesterday'
+  dif := DiffDate(aThen, aNow);
+  case dif of
+    0:
+      Result := 'Today';
+    1:
+      Result := 'Yesterday';
   else
-    Result := t + ' ' + d;
+    Result := IntToStr(dif) + ' days ago'
+  end;
 end;
 
-function DescribePassedTime(const starttime: TDateTime): string;
+function DescribePassedDateTime(const starttime: TDateTime): string;
 const
   timeformat = 'hh:nn:ss'; // 24h
   dateformat = 'ddd, dd mmm yyyy';
@@ -90,22 +92,22 @@ begin
   Date := FormatDateTime(dateformat, starttime);
   time := FormatDateTime(timeformat, starttime);
   if FormatDateTime(dateformat, now) = Date then
-    Result := DescribeTimeDiff(time)
+    Result := DescribePassedTime(time)
   else
-    Result := DescribeDateDiff(time, datetostr(starttime));
+    Result := DescribePassedDays(now, starttime);
 end;
 
-function DescribeTimeDiff(const t: string): string;
-  function TimeExt(n: string; s: string; p: string): string;
+function DescribePassedTime(const t: string): string;
+  function TimeExt(n: string; S: string; p: string): string;
   begin
     if n = '1' then
-      Result := n + ' ' + s
+      Result := n + ' ' + S
     else
       Result := n + ' ' + p;
   end;
 
 var
-  h, m, s, ms: string;
+  h, m, S, ms: string;
   t1, t2, ft: ttime;
 const
   zero = '0';
@@ -115,7 +117,7 @@ begin
   ft := t2 - t1;
   h := FormatDateTime('h', ft);
   m := FormatDateTime('n', ft);
-  s := FormatDateTime('s', ft);
+  S := FormatDateTime('s', ft);
   ms := FormatDateTime('z', ft);
   if h <> zero then
   begin
@@ -129,8 +131,9 @@ begin
     end
     else
     begin
-      if s <> zero then
-        Result := TimeExt(s, 'second ago', 'seconds ago') else
+      if S <> zero then
+        Result := TimeExt(S, 'second ago', 'seconds ago')
+      else
         Result := TimeExt(ms, 'millisecond ago', 'milliseconds ago');
     end;
   end;
@@ -175,17 +178,18 @@ begin
   end;
 end;
 
-function IsValidDate(const S: string;const format:string='mm/dd/yyyy';const sep:Char='/'): boolean;
+function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';
+  const sep: Char = '/'): boolean;
 var
   dt: TDateTime;
   fs: TFormatSettings;
 begin
   fs.ShortDateFormat := format;
   fs.DateSeparator := sep;
-  if TryStrToDate(s, dt, fs) then
-    result:=true
+  if TryStrToDate(S, dt, fs) then
+    Result := true
   else
-    result:=false;
+    Result := false;
 end;
 
 function UnixToDateTime(const sec: Longint): TDateTime;
