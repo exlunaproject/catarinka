@@ -117,11 +117,14 @@ procedure GetTextBetweenTags(const s, tag1, tag2: string; const list: TStrings;
 procedure MergeStrings(const dest, source: TStrings);
 procedure SplitString(const s: string; separator: Char;
   substrings: TStringList);
-procedure StripBlankLines(const sl: TStringList);
 
 {$IFDEF CHARINSET_UNAVAILABLE}
 function CharInSet(c: Char; CharSet: TSysCharSet): Boolean;
 {$ENDIF}
+
+// string list related functions
+function CompareStrings(sl: TStringList; Index1, Index2: integer): integer;
+procedure StripBlankLines(const sl: TStringList);
 
 const
   CRLF = #13 + #10;
@@ -375,6 +378,25 @@ begin
       break;
     end;
   end;
+end;
+
+// Useful for sorting a string list containing filenames
+// Usage sl.CustomSort(CompareStrings);
+function CompareStrings(sl: TStringList; Index1, Index2: integer): integer;
+begin
+  if Length(sl[Index1]) = Length(sl[Index2]) then
+  begin
+    if sl[Index1] = sl[Index2] then
+      result := 0
+    else if sl[Index1] < sl[Index2] then
+      result := -1
+    else
+      result := 1;
+  end
+  else if Length(sl[Index1]) < Length(sl[Index2]) then
+    result := -1
+  else
+    result := 1;
 end;
 
 function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)

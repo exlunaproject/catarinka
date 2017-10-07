@@ -19,6 +19,7 @@ uses
 {$ENDIF}
 function CalcAge(const StartDate, Date: TDate): integer;
 function DateTimeToUnix(const Date: TDateTime): Longint;
+function DescribeDuration(const StartTime: TDateTime): string;
 function DescribePassedDays(const aNow, aThen: TDateTime): string;
 function DescribePassedDateTime(const starttime: TDateTime): string;
 function DescribePassedTime(const t: string): string;
@@ -30,6 +31,8 @@ function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';
 function UnixToDateTime(const sec: Longint): TDateTime;
 
 implementation
+
+uses CatStrings;
 
 const
   UnixStartDate: TDateTime = 25569.0; // 01/01/1970
@@ -65,6 +68,14 @@ end;
 function DateTimeToUnix(const Date: TDateTime): Longint;
 begin
   Result := Round((Date - UnixStartDate) * 86400);
+end;
+
+function DescribeDuration(const StartTime: TDateTime): string;
+begin
+  if trunc(StartTime) <> 0 then
+    result := replacestr(DescribePassedDateTime(StartTime), ' ago', emptystr)
+  else
+    result := 'Not started.';
 end;
 
 function DescribePassedDays(const aNow, aThen: TDateTime): string;

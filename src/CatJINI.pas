@@ -83,7 +83,7 @@ const
   cFormatKey = '_format.';
   cKeySeparator = '.';
   cValuesSection = 'data';
-  cVersion = '1.01';
+  cVersion = '1.02';
 
   { TJIniList }
 
@@ -91,7 +91,7 @@ function TJIniList.FilterPath(s: string): string;
 begin
   // Replaces some chars (dots, quote and spaces are not allowed)
   Result := ReplaceStr(s, cKeySeparator, '_dot_');
-  Result := ReplaceStr(result, '"', emptystr);
+  Result := StripChars(result, ['"','(',')','[',']']);
   Result := ReplaceStr(result, ' ', '_');
   if fCaseSensitive = false then
     Result := lowercase(Result);
