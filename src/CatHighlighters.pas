@@ -2,7 +2,7 @@ unit CatHighlighters;
 
 {
   Catarinka - Multiple Code Highlighters
-  Copyright (c) 2011-2015 Syhunt Informatica
+  Copyright (c) 2011-2018 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -24,6 +24,7 @@ uses
   SynUnicode,
   SynExportHTML,
   SynEditHighlighter,
+  SynHighlighterJava,
   SynHighlighterRuby,
   SynHighlighterPerl,
   SynHighlighterPython,
@@ -43,6 +44,7 @@ type
     fWebHTML: TSynWebHtmlSyn;
     fWebXML: TSynWebXMLSyn;
     fWebPHP: TSynWebPHPPlainSyn;
+    fJava: TSynJavaSyn;
     fRuby: TSynRubySyn;
     fPascal: TSynPasSyn;
     fPerl: TSynPerlSyn;
@@ -92,7 +94,7 @@ begin
 end;
 
 type
-  TWebExts = (css, dpr, htm, html, js, json, jsie, lua, lp, pas, pasrem, php,
+  TWebExts = (css, dpr, htm, html, java, js, json, jsie, lua, lp, pas, pasrem, php,
     pl, py, rb, sql, tis, vbs, xml);
 
 function TCatHighlighters.GetByFileExtension(const fileext: string)
@@ -111,6 +113,8 @@ begin
       result := fWebHTML;
     lua, lp:
       result := nil;
+    java:
+      result := fJava;
     js, json, jsie, tis:
       result := fWebJS;
     css:
@@ -223,6 +227,7 @@ end;
 constructor TCatHighlighters.Create(AOwner: TObject);
 begin
   inherited Create;
+  fJava := TSynJavaSyn.Create(nil);
   fRuby := TSynRubySyn.Create(nil);
   fPascal := TSynPasSyn.Create(nil);
   fPerl := TSynPerlSyn.Create(nil);
@@ -260,6 +265,7 @@ begin
   fPerl.Free;
   fPascal.Free;
   fRuby.Free;
+  fJava.Free;
   inherited;
 end;
 
