@@ -111,6 +111,15 @@ begin
   result := 1;
 end;
 
+function method_getstringfromindex(L: PLua_State): Integer; cdecl;
+var
+  ht: TCatarinkaStrList;
+begin
+  ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
+  lua_pushstring(L, ht.obj[lua_tointeger(L, 2)]);
+  result := 1;
+end;
+
 procedure register_methods(L: PLua_State; classTable: Integer);
 begin
   RegisterMethod(L, 'add', @method_add, classTable);
@@ -118,6 +127,7 @@ begin
   RegisterMethod(L, 'indexof', @method_indexof, classTable);
   RegisterMethod(L, 'delete', @method_delete, classTable);
   RegisterMethod(L, 'clear', @method_clear, classTable);
+  RegisterMethod(L, 'get', @method_getstringfromindex, classTable);
   RegisterMethod(L, 'loadfromfile', @method_loadfromfile, classTable);
   RegisterMethod(L, 'savetofile', @method_savetofile, classTable);
   RegisterMethod(L, 'sort', @method_sort, classTable);

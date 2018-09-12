@@ -7,6 +7,7 @@ Loops through a string list.
 * **add** ( s ): Adds a string.
 * **clear** ( ): Clears the list (deletes all lines).
 * **curdelete** ( ): Deletes the current line.
+* **get** ( number ): Gets a line by its number.
 * **indexof** ( s ): Returns the line of a string. If not found, returns -1.
 * **load** ( s ): Loads a string list from a string.
 * **loadfromfile** ( filename ): Loads the list from a file.

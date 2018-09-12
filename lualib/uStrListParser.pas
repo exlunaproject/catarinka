@@ -134,9 +134,19 @@ begin
   result := 1;
 end;
 
+function method_getstringfromindex(L: PLua_State): Integer; cdecl;
+var
+  ht: TCatarinkaStrListParser;
+begin
+  ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
+  lua_pushstring(L, ht.obj.list.strings[lua_tointeger(L, 2)]);
+  result := 1;
+end;
+
 procedure register_methods(L: PLua_State; classTable: Integer);
 begin
   RegisterMethod(L, 'indexof', @method_indexof, classTable);
+  RegisterMethod(L, 'get', @method_getstringfromindex, classTable);
   RegisterMethod(L, 'load', @method_loadfromstr, classTable);
   RegisterMethod(L, 'loadfromfile', @method_loadfromfile, classTable);
   RegisterMethod(L, 'parsing', @method_parsing, classTable);
