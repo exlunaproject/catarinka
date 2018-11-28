@@ -18,7 +18,7 @@ uses
   System.Classes, System.SysUtils;
 {$ELSE}
   Classes, SysUtils;
-{$IFEND}
+{$ENDIF}
 
 function MD5Hash(s: UTF8String): UTF8String;
 

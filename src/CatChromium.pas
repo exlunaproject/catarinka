@@ -2,7 +2,7 @@ unit CatChromium;
 
 {
   Catarinka Browser Component
-  Copyright (c) 2011-2016 Syhunt Informatica
+  Copyright (c) 2011-2018 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -87,7 +87,7 @@ type
     procedure crmLoadEnd(Sender: TObject; const Browser: ICefBrowser;
       const frame: ICefFrame; httpStatusCode: integer);
     procedure crmLoadStart(Sender: TObject; const Browser: ICefBrowser;
-      const frame: ICefFrame);
+      const frame: ICefFrame; transitionType: TCefTransitionType);
     procedure crmAddressChange(Sender: TObject; const Browser: ICefBrowser;
       const frame: ICefFrame; const url: ustring);
     procedure crmStatusMessage(Sender: TObject; const Browser: ICefBrowser;
@@ -143,11 +143,9 @@ type
       const aDefaultPromptText: ustring; const aCallback: ICefJsdialogCallback;
       var aSuppressMessage: Boolean; out Result: Boolean);
 {$ELSE}
-    procedure crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
-      const aOriginUrl, aAcceptLang: ustring; aDialogType: TCefJsdialogType;
-      const aMessageText, aDefaultPromptText: ustring;
-      aCallback: ICefJsdialogCallback; out aSuppressMessage: Boolean;
-      out Result: Boolean);
+    procedure crmJsdialog(Sender: TObject; const browser: ICefBrowser; const originUrl: ustring;
+    adialogType: TCefJsDialogType; const amessageText, defaultPromptText: ustring;
+    callback: ICefJsDialogCallback; out asuppressMessage: Boolean; out Result: Boolean);
 {$ENDIF}
     procedure crmBeforeResourceLoad(Sender: TObject; const Browser: ICefBrowser;
       const frame: ICefFrame; const request: ICefRequest;
@@ -170,7 +168,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function EvalJavaScript(const Script: string): variant;
+    function EvalJavaScript(const script: string;
+      const aURL:string = '';const StartLine:integer = 0): variant;
     function GetURL: string;
     function IsMain(const b: ICefBrowser; const f: ICefFrame = nil): Boolean;
     function IsFrameNil: Boolean;
@@ -419,7 +418,8 @@ begin
   end;
 end;
 
-function TCatChromium.EvalJavaScript(const Script: string): variant;
+function TCatChromium.EvalJavaScript(const script: string;
+      const aURL:string = '';const StartLine:integer = 0): variant;
 var
   ret: ICefv8Value;
   expt: ICefV8Exception;
@@ -434,7 +434,7 @@ begin
   begin
     ctx.Enter;
     try
-      if ctx.Eval(Script, ret, expt) then
+      if ctx.Eval(Script, aURL, startline, ret, expt) then
         Result := ret.GetStringValue
       else
         Result := expt.message;
@@ -554,7 +554,7 @@ begin
 end;
 
 procedure TCatChromium.crmLoadStart(Sender: TObject; const Browser: ICefBrowser;
-const frame: ICefFrame);
+const frame: ICefFrame; transitionType: TCefTransitionType);
 begin
   if IsMain(Browser, frame) = false then
     exit;
@@ -863,11 +863,9 @@ const aDefaultPromptText: ustring; const aCallback: ICefJsdialogCallback;
 var aSuppressMessage: Boolean; out Result: Boolean);
 {$ELSE}
 
-procedure TCatChromium.crmJsdialog(Sender: TObject; const aBrowser: ICefBrowser;
-const aOriginUrl, aAcceptLang: ustring; aDialogType: TCefJsdialogType;
-const aMessageText, aDefaultPromptText: ustring;
-aCallback: ICefJsdialogCallback; out aSuppressMessage: Boolean;
-out Result: Boolean);
+procedure TCatChromium.crmJsdialog(Sender: TObject; const browser: ICefBrowser; const originUrl: ustring;
+    adialogType: TCefJsDialogType; const amessageText, defaultPromptText: ustring;
+    callback: ICefJsDialogCallback; out asuppressMessage: Boolean; out Result: Boolean);
 {$ENDIF}
 begin
   case aDialogType of
@@ -1065,7 +1063,7 @@ begin
   // LoadCustomCSS;
   fNeedRecreate := false;
   SetState(fCrm.Options.ApplicationCache, 'ApplicationCache');
-  SetState(fCrm.Options.CaretBrowsing, 'CaretBrowsing');
+  //SetState(fCrm.Options.CaretBrowsing, 'CaretBrowsing');
   SetState(fCrm.Options.Databases, 'Databases');
   SetState(fCrm.Options.FileAccessFromFileUrls, 'FileAccessFromFileUrls');
   SetState(fCrm.Options.ImageLoading, 'ImageLoading');
