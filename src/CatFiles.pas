@@ -29,7 +29,9 @@ function FileCanBeOpened(const filename: String): boolean;
 function FileCopy(const source, dest: string): boolean;
 function FilenameToMimeType(const filename: string): string;
 function ForceDir(const dir: string): boolean;
+function GetDirAge(const Dir: string): TDateTime;
 function GetDiskSerialNumber(const drive: string): string;
+function GetDllFilename:string;
 function GetFileSize(const filename: string): Int64;
 function GetFileToStr(const filename: string): string;
 function GetFileVersion(const filename: string;
@@ -175,6 +177,23 @@ begin
   Result := ForceDirectories(d);
 end;
 
+function GetDirAge(const Dir: string): TDateTime;
+var
+  FileSpecs: TGetFileExInfoLevels;
+  DirData: TWin32FileAttributeData;
+  FileTime: TSystemTime;
+begin
+  Result := 0;
+  fillchar(FileSpecs, sizeof(FileSpecs), 0);
+  FileSpecs := GetFileExInfoStandard;
+  fillchar(DirData, sizeof(DirData), 0);
+  if GetFileAttributesEx({$IFDEF UNICODE}pwidechar{$ELSE}pchar{$ENDIF}(string(Dir)), FileSpecs, @DirData) then
+  begin
+    FileTimeToSystemTime(DirData.ftCreationTime, FileTime);
+    Result := SystemTimeToDateTime(FileTime);
+  end;
+end;
+
 procedure GetDirs(const dir: string; const Result: TStrings;
   SortResult: boolean = true);
 var
@@ -206,6 +225,15 @@ var
 begin
   GetVolumeInformation(PChar(drive), nil, 0, @sn, len, flags, nil, 0);
   Result := IntToHex(HiWord(sn), 4) + '-' + IntToHex(LoWord(sn), 4);
+end;
+
+// Returns the DLL filename (like Application.Exename would for the EXE)
+function GetDllFilename:string;
+var FileName : array[0..MAX_PATH] of char;
+begin
+ FillChar(FileName, sizeof(FileName), #0);
+ GetModuleFileName(hInstance, filename, sizeof(filename));
+ result:=filename;
 end;
 
 procedure GetFiles(const dir: string; const Result: TStrings;
