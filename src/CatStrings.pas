@@ -44,6 +44,7 @@ function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
 function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
   const casesensitive: Boolean = true): integer;
+function CatCaseOf_GetName(const id: integer; labels: array of TCatCaseLabel): string;
 function CatWrapText(const text: string; const chars: integer): TStringList;
 function CharSetToStr(const c: TSysCharSet): string;
 function CommaTextToStr(const s: string): string;
@@ -287,6 +288,20 @@ begin
     if astr = labels[i].name then
       result := labels[i].id;
     if result <> -1 then
+      break;
+  end;
+end;
+
+function CatCaseOf_GetName(const id: integer; labels: array of TCatCaseLabel): string;
+var
+  i: integer;
+begin
+  result := EmptyStr; // label not found
+  for i := low(labels) to high(labels) do
+  begin
+    if id = labels[i].id then
+      result := labels[i].name;
+    if result <> EmptyStr then
       break;
   end;
 end;
