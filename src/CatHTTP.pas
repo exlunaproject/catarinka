@@ -124,10 +124,10 @@ function GenerateURL(const Host: string; const Port: integer): string;
 function URLDecode(const s: string): string;
 function URLEncode(const s: string; plus: boolean = false;
   const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
-  ' ']): string;
+  ' ','.']): string;
 function URLEncode_U(const s: string; plus: boolean = false;
   const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
-  ' ']): string;
+  ' ','.']): string;
 function URLEncodeFull(const s: string): string;
 function URLPathTitleCase(const s: string): string;
 
@@ -591,7 +591,7 @@ end;
 
 function URLEncode(const s: string; plus: boolean = false;
   const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
-  ' ']): string;
+  ' ', '.']): string;
 var
   i: integer;
   sp: string;
@@ -618,7 +618,7 @@ end;
 
 function URLEncode_U(const s: string; plus: boolean = false;
   const preserve: TSysCharSet = ['0' .. '9', 'A' .. 'Z', 'a' .. 'z',
-  ' ']): string;
+  ' ','.']): string;
 var
   i: integer;
   sp: string;
