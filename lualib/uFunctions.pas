@@ -52,11 +52,13 @@ function str_decrease(L: plua_State): integer; cdecl;
 
 function file_getdirfiles(L: plua_State): integer; cdecl;
 function file_getdirs(L: plua_State): integer; cdecl;
+function file_extractdir(L: plua_State): integer; cdecl;
 function file_extractname(L: plua_State): integer; cdecl;
 function file_getext(L: plua_State): integer; cdecl;
 function file_getversion(L: plua_State): integer; cdecl;
 function file_exists(L: plua_State): integer; cdecl;
 function file_canopen(L: plua_State): integer; cdecl;
+function file_cleanname(L: plua_State): integer; cdecl;
 function file_direxists(L: plua_State): integer; cdecl;
 function file_mkdir(L: plua_State): integer; cdecl;
 function file_copy(L: plua_State): integer; cdecl;
@@ -560,6 +562,12 @@ begin
   result := 1;
 end;
 
+function file_extractdir(L: plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, extractfilepath(lua_tostring(L, 1)));
+  result := 1;
+end;
+
 function file_extractname(L: plua_State): integer; cdecl;
 begin
   lua_pushstring(L, extractfilename(lua_tostring(L, 1)));
@@ -593,6 +601,12 @@ end;
 function file_canopen(L: plua_State): integer; cdecl;
 begin
   lua_pushboolean(L, filecanbeopened(lua_tostring(L, 1)));
+  result := 1;
+end;
+
+function file_cleanname(L: plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, cleanfilename(lua_tostring(L, 1)));
   result := 1;
 end;
 

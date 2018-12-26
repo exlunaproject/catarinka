@@ -238,8 +238,8 @@ begin
 end;
 
 type
-  TFileFields = (f_canopen, f_copy, f_delete, f_exec, f_exechide, f_exists,
-    f_getcontents, f_getname, f_getext, f_getsize, f_getver);
+  TFileFields = (f_canopen, f_cleanname, f_copy, f_delete, f_exec, f_exechide, f_exists,
+    f_getcontents, f_getname, f_getext, f_getsize, f_getver, f_getdir);
 
 function get_filefields(L: plua_State): integer; cdecl;
 begin
@@ -248,6 +248,8 @@ begin
     'f_' + lowercase(lua_tostring(L, 2)))) of
     f_canopen:
       lua_pushcfunction(L, file_canopen);
+    f_cleanname:
+      lua_pushcfunction(L, file_cleanname);
     f_copy:
       lua_pushcfunction(L, file_copy);
     f_delete:
@@ -260,6 +262,8 @@ begin
       lua_pushcfunction(L, file_exists);
     f_getcontents:
       lua_pushcfunction(L, file_gettostr);
+    f_getdir:
+      lua_pushcfunction(L, file_extractdir);
     f_getname:
       lua_pushcfunction(L, file_extractname);
     f_getsize:

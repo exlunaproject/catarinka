@@ -3,12 +3,14 @@
 ### File Functions (file.*)
 
 * **canopen** ( filename ): Returns true if a file can be opened. If the file is locked, returns false.
+* **cleanname** (filename): Returns a filename with invalid characters stripped out.
 * **copy** ( source, dest ): Copies a file to a new file.
 * **delete** ( filename ): Deletes a file.
 * **exec** ( filename ): Executes a file.
 * **exechide** ( filename ): Executes a file in hidden state.
 * **exists** ( filename ): Returns true if a file exists, and false otherwise.
 * **getcontents** ( filename ): Returns the contents of a local file.
+* **getdir** ( filename ): Gets the directory part of a filename.
 * **getext** ( filename ): Gets the extension part of a filename.
 * **getname** ( filename ): Gets the name and extension part of a filename.
 * **getsize** ( filename ): Gets the size in bytes of a filename.

@@ -2,7 +2,7 @@ unit CatJINI;
 {
   Catarinka TJIniList - JSON-Based INI-Like component
 
-  Copyright (c) 2010-2017 Felipe Daragon
+  Copyright (c) 2010-2018 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -33,6 +33,7 @@ type
     fFileName: string;
     fModified: Boolean;
     fObject: ISuperObject;
+    fStoreBoolAsInteger: Boolean;
     fVersion: string;
     function GetJSON: string;
     procedure SetJSON(json: string);
@@ -66,6 +67,7 @@ type
     property CaseSensitive: Boolean read fCaseSensitive write fCaseSensitive;
     property Count: integer read GetCount;
     property FileName: string read fFileName write fFileName;
+    property StoreBoolAsInteger: Boolean read fStoreBoolAsInteger write fStoreBoolAsInteger;
     property Text: string read GetJSON write SetJSON;
     property Values[const Key: string]: string read GetValue
       write SetValue; default;
@@ -83,7 +85,7 @@ const
   cFormatKey = '_format.';
   cKeySeparator = '.';
   cValuesSection = 'data';
-  cVersion = '1.02';
+  cVersion = '1.03';
 
   { TJIniList }
 
@@ -152,6 +154,8 @@ end;
 function TJIniList.ReadBool(const Section, Key: string;
   default: Boolean): Boolean;
 begin
+  if fStoreBoolAsInteger = false then
+  Result := StrToBool(ReadString(Section, Key, BoolToStr(default))) else
   Result := Boolean(ReadInteger(Section, Key, integer(default)));
 end;
 
@@ -192,6 +196,8 @@ end;
 
 procedure TJIniList.WriteBool(const Section, Key: string; Value: Boolean);
 begin
+  if fStoreBoolAsInteger = false then
+  WriteString(Section, Key, BoolToStr(Value)) else
   WriteInteger(Section, Key, integer(Value));
 end;
 
@@ -304,6 +310,7 @@ begin
   inherited Create;
   fBackup := false;
   fCaseSensitive := false;
+  fStoreBoolAsInteger := false;
   fVersion := cVersion;
   fObject := TSuperObject.Create(stObject);
 end;
