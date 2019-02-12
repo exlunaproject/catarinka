@@ -13,6 +13,7 @@ Loops through a string list.
 * **loadfromfile** ( filename ): Loads the list from a file.
 * **parsing** ( ): Returns true while still parsing the list.
 * **reset** ( ): Stops parsing the list, goes back to the beginning.
+* **reverse** ( ): Reverses the string list order.
 * **savetofile** ( filename ): Saves the list to a file.
 * **stop** ( ): Stops parsing the list.
 

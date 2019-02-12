@@ -2,7 +2,7 @@ unit CatTasks;
 {
   Catarinka - Task Management library
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2018 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -20,6 +20,7 @@ uses
   Windows, Forms, SysUtils, Classes, TlHelp32;
 {$ENDIF}
 function KillTask(const ExeFileName: string): Integer;
+function KillChildTasks: boolean;
 function RunTask(const ExeFileName: string; const Wait: boolean = false;
   const WindowState: Integer = SW_SHOW): Cardinal;
 function TaskRunning(const ExeFileName: WideString): boolean;
@@ -109,6 +110,30 @@ begin
     until not Thread32Next(ThreadsSnapshot, ThreadRecord);
   end;
   CloseHandle(ThreadsSnapshot);
+end;
+
+function KillChildTasks: boolean;
+var
+  h: THandle;
+  pe: TProcessEntry32;
+  curpid:  {$IFDEF UNICODE}Cardinal{$ELSE}DWORD{$ENDIF};
+begin
+  result := false;
+  curpid := GetCurrentProcessId;
+  h := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  pe.dwSize := SizeOf(pe);
+  if Process32First(h, pe) then
+  begin
+
+    while Process32Next(h, pe) do
+    begin
+      if pe.th32ParentProcessID = curpid then begin
+        //if lowercase(exename) = lowercase(string(pe.szExeFile)) then
+          KillProcessbyPID(pe.th32ProcessID);
+          result := true;
+      end;
+    end;
+  end;
 end;
 
 procedure KillProcessbyPID(const PID: Cardinal);

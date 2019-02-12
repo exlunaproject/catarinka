@@ -68,6 +68,15 @@ begin
   result := 1;
 end;
 
+function method_reverse(L: PLua_State): Integer; cdecl;
+var
+  ht: TCatarinkaStrListParser;
+begin
+  ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
+  ht.obj.Reverse;
+  result := 1;
+end;
+
 function method_delete(L: PLua_State): Integer; cdecl;
 var
   ht: TCatarinkaStrListParser;
@@ -153,6 +162,7 @@ begin
   RegisterMethod(L, 'savetofile', @method_savetofile, classTable);
   RegisterMethod(L, 'stop', @method_stop, classTable);
   RegisterMethod(L, 'reset', @method_reset, classTable);
+  RegisterMethod(L, 'reverse', @method_reverse, classTable);
   RegisterMethod(L, 'clear', @method_clear, classTable);
   RegisterMethod(L, 'curgetvalue', @method_getvalue, classTable);
   RegisterMethod(L, 'curdelete', @method_delete, classTable);

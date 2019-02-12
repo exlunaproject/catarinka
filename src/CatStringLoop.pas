@@ -1,7 +1,7 @@
 {
   Catarinka Loopers
     TStringLoop, TSepStringLoop, TCSVLoop
-  Copyright (c) 2003-2017 Felipe Daragon
+  Copyright (c) 2003-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -92,6 +92,7 @@ type
     procedure LoadFromString(const s: string);
     procedure LoadFromFile(const filename: string);
     procedure Reset; virtual;
+    procedure Reverse;
     procedure Stop; overload;
     function Stop(aReturn:Variant):Variant; overload;
     procedure Clear;
@@ -253,6 +254,16 @@ procedure TStringLoop.Reset;
 begin
   FPosition := 0;
   SetCurrent(emptystr);
+end;
+
+procedure TStringLoop.Reverse;
+var outlst:TStringList; i:integer;
+begin
+  outlst := TStringList.Create;
+  for i := fList.Count - 1 downto 0 do
+    outlst.Add(fList[i]);
+  fList.Text := outlst.Text;
+  outlst.Free;
 end;
 
 procedure TStringLoop.LoadFromFile(const filename: string);
