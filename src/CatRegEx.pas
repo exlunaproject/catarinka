@@ -2,7 +2,7 @@ unit CatRegex;
 {
   Catarinka - Regular Expression and some other useful matching functions
 
-  Copyright (c) 2003-2017 Felipe Daragon
+  Copyright (c) 2003-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -28,10 +28,14 @@ function RegExpReplace(const s, re, sreplacement: string): string; overload;
 function RegExpReplace(const s, re: string; refunc: TRegExprReplaceFunction): string; overload;
 function CatMatch(const sigpattern, s: string): boolean;
 function IsValidEmail(email: string): boolean;
+function ExtractVersionFromString(s:string):string;
+function MatchVersion(curver, vercheck:string):boolean;
+function MatchVersionRange(curver, vercheck:string):boolean;
+function MatchVersionEx(curver, vercheck:string):boolean;
 
 implementation
 
-uses CatStrings;
+uses CatStrings, CatStringLoop;
 
 function RegExpReplace(const s, re, sreplacement: string): string;
 var
@@ -153,6 +157,84 @@ begin
   end;
   if not(lastpoint) or (email[n] = '.')then  // not finish by . and have a . after arobasc
     result := false;
+end;
+
+function ExtractVersionFromString(s:string):string;
+begin
+  result := RegExpFind(s, '\d+(\.\d+)+');
+  if pos(',', result) <> 0 then
+  result := before(result, ',');
+end;
+
+// expects expression like: <3.4.0 or <=3.4.0
+// when using just the equal sign, can be followed by a wildcard, ex:
+// =* (matches any version), =3.*, =3.1.??
+function MatchVersion(curver, vercheck:string):boolean;
+var
+  outver:string;
+begin
+  result := false;
+  outver := ExtractVersionFromString(vercheck);
+    if beginswith(vercheck, '>=') then begin
+        if curver >= outver  then
+        result := true;
+    end else
+    if beginswith(vercheck, '<=') then begin
+        if curver <= outver  then
+        result := true;
+    end else
+    if beginswith(vercheck, '<') then begin
+        if curver < outver  then
+        result := true;
+    end else
+    if beginswith(vercheck, '>') then begin
+        if curver > outver  then
+        result := true;
+    end else
+    if beginswith(vercheck, '=') then begin
+        outver := after(vercheck, '=');
+        if matchstrings(curver, outver) = true  then
+        result := true;
+    end;
+end;
+
+// expects a version check range separated by spaces like:
+// >=1.4.2 <1.6.2
+// must match all to return true
+function MatchVersionRange(curver, vercheck:string):boolean;
+var
+  s: TSepStringLoop;
+begin
+  result := true;
+  s := TSepStringLoop.Create(vercheck,' ');
+  while s.Found do begin
+    if MatchVersion(curver,s.Current) = false then
+        result := false;
+  end;
+  s.Free;
+end;
+
+// expects version check list separated by commas like:
+// <1.12.2,>=1.12.3 <2.2.2,>=2.2.3 <3.0.0
+// must match at least one of the checks to return true
+// wildcards can be used when using just equal sign, ex:
+// usage examples:
+// MatchVersionEx('2.2.3','<1.12.2,>=1.12.3 <2.2.2,>=2.2.3 <3.0.0') -> true
+// MatchVersionEx('3.0.1','<1.12.2,>=1.12.3 <2.2.2,>=2.2.3 <3.0.0') -> false
+// MatchVersionEx('2.1.11','=2.1.??,=3.*') -> true
+function MatchVersionEx(curver, vercheck:string):boolean;
+var
+  s: TSepStringLoop;
+begin
+  result := false;
+  s := TSepStringLoop.Create(vercheck,',');
+  while s.Found do begin
+    if MatchVersionRange(curver,s.Current) = true then begin
+        result := true;
+        s.Stop;
+    end;
+  end;
+  s.Free;
 end;
 
 // ------------------------------------------------------------------------//
