@@ -2,7 +2,7 @@ unit CatInet;
 {
   Catarinka - Internet related functions
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -21,6 +21,8 @@ uses
   Windows, WinSock, SysUtils, Registry, WinInet;
 {$ENDIF}
 
+function ExtractIPAddresses(const s: string): string; overload;
+function ExtractIPAddresses(const s: string;const exceptions: array of string): string; overload;
 function GetAbsoluteURL(const baseURL, relURL: string): string;
 function GetTinyUrl(const URL: string): string;
 function IPAddrToName(const IP: string): string;
@@ -32,7 +34,7 @@ procedure IESettingsChanged(const agent: string);
 
 implementation
 
-uses CatStrings;
+uses CatStrings, RegExpr;
 
 procedure DisableProxy(const agent: string);
 var
@@ -144,6 +146,39 @@ begin
   Result := ((IP <> emptystr) and
     (inet_addr(PAnsiChar(ansistring(IP))) <>
     integer(INADDR_NONE)));
+end;
+
+function ExtractIPAddresses(const s: string;const exceptions: array of string): string;
+var
+  r: TRegExpr;
+  function IsValid(const ip:string):boolean;
+  begin
+   result := IsValidIP(ip);
+   if beginswith(ip, exceptions) = true then
+     result := false;
+  end;
+begin
+  result := emptystr;
+   r := TRegExpr.Create;
+   try
+     r.Expression := '\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b';
+     if r.Exec(s) then
+       repeat
+         if IsValid(r.Match[0]) = true then begin
+           if result = emptystr then
+             result := r.Match[0]
+           else
+             result := result+','+r.Match[0]
+         end
+       until not r.ExecNext;
+   finally
+     r.Free;
+   end;
+end;
+
+function ExtractIPAddresses(const s: string): string;
+begin
+  result := ExtractIPAddresses(s, []);
 end;
 
 function NameToIPAddr(const name: string): string;

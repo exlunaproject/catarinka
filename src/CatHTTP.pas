@@ -88,6 +88,7 @@ type
   end;
 
   // HTML functions
+function BeginsWithHTTPProto(const url: string): boolean;
 function BoolToDisplayState(const b: boolean): string;
 function ColorToHTMLColor(const Color: TColor): string;
 function DequoteHTMLAttribValue(const s: string): string;
@@ -135,6 +136,13 @@ implementation
 
 uses
   CatStrings, CatJSON, CatEntities;
+  
+function BeginsWithHTTPProto(const url: string): boolean;
+begin
+  result := false;
+  if BeginsWith(url, ['http:', 'https:'], true) then
+    result := true;
+end;  
 
 function BoolToDisplayState(const b: boolean): string;
 begin
