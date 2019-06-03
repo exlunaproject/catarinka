@@ -683,7 +683,8 @@ var
 begin
   Result := fPreventPopup;
   u := aTargetUrl;
-  SendMessageToTab(CRM_NEWTAB, u);
+  if fPreventPopup = true then
+    SendMessageToTab(CRM_NEWTAB, u);  
   if assigned(OnBeforePopup) then onBeforePopup(sender,u,result);
 end;
 

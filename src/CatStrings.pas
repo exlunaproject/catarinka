@@ -2,7 +2,7 @@ unit CatStrings;
 {
   Catarinka - String Operation functions
 
-  Copyright (c) 2003-2017 Felipe Daragon
+  Copyright (c) 2003-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 

@@ -815,7 +815,8 @@ var
 begin
   Result := fPreventPopup;
   u := aTargetUrl;
-  SendMessageToTab(CRM_NEWTAB, u);
+  if fPreventPopup = true then
+    SendMessageToTab(CRM_NEWTAB, u);
   if assigned(OnBeforePopup) then
     OnBeforePopup(Sender, u, Result);
 end;
@@ -1061,6 +1062,7 @@ procedure TCatChromium.LoadSettings(settings, DefaultSettings: TCatJSON);
 
 begin
   // LoadCustomCSS;
+  fPreventPopup := settings.GetValue(cSandcatOptions+'openpopupsinnewtab', false);
   fNeedRecreate := false;
   SetState(fCrm.Options.ApplicationCache, 'ApplicationCache');
   //SetState(fCrm.Options.CaretBrowsing, 'CaretBrowsing');
@@ -1113,7 +1115,7 @@ begin
   fMsg := TCatMsg.Create;
   fMsg.OnDataMessage := WMCopyData;
   fCriticalSection := TCriticalSection.Create;
-  fPreventPopup := true;
+  fPreventPopup := false;
   fInterceptRequests := true;
   fLogURLs := false;
   fEnableDownloads := true;

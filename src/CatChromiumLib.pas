@@ -139,6 +139,7 @@ const
   cURL_ABOUTBLANK = 'about:blank';
   cURL_HOME = 'sandcat:home';
   cOptions = 'chrome.options.';
+  cSandcatOptions = 'sandcat.options.';
 
 const // Messages from the Chromium renderer to the Sandcat Tab object
   CRM_LOG_REQUEST_JSON = 1;
