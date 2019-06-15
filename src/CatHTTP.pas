@@ -114,6 +114,7 @@ function RemoveHeaderFromResponse(const r: string): string;
 // URL functions
 function CrackURL(const url: string): TURLParts;
 function ChangeURLPath(const url, newpath: string): string;
+function RemoveUrlPath(const url: string): string;
 function ExtractUrlFileExt(const url: string): string;
 function ExtractUrlFileName(const url: string): string;
 function ExtractUrlHost(const url: string): string;
@@ -521,6 +522,20 @@ begin
     if pos('?', result) <> 0 then
       result := before(result, '?');
   end;
+end;
+
+// Removes the path from a URL, example:
+// http://www.somehost.com/somepath -> http://www.somehost.com
+function RemoveUrlPath(const url: string): string;
+var proto:string;
+begin
+  if pos('://', url )<> 0 then begin
+    proto := before(url, '://');
+    result := after(url, '://');
+  end;
+  if proto = emptystr then
+    proto := 'http';
+  result := proto+ '://' +before(result, '/');
 end;
 
 function ExtractHTTPRequestPostData(const r: string): string;
