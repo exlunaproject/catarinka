@@ -13,9 +13,9 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.SysUtils;
+  Winapi.Windows, System.SysUtils;
 {$ELSE}
-  SysUtils;
+  Windows, SysUtils;
 {$ENDIF}
 function GetCmdLine: string;
 function GetCmdParam(const param: string; const def_value: string = ''): string;
@@ -64,7 +64,7 @@ var
   i: integer;
   params: string;
 begin
-  result := emptystr;
+  result := def_value;
   if ParamCount = 0 then
     exit;
   for i := 1 to ParamCount do
@@ -85,12 +85,10 @@ var
 const
   quote = '"';
 begin
-  result := emptystr;
+  result := def_value;
   if ParamCount = 0 then
     exit;
-  for i := 1 to ParamCount do
-    params := params + ' ' + (ParamStr(i));
-  params := params + ' ';
+  params := GetCommandLine();
   result := after(params, param + ':');
 
   if beginswith(result, quote) then

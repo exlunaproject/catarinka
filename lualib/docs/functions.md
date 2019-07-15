@@ -145,3 +145,5 @@ These will return a boolean value.
 * **delay** ( ms ): Waits a specific number of milliseconds before proceeding.
 * **getarg** ( s or int , defaultvalue): Returns an argument passed to the executable as a string. Example: getarg('-pid') for returning the value of the argument provided as ``-pid:somevalue``, getarg(1) for returning the first argument, getarg() for returning all arguments. If the argument value is empty, returns the default value.
 * **hasarg** ( s ):  Returns true if the argument has been provided, false otherwise.
+* **clipboard_gettext** ( ): Returns the current Clipboard text (if any).
+* **clipboard_settext** ( s ): Copies a text to the Clipboard. 

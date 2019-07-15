@@ -2,7 +2,7 @@ unit uMain;
 
 {
   Catarinka Lua Extension Library
-  Copyright (c) 2013-2016 Felipe Daragon
+  Copyright (c) 2013-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -368,7 +368,7 @@ begin
 end;
 
 type
-  TUtilFields = (ut_delay, ut_getarg, ut_hasarg, ut_hassoftware);
+  TUtilFields = (ut_delay, ut_getarg, ut_hasarg, ut_hassoftware, ut_clipboard_gettext, ut_clipboard_settext);
 
 function get_utilfields(L: plua_State): integer; cdecl;
 begin
@@ -383,6 +383,10 @@ begin
       lua_pushcfunction(L, utils_hasarg);
     ut_hassoftware:
       lua_pushcfunction(L, utils_hassoftwareinstalled);
+    ut_clipboard_gettext:
+      lua_pushcfunction(L, utils_clipboard_gettext);
+    ut_clipboard_settext:
+      lua_pushcfunction(L, utils_clipboard_settext);
   else
     result := 0;
   end;

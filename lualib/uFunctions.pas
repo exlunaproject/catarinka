@@ -2,7 +2,7 @@ unit uFunctions;
 
 {
   Catarinka Lua Library
-  Copyright (c) 2013-2016 Felipe Daragon
+  Copyright (c) 2013-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -14,9 +14,9 @@ interface
 uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, System.Classes, System.SysUtils, Winapi.ShellAPI,
-  System.Win.Registry,
+  System.Win.Registry, Vcl.Clipbrd,
 {$ELSE}
-  Windows, Classes, SysUtils, ShellAPI, Registry,
+  Windows, Classes, SysUtils, ShellAPI, Registry, Clipbrd,
 {$ENDIF}
   Lua;
 
@@ -116,6 +116,8 @@ function utils_delay(L: plua_State): integer; cdecl;
 function utils_getarg(L: plua_State): integer; cdecl;
 function utils_hasarg(L: plua_State): integer; cdecl;
 function utils_hassoftwareinstalled(L: plua_State): integer; cdecl;
+function utils_clipboard_gettext(L: plua_State): integer; cdecl;
+function utils_clipboard_settext(L: plua_State): integer; cdecl;
 
 implementation
 
@@ -825,6 +827,18 @@ end;
 function utils_hassoftwareinstalled(L: plua_State): integer; cdecl;
 begin
   lua_pushboolean(L, HasSoftwareInstalled(lua_tostring(L, 1)));
+  result := 1;
+end;
+
+function utils_clipboard_settext(L: plua_State): integer; cdecl;
+begin
+  Clipboard.AsText := lua_tostring(L, 1);
+  result := 1;
+end;
+
+function utils_clipboard_gettext(L: plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, Clipboard.AsText);
   result := 1;
 end;
 
