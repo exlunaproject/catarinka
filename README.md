@@ -17,7 +17,7 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 * `TCatHighlighters` - Provides quick access to multiple SynEdit highlighters with a color scheme adapted from the CodeRay project.
 * `THTMLEntities` - HTML Entity Encoder and Decoder.
 * `TCatHTMLParser` - HTML Parser based on a component by Przemyslaw Jankowski.
-* `TCatJSON` - JSON Manipulation component built on top of the SuperObject.
+* `TCatJSON` - JSON Manipulation component built on top of the XSuperObject or SuperObject.
 * `TCatListEditor` - A list editor based on SuperList by David Koretzky.
 * `TCatMsg`, `TCatMsgCromis` - Easy to deploy IPC components.
 * `TStringPattern`, `TIntegerPattern` - Flexible pattern validation engine using method chaining.
@@ -37,7 +37,7 @@ Most components can be cross-compiled with Delphi XE10 Tokyo and CrossVCL.
 
 ### Before Compiling
 
-CatPrefs: Rename the `src\CatDCPKey.pas` file, edit it and add your own encryption keys or key generators.
+CatPrefs: Rename the `src\CatCryptKey.pas` file, edit it and add your own encryption keys or key generators.
 
 ## Dependencies
 

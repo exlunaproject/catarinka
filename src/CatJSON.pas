@@ -26,7 +26,6 @@ unit CatJSON;
 interface
 
 {$I Catarinka.inc}
-{$I CatarinkaX.inc}
 
 uses
 {$IFDEF DXE2_OR_UP}
