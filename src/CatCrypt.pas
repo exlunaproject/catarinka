@@ -1,9 +1,9 @@
-unit CatDCP;
+unit CatCrypt;
 {
   Catarinka Crypto library
   Quick AES encryption/decryption functions covering string, stream and file
 
-  Copyright (c) 2003-2017 Felipe Daragon
+  Copyright (c) 2003-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -14,7 +14,10 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  Winapi.Windows, System.Classes, System.SysUtils;
+  {$IFDEF USECROSSVCL}
+  WinAPI.Windows,
+  {$ENDIF}
+  System.Classes, System.SysUtils;
 {$ELSE}
   Classes, SysUtils;
 {$ENDIF}
@@ -34,28 +37,42 @@ function AESToAnsiStr(const s, key: string): string;
 implementation
 
 uses
-  DCPrijndael, DCPsha512;
+  AES;
 
 function StrToAES(const s, key: string): string;
-var
-  c: TDCP_rijndael;
 begin
-  c := TDCP_rijndael.Create(nil);
-  c.InitStr(key, TDCP_sha512);
-  result := string(c.EncryptString(s));
-  c.Burn;
-  c.Free;
+  result := EncryptString(s, key);
 end;
 
 function AESToStr(const s, key: string): string;
-var
-  c: TDCP_rijndael;
 begin
-  c := TDCP_rijndael.Create(nil);
-  c.InitStr(key, TDCP_sha512);
-  result := string(c.DecryptString(s));
-  c.Burn;
-  c.Free;
+  result := DecryptString(s, key);
+end;
+
+procedure AES_EncryptStream(ms: TMemoryStream; const key: string);
+var
+  src: TMemoryStream;
+begin
+  src := TMemoryStream.Create;
+  src.CopyFrom(ms, ms.Size);
+  src.position := 0;
+  ms.clear;
+  // encrypt the contents of the stream
+  EncryptStream(src, ms, key, kb256);
+  src.Free;
+end;
+
+procedure AES_DecryptStream(ms: TMemoryStream; const key: string);
+var
+  src: TMemoryStream;
+begin
+  src := TMemoryStream.Create;
+  src.CopyFrom(ms, ms.Size);
+  src.position := 0;
+  ms.clear;
+  // decrypt the contents of the stream
+  DecryptStream(src, ms, key, kb256);
+  src.Free;
 end;
 
 procedure AES_EncryptFile(const filename, outfilename: string;
@@ -88,72 +105,17 @@ begin
   s.Free;
 end;
 
-procedure AES_EncryptStream(ms: TMemoryStream; const key: string);
-var
-  src: TMemoryStream;
-  c: TDCP_rijndael;
-begin
-  src := TMemoryStream.Create;
-  src.CopyFrom(ms, ms.Size);
-  src.position := 0;
-  ms.clear;
-
-  c := TDCP_rijndael.Create(nil);
-  // initialize the cipher with a hash of the passphrase
-  c.InitStr(key, TDCP_sha512);
-  // encrypt the contents of the stream
-  c.EncryptStream(src, ms, src.Size);
-  c.Burn;
-  c.Free;
-
-  src.Free;
-end;
-
-procedure AES_DecryptStream(ms: TMemoryStream; const key: string);
-var
-  src: TMemoryStream;
-  c: TDCP_rijndael;
-begin
-  src := TMemoryStream.Create;
-  src.CopyFrom(ms, ms.Size);
-  src.position := 0;
-  ms.clear;
-
-  c := TDCP_rijndael.Create(nil);
-  // initialize the cipher with a hash of the passphrase
-  c.InitStr(key, TDCP_sha512);
-  // decrypt the contents of the stream
-  c.DecryptStream(src, ms, src.Size);
-  c.Burn;
-  c.Free;
-
-  src.Free;
-end;
-
 { ansi functions }
 
 function AnsiStrToAES(const s, key: string): string;
-var
-  c: TDCP_rijndael;
 begin
-  c := TDCP_rijndael.Create(nil);
   // force ANSI
-  c.InitStr(ansistring(key), TDCP_sha512);
-  result := string(c.EncryptString(ansistring(s)));
-  c.Burn;
-  c.Free;
+  result := EncryptString(ansistring(s), ansistring(key));
 end;
 
 function AESToAnsiStr(const s, key: string): string;
-var
-  c: TDCP_rijndael;
 begin
-  c := TDCP_rijndael.Create(nil);
-  // force ANSI
-  c.InitStr(ansistring(key), TDCP_sha512);
-  result := string(c.DecryptString(ansistring(s)));
-  c.Burn;
-  c.Free;
+  result := DecryptString(ansistring(s), ansistring(key));
 end;
 
 // ------------------------------------------------------------------------//

@@ -79,7 +79,13 @@ type
 
 implementation
 
-uses CatDCP, CatStrings, CatStringLoop, CatDCPKey;
+uses CatStrings, CatStringLoop,
+{$IFDEF MSWINDOWS}
+  CatDCP,
+{$ELSE}
+  CatCrypt,
+{$ENDIF}
+  CatCryptKey;
 
 function VariantTypeIDToVariantType(ID:string):word;
 begin
@@ -124,7 +130,7 @@ function TCatPreferences.Encrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := ansistrtoaes(Value, GetDCPKey(CATKEY_PASSWORD))
+    result := ansistrtoaes(Value, GetCatKey(CATKEY_PASSWORD))
   else
     result := Value;
 end;
@@ -134,7 +140,7 @@ function TCatPreferences.Decrypt(const CID: string;
   const Value: Variant): Variant;
 begin
   if IsEncryptedCID(CID) then
-    result := aestoansistr(Value, GetDCPKey(CATKEY_PASSWORD))
+    result := aestoansistr(Value, GetCatKey(CATKEY_PASSWORD))
   else
     result := Value;
 end;

@@ -372,7 +372,9 @@ function GetSpecialFolderPath(const Folder: integer;
 var
   FilePath: array [0 .. 255] of char;
 begin
+ {$IFDEF MSWINDOWS}
   SHGetSpecialFolderPath(0, @FilePath[0], Folder, CanCreate);
+{$ENDIF}
   result := FilePath;
 end;
 
@@ -433,6 +435,7 @@ begin
   TMethod(result).code := forObject.methodAddress(procname);
 end;
 
+
 procedure NilComponentMethods(Component: TComponent);
 var
   count, Size, i: integer;
@@ -451,12 +454,17 @@ begin
     begin
       PropInfo := List^[i];
       if PropInfo^.PropType^.Kind in tkMethods then
+      {$IFDEF MSWINDOWS}
         SetMethodProp(Component, string(PropInfo.Name), NilMethod);
+      {$ELSE}
+        //FIXME
+      {$ENDIF}
     end;
   finally
     FreeMem(List);
   end;
 end;
+
 
 procedure QuickSortTreeViewItems(tv: TTreeView);
 var

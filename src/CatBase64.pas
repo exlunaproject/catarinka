@@ -15,6 +15,9 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
+  {$IFDEF USECROSSVCL}
+  WinAPI.Windows,
+  {$ENDIF}
   System.Classes, System.SysUtils;
 {$ELSE}
   Classes, SysUtils;

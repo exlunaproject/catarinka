@@ -33,6 +33,8 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 
 All components here work with the latest Delphi releases (for both 32-bit and 64-bit compilation) and the older D7. Most of them may work with FPC and Lazarus.
 
+Most components can be cross-compiled with Delphi XE10 Tokyo and CrossVCL.
+
 ### Before Compiling
 
 CatPrefs: Rename the `src\CatDCPKey.pas` file, edit it and add your own encryption keys or key generators.

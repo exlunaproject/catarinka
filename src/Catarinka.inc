@@ -32,3 +32,5 @@
   // https://github.com/hgourvest/dcef3/issues/12#issuecomment-158649005
   {$DEFINE CANUSECEFLOADERROR}
 {$ENDIF}
+
+{$I CatarinkaX.inc}

@@ -311,6 +311,7 @@ var
   verinfo: VS_FIXEDFILEINFO;
 begin
   Result := emptystr;
+{$IFDEF MSWINDOWS}
   infosz := GetFileVersionInfoSize({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(filename), plen);
   FillChar(verinfo, SizeOf(verinfo), 0);
   if infosz > 0 then
@@ -325,6 +326,8 @@ begin
       verinfo.dwFileVersionLS and 65535]);
     FreeMem(p);
   end;
+
+{$ENDIF}
 end;
 
 function GetSizeDescription(const bytes: cardinal): string;

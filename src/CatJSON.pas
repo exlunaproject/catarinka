@@ -2,10 +2,13 @@ unit CatJSON;
 
 {
   Catarinka TCatJSON - JSON Manipulation Object
-  Copyright (c) 2010-2017 Felipe Daragon
+  Copyright (c) 2010-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  14.08.2019:
+  - Added compatibility with xsuperobject
+  - Added RemovePath() method
   23.07.2017:
   - Added Count property and fixed handling of integer types
   - Added SetValues() for setting the value of multiple paths at the same time
@@ -23,6 +26,7 @@ unit CatJSON;
 interface
 
 {$I Catarinka.inc}
+{$I CatarinkaX.inc}
 
 uses
 {$IFDEF DXE2_OR_UP}
@@ -30,7 +34,12 @@ uses
 {$ELSE}
   Classes, SysUtils, Variants,
 {$ENDIF}
-  SuperObject;
+{$IFDEF USEXSUPEROBJECT}
+  XSuperObject, XSuperJSON
+{$ELSE}
+  SuperObject
+{$ENDIF}
+  ;
 
 const
   EmptyJSONStr = '{}';
@@ -49,6 +58,7 @@ type
     function GetValue(const Name: string; DefaultValue: Variant): Variant;
     function HasPath(const Name: string): Boolean;
     function IncValue(const Name: string; Int: integer = 1) : Integer;
+    procedure RemovePath(const Name: string);
     procedure LoadFromFile(const Filename: string);
     procedure SaveToFile(const Filename: string);
     procedure SetValue(const Name: string; const Value: Variant);
@@ -106,6 +116,11 @@ type
       write SetValue; default;
   end;
 
+{$IFDEF USEXSUPEROBJECT}
+  type
+    TSuperObjectIter = IMember;
+{$ENDIF}
+
 function GetJSONVal(const JSON, Name: string;const DefaultValue: Variant): Variant;
 function IsValidJSONName(const S: string): Boolean;
 
@@ -141,12 +156,16 @@ function TCatJSON.GetCount:integer;
 var
   ite: TSuperObjectIter;
 begin
+{$IFDEF USEXSUPEROBJECT}
+  Result := fObject.Count;
+{$ELSE}
   Result := 0;
   if ObjectFindFirst(fObject, ite) then
     repeat
       Inc(Result)
     until not ObjectFindNext(ite);
   ObjectFindClose(ite);
+{$ENDIF}
 end;
 
 function TCatJSON.GetTextUnquoted: string;
@@ -154,11 +173,16 @@ var
   ite: TSuperObjectIter;
 begin
   Result := '{';
+{$IFDEF USEXSUPEROBJECT}
+ for ite in fObject do
+   Result := Result + crlf + ite.Name + ': ' + ite.ToString + ',';
+{$ELSE}
   if ObjectFindFirst(fObject, ite) then
     repeat
       Result := Result + crlf + ite.key + ': ' + ite.Val.AsJson + ',';
     until not ObjectFindNext(ite);
   ObjectFindClose(ite);
+{$ENDIF}
   Result := Result + '}';
 end;
 
@@ -195,19 +219,29 @@ begin
   if JSON = emptystr then
     JSON := EmptyJSONStr;
   fObject := nil;
+{$IFDEF USEXSUPEROBJECT}
+  fObject := TSuperObject.Create(JSON, False);
+{$ELSE}
   fObject := TSuperObject.ParseString(PWideChar(WideString(JSON)), False);
+{$ENDIF}
 end;
 
 procedure TCatJSON.Clear;
 begin
-  fObject.Clear;
+  SetText(EmptyJSONStr);
 end;
 
 constructor TCatJSON.Create(const JSON: string = '');
 begin
-  fObject := TSuperObject.Create(stObject);
   fDefaultValue := null;
+{$IFDEF USEXSUPEROBJECT}
+  if json<>emptystr then
+  fObject := TSuperObject.Create(JSON) else
+  fObject := TSuperObject.Create;
+{$ELSE}
+  fObject := TSuperObject.Create(stObject);
   Text := JSON;
+{$ENDIF}
 end;
 
 destructor TCatJSON.Destroy;
@@ -233,7 +267,11 @@ begin
     {$IFDEF UNICODE}varUInt64, {$ENDIF} varInt64:
       fObject.i[name] := Value;
     varDouble:
+     {$IFDEF USEXSUPEROBJECT}
+      fObject.f[name] := Value;
+     {$ELSE}
       fObject.d[name] := Value;
+     {$ENDIF}
   end;
 end;
 
@@ -247,9 +285,20 @@ end;
 
 function TCatJSON.HasPath(const Name: string): Boolean;
 begin
-  Result := False;
-  if fObject.O[name] <> nil then
-    Result := True;
+ {$IFDEF USEXSUPEROBJECT}
+ Result := fObject.Contains(name);
+ {$ELSE}
+ Result := (fObject.O[name] <> nil);
+ {$ENDIF}
+end;
+
+procedure TCatJSON.RemovePath(const Name: string);
+begin
+{$IFDEF USEXSUPEROBJECT}
+  fObject.Remove(Name);
+{$ELSE}
+  fObject.O[Name].Clear;
+{$ENDIF}
 end;
 
 function TCatJSON.GetValue(const Name: string;
@@ -258,6 +307,9 @@ begin
   Result := DefaultValue;
   if HasPath(Name) then
   begin
+    {$IFDEF USEXSUPEROBJECT}
+    result := fObject.V[name];
+    {$ELSE}
     case fObject.O[name].DataType of
       stNull:
         Result := DefaultValue;
@@ -272,6 +324,7 @@ begin
       stObject, stArray, stMethod:
         Result := DefaultValue;
     end;
+    {$ENDIF}
   end;
 end;
 

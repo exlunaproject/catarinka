@@ -44,6 +44,8 @@ unit RegExpr;
 
 interface
 
+{$I Catarinka.inc}
+
 // ======== Determine compiler
 {$IFDEF VER80} Sorry, TRegExpr is for 32-bits Delphi only. Delphi 1 is not supported (and whos really care today?!). {$ENDIF}
 {$IFDEF VER90} {$DEFINE D2} {$ENDIF} // D2
@@ -76,7 +78,7 @@ interface
 {.$DEFINE UniCode} // Unicode support
 {$DEFINE RegExpPCodeDump} // p-code dumping (see Dump method)
 {$IFNDEF FPC} // the option is not supported in FreePascal
- {$DEFINE reRealExceptionAddr} // exceptions will point to appropriate source line, not to Error procedure
+ //{$DEFINE reRealExceptionAddr} // exceptions will point to appropriate source line, not to Error procedure
 {$ENDIF}
 {$DEFINE ComplexBraces} // support braces in complex cases
 {$IFNDEF UniCode} // the option applicable only for non-UniCode mode
@@ -101,8 +103,11 @@ interface
 {$IFDEF FPC} {$DEFINE OverMeth} {$ENDIF}
 
 uses
- Classes,  // TStrings in Split method
- SysUtils; // Exception
+{$IFDEF DXE2_OR_UP}
+  WinAPI.Windows, System.Classes, System.SysUtils;
+{$ELSE}
+  Windows, Classes, SysUtils;
+{$ENDIF}
 
 type
  {$IFDEF UniCode}
@@ -635,8 +640,8 @@ function RegExprSubExpressions (const ARegExpr : string;
 
 implementation
 
-uses
- Windows; // CharUpper/Lower
+//uses
+//Winapi.Windows; // CharUpper/Lower
 
 const
  TRegExprVersionMajor : integer = 0;

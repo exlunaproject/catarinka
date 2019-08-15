@@ -13,6 +13,9 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
+  {$IFDEF USECROSSVCL}
+  WinAPI.Windows,
+  {$ENDIF}
   System.SysUtils;
 {$ELSE}
   SysUtils;
@@ -32,6 +35,7 @@ begin
   Result := string(pansichar(PC^));
 end;
 
+{$IFDEF MSWINDOWS}
 function StrToPointer(const s: string): Pointer;
 var
   c: Cardinal;
@@ -48,5 +52,25 @@ begin
   PP := P;
   Result := PP^;
 end;
+{$ELSE}
+
+function StrToPointer(const s: string): Pointer;
+var
+  c: Cardinal;
+  P: Pointer;
+  PC: ^Cardinal;
+  PP: ^Pointer;
+  tStr: pwidechar;
+begin
+  GetMem(tStr, 1 + Length(s));
+  StrPCopy(tStr, s);
+  c := integer(tStr);
+  PC := @c;
+  P := PC;
+  PP := P;
+  Result := PP^;
+end;
+
+{$ENDIF}
 
 end.

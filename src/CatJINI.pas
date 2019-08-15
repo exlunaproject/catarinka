@@ -2,7 +2,7 @@ unit CatJINI;
 {
   Catarinka TJIniList - JSON-Based INI-Like component
 
-  Copyright (c) 2010-2018 Felipe Daragon
+  Copyright (c) 2010-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -23,7 +23,7 @@ uses
 {$ELSE}
   Classes, SysUtils, Windows,
 {$ENDIF}
-  Superobject;
+  CatJSON;
 
 type
   TJIniList = class
@@ -32,7 +32,7 @@ type
     fCaseSensitive: Boolean;
     fFileName: string;
     fModified: Boolean;
-    fObject: ISuperObject;
+    fCurrent: TCatJSON;
     fStoreBoolAsInteger: Boolean;
     fVersion: string;
     function GetJSON: string;
@@ -42,6 +42,7 @@ type
     function GetCount: integer;
     function FilterPath(s: string): string;
     procedure GetSectionKeyPath(var Section, Key, Path: string);
+    procedure SetFilename(s:string);
   public
     constructor Create;
     destructor Destroy; override;
@@ -66,13 +67,13 @@ type
     property Backup: Boolean read fBackup write fBackup;
     property CaseSensitive: Boolean read fCaseSensitive write fCaseSensitive;
     property Count: integer read GetCount;
-    property FileName: string read fFileName write fFileName;
+    property FileName: string read fFileName write SetFilename;
     property StoreBoolAsInteger: Boolean read fStoreBoolAsInteger write fStoreBoolAsInteger;
     property Text: string read GetJSON write SetJSON;
     property Values[const Key: string]: string read GetValue
       write SetValue; default;
     property Version: string read fVersion;
-    property sObject: ISuperObject read fObject;
+    property Current: TCatJSON read fCurrent;
   end;
 
 implementation
@@ -85,9 +86,17 @@ const
   cFormatKey = '_format.';
   cKeySeparator = '.';
   cValuesSection = 'data';
-  cVersion = '1.03';
+  cVersion = '1.04';
 
   { TJIniList }
+
+procedure TJIniList.SetFilename(s:string);
+begin
+ {$IFNDEF WINDOWS}
+  s := ReplaceStr(s, '\', '/');
+ {$ENDIF}
+  fFileName := s;
+end;
 
 function TJIniList.FilterPath(s: string): string;
 begin
@@ -118,18 +127,17 @@ end;
 
 function TJIniList.GetJSON: string;
 begin
-  Result := fObject.AsJson(true);
+  Result := fCurrent.Text;
 end;
 
 procedure TJIniList.SetJSON(json: string);
 begin
-  fObject := nil;
-  fObject := TSuperObject.ParseString(PWideChar(WideString(json)), false)
+  fCurrent.Text := json;
 end;
 
 procedure TJIniList.Clear;
 begin
-  fObject.Clear;
+  fCurrent.Clear;
 end;
 
 function TJIniList.LoadFromFile: Boolean;
@@ -181,11 +189,16 @@ begin
   Result := false;
   if FileName = emptystr then
     exit;
+
+ {$IFNDEF WINDOWS}
+  forcedir(extractfilepath(filename));
+ {$ENDIF}
+
   if fBackup and FileExists(FileName) then
     FileCopy(FileName, FileName + cBackupExt);
 
   sl := TStringlist.Create;
-  sl.Text := fObject.AsJson(true);
+  sl.Text := fCurrent.Text;
   if SL_SaveToFile(sl, FileName) then
   begin
     Result := true;
@@ -215,10 +228,10 @@ begin
   if ReadString(Section, Key, emptystr) = Value then
     exit;
   if Format <> emptystr then
-    fObject.s[cFormatKey + Path] := Format;
+    fCurrent.sObject.s[cFormatKey + Path] := Format;
   if Format = cBase64 then
     Value := Base64EnCode(Value);
-  fObject.s[Path] := Value;
+  fCurrent.sObject.s[Path] := Value;
   fModified := true;
 end;
 
@@ -229,13 +242,13 @@ var
 begin
   GetSectionKeyPath(Section, Key, Path);
   Result := default;
-  if fObject.s[Path] <> emptystr then
-    Result := fObject.s[Path]
+  if fCurrent.sObject.s[Path] <> emptystr then
+    Result := fCurrent.sObject.s[Path]
   else
     Result := default;
-  if fObject.s[cFormatKey + Path] <> emptystr then
+  if fCurrent.sObject.s[cFormatKey + Path] <> emptystr then
   begin
-    fmt := fObject.s[cFormatKey + Path];
+    fmt := fCurrent.sObject.s[cFormatKey + Path];
     if fmt = cBase64 then
       Result := Base64DeCode(Result);
   end;
@@ -244,9 +257,7 @@ end;
 function TJIniList.SectionExists(Section: string): Boolean;
 begin
   Section := FilterPath(Section);
-  Result := false;
-  if fObject.O[Section] <> nil then
-    Result := true;
+  Result := fCurrent.HasPath(Section);
 end;
 
 function TJIniList.SectionKeyExists(Section, Key: string): Boolean;
@@ -254,9 +265,7 @@ var
   Path: string;
 begin
   GetSectionKeyPath(Section, Key, Path);
-  Result := false;
-  if fObject.O[Section] <> nil then
-    Result := true;
+  Result := fCurrent.HasPath(Path);
 end;
 
 procedure TJIniList.AddString(const Section, Key, Value: String;
@@ -280,7 +289,7 @@ end;
 procedure TJIniList.DeleteSection(Section: string);
 begin
   Section := FilterPath(Section);
-  fObject.O[Section].Clear;
+  fCurrent.RemovePath(Section);
   fModified := true;
 end;
 
@@ -289,20 +298,13 @@ var
   Path: string;
 begin
   GetSectionKeyPath(Section, Key, Path);
-  fObject.O[Path].Clear;
+  fCurrent.RemovePath(Path);
   fModified := true;
 end;
 
 function TJIniList.GetCount: integer;
-var
-  ite: TSuperObjectIter;
 begin
-  Result := 0;
-  if ObjectFindFirst(fObject, ite) then
-    repeat
-      Inc(Result)
-    until not ObjectFindNext(ite);
-  ObjectFindClose(ite);
+  Result := fCurrent.Count;
 end;
 
 constructor TJIniList.Create;
@@ -312,12 +314,12 @@ begin
   fCaseSensitive := false;
   fStoreBoolAsInteger := false;
   fVersion := cVersion;
-  fObject := TSuperObject.Create(stObject);
+  fCurrent := TCatJSON.Create;
 end;
 
 destructor TJIniList.Destroy;
 begin
-  fObject := nil;
+  fCurrent.Free;
   inherited;
 end;
 

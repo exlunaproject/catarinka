@@ -20,7 +20,15 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.Classes, System.SysUtils, System.StrUtils, System.AnsiStrings;
+  {$IFDEF USECROSSVCL}
+  WinAPI.Windows,
+  {$ENDIF} 
+  System.Classes, System.SysUtils, System.StrUtils
+  {$IFDEF MSWINDOWS}
+  ,System.AnsiStrings;
+  {$ELSE}
+  ;
+  {$ENDIF}
 {$ELSE}
   Classes, SysUtils, StrUtils;
 {$ENDIF}
@@ -113,8 +121,12 @@ function StrToCommaText(const s: string): string;
 function StrToHex(const s: string): string;
 function StrToHex16(const s: string): string;
 function TitleCase(const s: string): string;
+
+{$IFDEF MSWINDOWS}
+// TODO: not compatible for crosscompilation
 procedure GetTextBetweenTags(const s, tag1, tag2: string; const list: TStrings;
   const includetags: Boolean = false);
+{$ENDIF}
 procedure MergeStrings(const dest, source: TStrings);
 procedure SplitString(const s: string; separator: Char;
   substrings: TStringList);
@@ -200,8 +212,13 @@ var
 begin
   tmpstr := s;
 {$IFDEF DXE2_OR_UP}
+  {$IFDEF MSWINDOWS}
   SetLength(tmpstr, System.AnsiStrings.StrLen
     (System.PAnsiChar(AnsiString(prefix))));
+  {$ELSE}
+     SetLength(tmpstr, StrLen(PWideChar(WideString(prefix))));
+  {$ENDIF}
+
 {$ELSE}
   SetLength(tmpstr, StrLen(PAnsiChar(prefix)));
 {$ENDIF}
@@ -1031,7 +1048,11 @@ begin
   repeat
 
 {$IFDEF DXE2_OR_UP}
+    {$IFDEF MSWINDOWS}
     pScan := System.AnsiStrings.StrPos(pScan, pTag1);
+    {$ELSE}
+    // FIXME
+    {$ENDIF}
 {$ELSE}
     pScan := StrPos(pScan, pTag1);
 {$ENDIF}
@@ -1040,7 +1061,11 @@ begin
       inc(pScan, length(tag1));
 
 {$IFDEF DXE2_OR_UP}
+    {$IFDEF MSWINDOWS}
       pEnd := System.AnsiStrings.StrPos(pScan, pTag2);
+    {$ELSE}
+    // FIXME!!!
+    {$ENDIF}
 {$ELSE}
       pEnd := StrPos(pScan, pTag2);
 {$ENDIF}
