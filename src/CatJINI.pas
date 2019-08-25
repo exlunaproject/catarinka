@@ -92,7 +92,7 @@ const
 
 procedure TJIniList.SetFilename(s:string);
 begin
- {$IFNDEF WINDOWS}
+ {$IFNDEF MSWINDOWS}
   s := ReplaceStr(s, '\', '/');
  {$ENDIF}
   fFileName := s;
