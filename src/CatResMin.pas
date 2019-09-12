@@ -3,9 +3,11 @@ unit CatResMin;
 {
   Minimal version of CatRes.pas with most used functions only
 
-  Copyright (c) 2003-2018 Felipe Daragon
+  Copyright (c) 2003-2019 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
+
+  GetResourceAsPointer is based on an example from the Pascal Newsletter #25
 }
 
 interface
@@ -14,14 +16,14 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.SysUtils;
+  Winapi.Windows, System.SysUtils;
 {$ELSE}
-  SysUtils;
+  Windows, SysUtils;
 {$ENDIF}
 
-function GetResourceAsPointer(const ResName, ResType: string;
+function GetResourceAsPointer(const ResName: string;
   out Size: longword): pointer;
-function GetResourceAsString(const ResName, ResType: string): string;
+function GetResourceAsString(const ResName: string): string;
 
 implementation
 
@@ -39,14 +41,13 @@ result := PAnsiChar(AnsiString(s));
 end;
 {$ENDIF}
 
-// Based on an example from the Pascal Newsletter #25
-function GetResourceAsPointer(const ResName, ResType: string;
+function GetResourceAsPointer(const ResName: string;
   out Size: longword): pointer;
 var
   ib: HRSRC; // InfoBlock
   gmb: HGLOBAL; // GlobalMemoryBlock
 begin
-  ib := FindResource(hInstance, StrToResType(ResName), StrToResType(ResType));
+  ib := FindResource(hInstance, StrToResType(ResName), RT_RCDATA);
   if ib = 0 then
     raise Exception.Create(SysErrorMessage(GetLastError));
   Size := SizeofResource(hInstance, ib);
@@ -60,13 +61,13 @@ begin
     raise Exception.Create(SysErrorMessage(GetLastError));
 end;
 
-// Example: Memo1.Lines.Text := GetResourceAsString('sample_txt', 'text');
-function GetResourceAsString(const ResName, ResType: string): string;
+// Example: Memo1.Lines.Text := GetResourceAsString('sample_txt');
+function GetResourceAsString(const ResName: string): string;
 var
-  rd: PAnsiChar; // resource data
-  sz: longword; // resource size
+  rd: PAnsiChar;
+  sz: longword;
 begin
-  rd := GetResourceAsPointer(ResName, ResType, sz);
+  rd := GetResourceAsPointer(ResName, sz);
   SetString(result, rd, sz);
 end;
 
