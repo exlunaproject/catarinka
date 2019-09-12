@@ -1,4 +1,4 @@
-﻿(* ************************************************ *)
+(* ************************************************ *)
 (* *)
 (* Advanced Encryption Standard (AES) *)
 (* Interface Unit v1.0 *)
@@ -8,15 +8,15 @@
 (* *)
 (* *)
 (* *)
-(* 说明： *)
+(* Description: *)
 (* *)
-(* 基于 ElASE.pas 单元封装 *)
+(* Based on ElASE.pas unit package *)
 (* *)
-(* 这是一个 AES 加密算法的标准接口。 *)
-(* 通过两个函数 EncryptString 和 DecryptString *)
-(* 可以轻松得对字符串进行加密。 *)
+(* This is the standard interface for an AES encryption algorithm. *)
+(* Pass to functions EncryptString and DecryptString *)
+(* It is easy to encrypt strings. *)
 (* *)
-(* 作者：杨泽晖      2004.12.03 *)
+(* Author: Yang Zehui 2004.12.03 *)
 (* *)
 (* ************************************************ *)
 
@@ -189,7 +189,7 @@ begin
   end;
 end;
 
-{  --  流加密函数 默认按照 128 位密匙解密 --  }
+{  -- Stream encryption function defaults to 256-bit key decryption -- }
 procedure EncryptStream(Stream, OutStrm: TStream; Key: string;
   KeyBit: TKeyBit = kb256);
 var
@@ -202,21 +202,21 @@ begin
   Count := Stream.Size;
   OutStrm.Write(Count, SizeOf(Count));
   try
-    {  --  128 位密匙最大长度为 16 个字符 --  }
+    {  -- 128-bit key with a maximum length of 16 characters --  }
     if KeyBit = kb128 then
     begin
       FillChar(AESKey128, SizeOf(AESKey128), 0 );
       Move(PChar(Key)^, AESKey128, Min(SizeOf(AESKey128), Length(Key)));
       EncryptAESStreamECB(Stream, 0, AESKey128, OutStrm);
     end;
-    {  --  192 位密匙最大长度为 24 个字符 --  }
+    {  -- 192-bit key with a maximum length of 24 characters --  }
     if KeyBit = kb192 then
     begin
       FillChar(AESKey192, SizeOf(AESKey192), 0 );
       Move(PChar(Key)^, AESKey192, Min(SizeOf(AESKey192), Length(Key)));
       EncryptAESStreamECB(Stream, 0, AESKey192, OutStrm);
     end;
-    {  --  256 位密匙最大长度为 32 个字符 --  }
+    {  -- 256-bit key with a maximum length of 32 characters --  }
     if KeyBit = kb256 then
     begin
       FillChar(AESKey256, SizeOf(AESKey256), 0 );
@@ -227,7 +227,7 @@ begin
   end;
 end;
 
-{  --  流解密函数 默认按照 128 位密匙解密 --  }
+{  -- Stream decryption function is decrypted by default with 256-bit key --  }
 procedure DecryptStream(Stream, OutStrm: TStream; Key: string;
   KeyBit: TKeyBit = kb256);
 var
@@ -240,7 +240,7 @@ begin
   OutPos :=OutStrm.Position;
   Stream.ReadBuffer(Count, SizeOf(Count));
   try
-    {  --  128 位密匙最大长度为 16 个字符 --  }
+    {  -- 128-bit key with a maximum length of 16 characters --  }
     if KeyBit = kb128 then
     begin
       FillChar(AESKey128, SizeOf(AESKey128), 0 );
@@ -248,7 +248,7 @@ begin
       DecryptAESStreamECB(Stream, Stream.Size - Stream.Position,
         AESKey128, OutStrm);
     end;
-    {  --  192 位密匙最大长度为 24 个字符 --  }
+    {  -- 192-bit key with a maximum length of 24 characters --  }
     if KeyBit = kb192 then
     begin
       FillChar(AESKey192, SizeOf(AESKey192), 0 );
@@ -256,7 +256,7 @@ begin
       DecryptAESStreamECB(Stream, Stream.Size - Stream.Position,
         AESKey192, OutStrm);
     end;
-    {  --  256 位密匙最大长度为 32 个字符 --  }
+    {  -- 256-bit key with a maximum length of 32 characters --  }
     if KeyBit = kb256 then
     begin
       FillChar(AESKey256, SizeOf(AESKey256), 0 );
