@@ -115,6 +115,7 @@ function StripChars(const s: string; const aSet: TSysCharSet): string;
 function StrMaxLen(const s: string; const MaxLen: integer;
   const AddEllipsis: Boolean = false): string;
 function StrToAlphaNum(const s: string): string;
+function StrArrayToCommaText(aArray: array of string):string;
 function StrToBool(const s: string): Boolean;
 function StrToCharSet(const s: string): TSysCharSet;
 function StrToCommaText(const s: string): string;
@@ -893,6 +894,18 @@ begin
       tmpstr := tmpstr + Copy(s, i, 1);
   end;
   result := tmpstr;
+end;
+
+function StrArrayToCommaText(aArray: array of string):string;
+var
+  b: integer;
+  sl: TStringList;
+begin
+  sl := TStringList.Create;
+  for b := Low(aArray) to High(aArray) do
+    sl.add(aArray[b]);
+  result := sl.CommaText;
+  sl.Free;
 end;
 
 function StrToBool(const s: string): Boolean;
