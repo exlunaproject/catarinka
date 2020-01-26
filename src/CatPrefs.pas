@@ -41,6 +41,7 @@ type
     function FGetValue(const CID: string): Variant;
     function GetCIDList: string;
   public
+    function ContainsTag(const CID, aTag:string):boolean;
     function GetCIDListByTag(const aTag: string): string;
     function GetValue(const CID: string): Variant; overload;
     function GetValue(const CID: string; const DefaultValue: Variant)
@@ -151,29 +152,37 @@ begin
   result := fOptionList.text;
 end;
 
+function TCatPreferences.ContainsTag(const CID, aTag:string):boolean;
+var
+  tags: string;
+  Tag: TSepStringLoop;
+begin
+  result := false;
+  tags := fTags.GetValue(CID, emptystr);
+  if tags <> emptystr then
+  begin
+      Tag := TSepStringLoop.Create(tags, ',');
+      while Tag.Found do
+      begin
+        if Tag.Current = aTag then
+          result := true;
+      end;
+      Tag.Free;
+  end;
+end;
+
 // Returns a CID list by a specific tag
 function TCatPreferences.GetCIDListByTag(const aTag: string): string;
 var
   CID: TStringLoop;
-  Tag: TSepStringLoop;
   list: TStringList;
-  cidtags: string;
 begin
   list := TStringList.Create;
   CID := TStringLoop.Create(fOptionList);
   while CID.Found do
   begin
-    cidtags := fTags.GetValue(CID.Current, emptystr);
-    if cidtags <> emptystr then
-    begin
-      Tag := TSepStringLoop.Create(cidtags, ',');
-      while Tag.Found do
-      begin
-        if Tag.Current = aTag then
-          list.Add(CID.Current);
-      end;
-      Tag.Free;
-    end;
+    if ContainsTag(CID.Current, aTag) = true then
+      list.Add(CID.Current);
   end;
   CID.Free;
   result := list.text;

@@ -2,7 +2,7 @@ unit CatTasks;
 {
   Catarinka - Task Management library
 
-  Copyright (c) 2003-2019 Felipe Daragon
+  Copyright (c) 2003-2020 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -26,6 +26,7 @@ function RunTask(const ExeFileName: string; const Wait: boolean = false;
 function TaskRunning(const ExeFileName: WideString): boolean;
 function TaskRunningCount(const ExeFileName: WideString): integer;
 function TaskRunningSingleInstance(const ExeFileName: WideString): boolean;
+function TaskRunningWithPID(const ExeFileName: WideString;const PID: Cardinal): boolean;
 procedure GetProcesses(ProcList: TStringList);
 procedure GetProcessesOnNT(ProcList: TStringList);
 procedure KillEXE(const ExeFileName: string);
@@ -209,6 +210,26 @@ end;
 function TaskRunning(const ExeFileName: WideString): boolean;
 begin
   Result := TaskRunningCount(ExeFileName) <> 0;
+end;
+
+function TaskRunningWithPID(const ExeFileName: WideString;const PID: Cardinal): boolean;
+var
+  ContinueLoop: BOOL;
+  FSnapshotHandle: THandle;
+  FProcessEntry32: TProcessEntry32;
+begin
+  Result := false;
+  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  FProcessEntry32.dwSize := sizeof(FProcessEntry32);
+  ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
+  while Integer(ContinueLoop) <> 0 do
+  begin
+    if (UpperCase(ExtractFileName(FProcessEntry32.szExeFile))
+      = UpperCase(ExeFileName)) and (FProcessEntry32.th32ProcessID = PID) then
+      result := true;
+    ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
+  end;
+  CloseHandle(FSnapshotHandle);
 end;
 
 function TaskRunningSingleInstance(const ExeFileName: WideString): boolean;
