@@ -2,7 +2,7 @@ unit CatHighlighters;
 
 {
   Catarinka - Multiple Code Highlighters
-  Copyright (c) 2011-2018 Syhunt Informatica
+  Copyright (c) 2011-2020 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -24,6 +24,7 @@ uses
   SynUnicode,
   SynExportHTML,
   SynEditHighlighter,
+  SynHighlighterCPP,
   SynHighlighterJava,
   SynHighlighterRuby,
   SynHighlighterPerl,
@@ -44,6 +45,7 @@ type
     fWebHTML: TSynWebHtmlSyn;
     fWebXML: TSynWebXMLSyn;
     fWebPHP: TSynWebPHPPlainSyn;
+    fCPP: TSynCPPSyn;
     fJava: TSynJavaSyn;
     fRuby: TSynRubySyn;
     fPascal: TSynPasSyn;
@@ -94,8 +96,12 @@ begin
 end;
 
 type
-  TWebExts = (css, dpr, htm, html, java, js, json, jsie, lua, lp, pas, pasrem, php,
+  TWebExts = (
+    css, dpr, htm, html, java, js, json, jsie, lua, lp, pas, pasrem, php,
     pl, py, rb, sql, tis, vbs, xml);
+
+type
+  TCPPExts = (c, h, cpp, cc, cxx, hpp, hxx, hh, m, mm);
 
 function TCatHighlighters.GetByFileExtension(const fileext: string)
   : TSynCustomHighlighter;
@@ -108,6 +114,10 @@ begin
     ext := after(ext, '.');
   if ext = emptystr then
     exit;
+  case TCPPExts(GetEnumValue(TypeInfo(TCPPExts), ext)) of
+    c, h, cpp, cc, cxx, hpp, hxx, hh, m, mm:
+     result := fCPP;
+  end;
   case TWebExts(GetEnumValue(TypeInfo(TWebExts), ext)) of
     htm, html:
       result := fWebHTML;
@@ -227,6 +237,7 @@ end;
 constructor TCatHighlighters.Create(AOwner: TObject);
 begin
   inherited Create;
+  fCPP := TSynCPPSyn.Create(nil);
   fJava := TSynJavaSyn.Create(nil);
   fRuby := TSynRubySyn.Create(nil);
   fPascal := TSynPasSyn.Create(nil);
@@ -266,6 +277,7 @@ begin
   fPascal.Free;
   fRuby.Free;
   fJava.Free;
+  fCPP.Free;
   inherited;
 end;
 
