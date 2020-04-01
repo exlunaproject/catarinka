@@ -29,6 +29,7 @@ function RegExpReplace(const s, re: string; refunc: TRegExprReplaceFunction): st
 function CatMatch(const sigpattern, s: string): boolean;
 function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
+function MatchStrInSepStr(const s,tags:string;separator:string=','):boolean;
 function MatchVersion(curver, vercheck:string):boolean;
 function MatchVersionRange(curver, vercheck:string):boolean;
 function MatchVersionEx(curver, vercheck:string):boolean;
@@ -164,6 +165,23 @@ begin
   result := RegExpFind(s, '\d+(\.\d+)+');
   if pos(',', result) <> 0 then
   result := before(result, ',');
+end;
+
+// Matches a string against a separated string (comma-based if separator is ommited)
+function MatchStrInSepStr(const s,tags:string;separator:string=','):boolean;
+var Tag: TSepStringLoop;
+begin
+  result := false;
+  if tags <> emptystr then
+  begin
+      Tag := TSepStringLoop.Create(tags, separator);
+      while Tag.Found do
+      begin
+        if Tag.Current = s then
+          result := true;
+      end;
+      Tag.Free;
+  end;
 end;
 
 // expects expression like: <3.4.0 or <=3.4.0

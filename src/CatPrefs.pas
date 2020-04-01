@@ -80,7 +80,7 @@ type
 
 implementation
 
-uses CatStrings, CatStringLoop,
+uses CatStrings, CatStringLoop, CatRegex,
 {$IFDEF MSWINDOWS}
   CatDCP,
 {$ELSE}
@@ -155,20 +155,9 @@ end;
 function TCatPreferences.ContainsTag(const CID, aTag:string):boolean;
 var
   tags: string;
-  Tag: TSepStringLoop;
 begin
-  result := false;
   tags := fTags.GetValue(CID, emptystr);
-  if tags <> emptystr then
-  begin
-      Tag := TSepStringLoop.Create(tags, ',');
-      while Tag.Found do
-      begin
-        if Tag.Current = aTag then
-          result := true;
-      end;
-      Tag.Free;
-  end;
+  result := MatchStrInSepStr(aTag, tags);
 end;
 
 // Returns a CID list by a specific tag
