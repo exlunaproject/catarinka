@@ -96,7 +96,7 @@ function GetAbsoluteURL(const baseURL, relURL: string): string;
 var
   buflen: DWORD;
 begin
-  buflen := 10240;
+  buflen := 50240;
   SetLength(Result, buflen);
   InternetCombineUrl(
 {$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(baseURL),

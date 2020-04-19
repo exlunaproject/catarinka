@@ -82,6 +82,7 @@ type
   public
     function Found: boolean;
     procedure LoadFromURL(const aURL:string);
+    procedure LoadFromPOSTData(const PostData:string);
     property ParamName:string read fParamName;
     property ParamNameLower:string read fParamNameLower;
     property ParamValue:string read fParamValue;
@@ -743,6 +744,20 @@ begin
   params := emptystr;
   if occurs('?', url) <> 0 then begin
     params := gettoken(url, '?', 2);
+    params := replacestr(params,'&',crlf);
+  end;
+  LoadFromString(params);
+  Reset;
+end;
+
+procedure TURLParamsLoop.LoadFromPOSTData(const POSTData:string);
+var params:string;
+begin
+  params := trim(POSTData);
+  params := replacestr(params, ' ','%20');
+  if BeginsWith(params, '&') then
+    params := After(params, '&');
+  if occurs('&', params) <> 0 then begin
     params := replacestr(params,'&',crlf);
   end;
   LoadFromString(params);
