@@ -128,6 +128,7 @@ begin
   RegisterMethod(L, 'delete', @method_delete, classTable);
   RegisterMethod(L, 'clear', @method_clear, classTable);
   RegisterMethod(L, 'get', @method_getstringfromindex, classTable);
+  RegisterMethod(L, 'getvalue', @method_getvalue, classTable);
   RegisterMethod(L, 'loadfromfile', @method_loadfromfile, classTable);
   RegisterMethod(L, 'savetofile', @method_savetofile, classTable);
   RegisterMethod(L, 'sort', @method_sort, classTable);
@@ -166,6 +167,8 @@ begin
     result := obj.Count
   else if CompareText(propName, 'text') = 0 then
     result := obj.Text
+  else if CompareText(propName, 'commatext') = 0 then
+    result := obj.CommaText
   else
     result := inherited GetPropValue(propName);
 end;
@@ -176,6 +179,8 @@ begin
   result := true;
   if CompareText(propName, 'text') = 0 then
     obj.Text := AValue
+  else if CompareText(propName, 'commatext') = 0 then
+    obj.CommaText := AValue
   else
     result := inherited SetPropValue(propName, AValue);
 end;

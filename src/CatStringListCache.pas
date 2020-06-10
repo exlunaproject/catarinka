@@ -31,6 +31,7 @@ type
     procedure ClearLists; overload;
     procedure ClearLists(const Key:array of string); overload;
     procedure LoadFromFile(const AFilename:string);
+    procedure LoadFromString(const JSON:string);
     procedure SaveToFile(const AFilename:string);
     constructor Create(ACapacity : Integer = 1000; OwnsObjects : boolean = true);
     destructor Destroy; override;
@@ -74,12 +75,20 @@ for X := Low(Key) to High(Key) do
 end;
 
 procedure TStringListCache.LoadFromFile(const AFilename:string);
+var sl:TStringList;
+begin
+  sl := TStringList.Create;
+  sl.LoadFromFile(AFilename);
+  LoadFromString(sl.Text);
+  sl.Free;
+end;
+
+procedure TStringListCache.LoadFromString(const JSON:string);
 var slp:TStringLoop; sl:TStringList; j:TCatJSON;
 begin
   fCache.Clear;
   fNameList.Clear;
-  j := TCatJSON.Create;
-  j.LoadFromFile(AFilename);
+  j := TCatJSON.Create(JSON);
   slp := TStringLoop.Create(j[cIDListKey]);
   while slp.Found do begin
     sl := GetList(slp.Current);

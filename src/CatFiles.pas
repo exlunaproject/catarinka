@@ -174,7 +174,9 @@ var
 begin
   d := ReplaceStr(dir, '\\', '\');
   d := ReplaceStr(d, '//', '/');
-  Result := ForceDirectories(d);
+  if d <> emptystr then
+  Result := ForceDirectories(d) else
+  Result := false;
 end;
 
 function GetDirAge(const Dir: string): TDateTime;

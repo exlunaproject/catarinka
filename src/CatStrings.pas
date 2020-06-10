@@ -2,11 +2,10 @@ unit CatStrings;
 {
   Catarinka - String Operation functions
 
-  Copyright (c) 2003-2019 Felipe Daragon
+  Copyright (c) 2003-2020 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
-  MD5 function by Stijn Sanders (MIT license, included at the end of this file)
   IScan, SplitString, GetTextBetweenTags functions by Peter Below
   MatchStrings and PosX functions by Arsne von Wyss
 
@@ -32,6 +31,14 @@ uses
 {$ELSE}
   Classes, SysUtils, StrUtils;
 {$ENDIF}
+
+// Useful for declaring a single record variable, instead of declaring two 
+// variables like var somename, somevalue:string;
+type
+  TCatNameValue = record
+    name: string;
+    value: string;
+  end;
 
 type
   TCatCaseLabel = record
@@ -66,7 +73,6 @@ function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
 function EndsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function ExtractFromString(const s, startstr, endstr: string): string;
-function ExtractFromTag(const s, tag: string): string;
 function GetLineByPos(const s: string; const Position: integer): integer;
 function GetToken(const aString, SepChar: string; const TokenNum: Byte): string;
 function GetValidCompName(const s: string): string;
@@ -112,6 +118,7 @@ function RightPad(const s: string; const c: Char; const len: integer): string;
 function StrDecrease(const s: string; const step: integer = 1): string;
 function StrIncrease(const s: string; const step: integer = 1): string;
 function StripChars(const s: string; const aSet: TSysCharSet): string;
+function StripEnclosed(const s: string;const beginChar,endChar: Char): string;
 function StrMaxLen(const s: string; const MaxLen: integer;
   const AddEllipsis: Boolean = false): string;
 function StrToAlphaNum(const s: string): string;
@@ -121,6 +128,7 @@ function StrToCharSet(const s: string): TSysCharSet;
 function StrToCommaText(const s: string): string;
 function StrToHex(const s: string): string;
 function StrToHex16(const s: string): string;
+function StrToNameValue(const s: string; const aSeparator:string='='): TCatNameValue;
 function TitleCase(const s: string): string;
 
 {$IFDEF MSWINDOWS}
@@ -455,11 +463,6 @@ begin
       break;
     end;
   end;
-end;
-
-function ExtractFromTag(const s, tag: string): string;
-begin
-  result := ExtractFromString(s, '<' + tag + '>', '</' + tag + '>');
 end;
 
 function GetLineByPos(const s: string; const Position: integer): integer;
@@ -993,6 +996,30 @@ begin
   end;
 end;
 
+function StripEnclosed(const s: string;const beginChar,endChar:char): string;
+var
+  i: integer;
+  strip: boolean;
+begin
+  result := emptystr;
+  strip := false;
+  for i := 1 to length(s) do
+  begin
+    if s[i] = beginChar then
+      strip := true;
+    if strip then
+    begin
+      if s[i] = endChar then
+      begin
+        strip := false;
+        Continue;
+      end;
+    end
+    else
+      result := result + s[i];
+  end;
+end;
+
 function TitleCase(const s: string): string;
 var
   i: integer;
@@ -1008,6 +1035,12 @@ begin
       else
         result := result + lowercase(s[i]);
   end;
+end;
+
+function StrToNameValue(const s: string; const aSeparator:string='='): TCatNameValue;
+begin
+  result.name := Before(s, aSeparator);
+  result.value := After(s, aSeparator);
 end;
 
 // CONTRIBUTED ------------------------------------------------------------//

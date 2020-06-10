@@ -45,7 +45,7 @@ type
     property ServerName: string read GetServerName;
   end;
 
-procedure SendCromisMessage(desthandle, msgid: integer; l: string);
+function SendCromisMessage(desthandle, msgid: integer; l: string):integer;
 
 implementation
 
@@ -56,12 +56,13 @@ const
   WM_OnListBoxMessage = WM_USER + 1;
   WM_OnRequestFinished = WM_USER + 2;
 
-procedure SendCromisMessage(desthandle, msgid: integer; l: string);
+function SendCromisMessage(desthandle, msgid: integer; l: string):integer;
 var
-  Result: IIPCData;
+  IPCResult: IIPCData;
   Request: IIPCData;
   IPCClient: TIPCClient;
 begin
+  result := 1;
   IPCClient := TIPCClient.Create;
   try
     IPCClient.ComputerName := EmptyStr;
@@ -74,7 +75,7 @@ begin
         Request.ID := DateTimeToStr(Now);
         Request.Data.WriteInteger('CmdID', msgid);
         Request.Data.WriteUTF8String('Command', AnsiString(l));
-        Result := IPCClient.ExecuteConnectedRequest(Request);
+        IPCResult := IPCClient.ExecuteConnectedRequest(Request);
       end;
     finally
       IPCClient.DisconnectClient;

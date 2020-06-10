@@ -27,6 +27,7 @@ type
     Path: string;
     Port: integer;
     Protocol: string;
+    ProtocolHTTP: boolean;
   end;
 
 type
@@ -93,6 +94,7 @@ function BeginsWithHTTPProto(const url: string): boolean;
 function BoolToDisplayState(const b: boolean): string;
 function ColorToHTMLColor(const Color: TColor): string;
 function DequoteHTMLAttribValue(const s: string): string;
+function ExtractFromTag(const s, tag: string): string;
 function HtmlColorToColor(const Color: string): TColor;
 function HtmlEntityEncode(const s: string): string;
 function HtmlEntityDecode(const s: string): string;
@@ -202,6 +204,7 @@ begin
   result.Path := ExtractUrlPath(url);
   result.Port := ExtractUrlPort(url);
   result.Protocol := before(url, ':');
+  result.ProtocolHTTP := BeginsWithHttpProto(url);
 end;
 
 // A special dequote for HTML attribute values
@@ -253,6 +256,11 @@ begin
   slp.free;
   result := d.Text;
   d.free;
+end;
+
+function ExtractFromTag(const s, tag: string): string;
+begin
+  result := ExtractFromString(s, '<' + tag + '>', '</' + tag + '>');
 end;
 
 function ExtractHTTPResponseStatusCode(const r: string): integer;
@@ -336,27 +344,8 @@ begin
 end;
 
 function StripHTML(const s: string): string;
-var
-  i: integer;
-  strip: boolean;
 begin
-  result := emptystr;
-  strip := false;
-  for i := 1 to length(s) do
-  begin
-    if s[i] = '<' then
-      strip := true;
-    if strip then
-    begin
-      if s[i] = '>' then
-      begin
-        strip := false;
-        Continue;
-      end;
-    end
-    else
-      result := result + s[i];
-  end;
+  result := StripEnclosed(s,'<', '>');
 end;
 
 function StripPHPCode(const s: string): string;
