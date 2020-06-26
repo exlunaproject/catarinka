@@ -37,6 +37,7 @@ begin
   begin
     repeat
       // add the files to the list
+      if List.IndexOf(directory + search.Name) = -1 then
       list.Add(directory + search.Name);
       // Inc(Count);
     until FindNext(search) <> 0;
@@ -55,15 +56,22 @@ begin
   end;
 end;
 
+// Creates a TAR file with the contents of a directory
+// Mask can be single one or multiple separated by pipe like: *.txt|*.etc
 procedure DirToTAR(directory, tarfilename: string; mask: string = '*.*');
 var
   tw: TTarWriter;
   slp: TStringLoop;
+  masks: TSepStringLoop;
 begin
   slp := TStringLoop.create;
   if endswith(directory, '\') = false then
     directory := directory + '\';
-  GetAllFiles(slp.list, directory + mask);
+
+  masks := TSepStringLoop.Create(mask);
+  while masks.Found do
+  GetAllFiles(slp.list, directory + masks.Current);
+  masks.Free;
   // writeln(slp.list.text);
   tw := TTarWriter.create(tarfilename);
   while slp.Found do
