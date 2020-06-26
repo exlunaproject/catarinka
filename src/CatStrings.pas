@@ -7,7 +7,6 @@ unit CatStrings;
   See https://github.com/felipedaragon/catarinka/ for details
 
   IScan, SplitString, GetTextBetweenTags functions by Peter Below
-  MatchStrings and PosX functions by Arsne von Wyss
 
   Note: random functions included with this library are not suitable
   for cryptographic purposes.
@@ -97,7 +96,6 @@ function LeftStr(s: string; c: longword): string;
 function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
 function MatchStrInArray(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
-function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MemStreamToStr(m: TMemoryStream): String;
 function Occurs(substr, s: string): integer;
 function RandomCase(const s: string;
@@ -655,6 +653,41 @@ begin
   result := Copy(s, 1, c);
 end;
 
+function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
+var
+  b: Byte;
+begin
+  result := false;
+  for b := Low(aArray) to High(aArray) do
+  begin
+    if i = aArray[b] then begin
+      result := true;
+      break;
+    end;
+  end;
+end;
+
+function MatchStrInArray(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): Boolean;
+var
+  b: Byte;
+begin
+  result := false;
+  if IgnoreCase then
+  begin
+    s := lowercase(s);
+    for b := Low(aArray) to High(aArray) do
+      aArray[b] := lowercase(aArray[b]);
+  end;
+  for b := Low(aArray) to High(aArray) do
+  begin
+    if s = aArray[b] then begin
+      result := true;
+      break;
+    end;
+  end;
+end;
+
 procedure MergeStrings(const dest, source: TStrings);
 var
   i: integer;
@@ -1174,115 +1207,6 @@ begin
     result := Token
   else
     result := emptystr;
-end;
-
-function PosX(const substr, s: string; Start: integer): integer;
-var
-  i, J, len: integer;
-begin
-  len := length(substr);
-  if len = 0 then
-  begin
-    PosX := 1;
-    Exit;
-  end;
-  for i := Start to Succ(length(s) - len) do
-  begin
-    J := 1;
-    while J <= len do
-    begin
-      if not((substr[J] = '?') or (substr[J] = s[Pred(i + J)])) then
-        break;
-      inc(J);
-    end;
-    if J > len then
-    begin
-      PosX := i;
-      Exit;
-    end;
-  end;
-  PosX := 0;
-end;
-
-function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
-var
-  b: Byte;
-begin
-  result := false;
-  for b := Low(aArray) to High(aArray) do
-  begin
-    if i = aArray[b] then begin
-      result := true;
-      break;
-    end;
-  end;
-end;
-
-function MatchStrInArray(s: string; aArray: array of string;
-  IgnoreCase: Boolean = false): Boolean;
-var
-  b: Byte;
-begin
-  result := false;
-  if IgnoreCase then
-  begin
-    s := lowercase(s);
-    for b := Low(aArray) to High(aArray) do
-      aArray[b] := lowercase(aArray[b]);
-  end;
-  for b := Low(aArray) to High(aArray) do
-  begin
-    if s = aArray[b] then begin
-      result := true;
-      break;
-    end;
-  end;
-end;
-
-{
-  This function takes two strings and compares them. The first string
-  can be anything, but should not contain pattern characters (* or ?).
-  The pattern string can have as many of these pattern characters as you want.
-  For example: MatchStrings('Pascal','*as*') would return True.
-
-  Copyright (c) 1999 Arsne von Wyss
-}
-function MatchStrings(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
-const
-  WildSize = 0; { minimal number of characters representing a "*" }
-var
-  Min, Max, At, MaskSTart, MaskEnd: integer;
-  T: string;
-begin
-  if IgnoreCase then
-  begin
-    for At := 1 to length(s) do
-      s[At] := UpCase(s[At]);
-    for At := 1 to length(Mask) do
-      Mask[At] := UpCase(Mask[At]);
-  end;
-  s := s + #0;
-  Mask := Mask + #0;
-  Min := 1;
-  Max := 1;
-  MaskEnd := 0;
-  while length(Mask) >= MaskEnd do
-  begin
-    MaskSTart := MaskEnd + 1;
-    repeat
-      inc(MaskEnd);
-    until (MaskEnd > length(Mask)) or (Mask[MaskEnd] = '*');
-    T := Copy(Mask, MaskSTart, MaskEnd - MaskSTart);
-    At := PosX(T, s, Min);
-    if (At = 0) or (At > Max) then
-    begin
-      MatchStrings := false;
-      Exit;
-    end;
-    Min := At + length(T) + WildSize;
-    Max := length(s);
-  end;
-  MatchStrings := true;
 end;
 
 function MemStreamToStr(m: TMemoryStream): String;

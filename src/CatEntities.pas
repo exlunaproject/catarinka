@@ -19,9 +19,9 @@ uses
   {$ELSE}
   Web.HTTPApp,
   {$ENDIF}
-  CatRegEx;
+  CatMatch;
 {$ELSE}
-  SysUtils, HTTPApp, CatRegEx;
+  SysUtils, HTTPApp, CatMatch;
 {$ENDIF}
 
 type

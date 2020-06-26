@@ -1,12 +1,13 @@
-unit CatRegex;
+unit CatMatch;
 {
-  Catarinka - Regular Expression and some other useful matching functions
+  Catarinka - Regular Expression and various other useful matching functions
 
-  Copyright (c) 2003-2019 Felipe Daragon
+  Copyright (c) 2003-2020 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
   Uses the RegExpr library by Andrey V. Sorokin.
+  MatchWildcard function by Arsne von Wyss
 }
 
 interface
@@ -26,13 +27,15 @@ type
 function RegExpFind(const s, re: string): string;
 function RegExpReplace(const s, re, sreplacement: string): string; overload;
 function RegExpReplace(const s, re: string; refunc: TRegExprReplaceFunction): string; overload;
-function CatMatch(const sigpattern, s: string): boolean;
+function CatMatchSignature(const sigpattern, s: string): boolean;
 function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
 function MatchStrInSepStr(const s,tags:string;separator:string=','):boolean;
 function MatchVersion(curver, vercheck:string):boolean;
 function MatchVersionRange(curver, vercheck:string):boolean;
 function MatchVersionEx(curver, vercheck:string):boolean;
+function MatchWildcard(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
+function MatchWildcardX(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 
 implementation
 
@@ -87,7 +90,7 @@ end;
 // regexp:[expression] -- regular expression
 // icase:[somestring] -- case insensitive contains
 // icase:wild:[somestring] -- case insensitive wild match (* and ?)
-function CatMatch(const sigpattern, s: string): boolean;
+function CatMatchSignature(const sigpattern, s: string): boolean;
 const
   cIgnoreCase = 'icase:';
   cReEx = 'regexp:';
@@ -112,7 +115,7 @@ begin
   if BeginsWith(sig,cWild) then
   begin
     pat := after(sig, cWild);
-    result := MatchStrings(content, pat);
+    result := MatchWildcard(content, pat);
   end
   else
   begin
@@ -211,7 +214,7 @@ begin
     end else
     if beginswith(vercheck, '=') then begin
         outver := after(vercheck, '=');
-        if matchstrings(curver, outver) = true  then
+        if matchwildcard(curver, outver) = true  then
         result := true;
     end;
 end;
@@ -253,6 +256,147 @@ begin
     end;
   end;
   s.Free;
+end;
+
+function MatchWildcard_Pos(const substr, s: string; Start: integer): integer;
+var
+  i, J, len: integer;
+begin
+  len := length(substr);
+  if len = 0 then
+  begin
+    result := 1;
+    Exit;
+  end;
+  for i := Start to Succ(length(s) - len) do
+  begin
+    J := 1;
+    while J <= len do
+    begin
+      if not((substr[J] = '?') or (substr[J] = s[Pred(i + J)])) then
+        break;
+      inc(J);
+    end;
+    if J > len then
+    begin
+      result := i;
+      Exit;
+    end;
+  end;
+  result := 0;
+end;
+
+{
+  This function takes two strings and compares them. The first string
+  can be anything, but should not contain pattern characters (* or ?).
+  The pattern string can have as many of these pattern characters as you want.
+  For example: MatchStrings('Pascal','*as*') would return True.
+
+  Contributed by Arsne von Wyss (1999)
+}
+function MatchWildcard(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
+const
+  WildSize = 0; { minimal number of characters representing a "*" }
+var
+  Min, Max, At, MaskSTart, MaskEnd: integer;
+  T: string;
+begin
+  if IgnoreCase then
+  begin
+    s := uppercase(s);
+    mask := uppercase(mask);
+  end;
+  s := s + #0;
+  Mask := Mask + #0;
+  Min := 1;
+  Max := 1;
+  MaskEnd := 0;
+  while length(Mask) >= MaskEnd do
+  begin
+    MaskSTart := MaskEnd + 1;
+    repeat
+      inc(MaskEnd);
+    until (MaskEnd > length(Mask)) or (Mask[MaskEnd] = '*');
+    T := Copy(Mask, MaskSTart, MaskEnd - MaskSTart);
+    At := MatchWildcard_Pos(T, s, Min);
+    if (At = 0) or (At > Max) then
+    begin
+      result := false;
+      Exit;
+    end;
+    Min := At + length(T) + WildSize;
+    Max := length(s);
+  end;
+  result := true;
+end;
+
+function MatchWildcardX_Pos(const substr, s: string; Start: integer): integer;
+var
+  i, J, len: integer;
+begin
+  len := length(substr);
+  if len = 0 then
+  begin
+    result := 1;
+    Exit;
+  end;
+  for i := Start to Succ(length(s) - len) do
+  begin
+    J := 1;
+    while J <= len do
+    begin
+      if (substr[J] = '#') and (IsInteger(s[Pred(i + J)]) <> true) then
+        break;
+      if not(ContainsAnyOfChars(substr[J], ['?','#']) or (substr[J] = s[Pred(i + J)])) then
+        break;
+      inc(J);
+    end;
+    if J > len then
+    begin
+      result := i;
+      Exit;
+    end;
+  end;
+  result := 0;
+end;
+
+// Extended version of MatchWildcard() function that allows hash (#) to be used
+// as part of mask to match a number
+// by Felipe Daragon
+function MatchWildcardX(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
+const
+  WildSize = 0; { minimal number of characters representing a "*" }
+var
+  Min, Max, At, MaskSTart, MaskEnd: integer;
+  T: string;
+begin
+  if IgnoreCase then
+  begin
+    s := uppercase(s);
+    mask := uppercase(mask);
+  end;
+  s := s + #0;
+  Mask := Mask + #0;
+  Min := 1;
+  Max := 1;
+  MaskEnd := 0;
+  while length(Mask) >= MaskEnd do
+  begin
+    MaskSTart := MaskEnd + 1;
+    repeat
+      inc(MaskEnd);
+    until (MaskEnd > length(Mask)) or (Mask[MaskEnd] = '*');
+    T := Copy(Mask, MaskSTart, MaskEnd - MaskSTart);
+    At := MatchWildcardX_Pos(T, s, Min);
+    if (At = 0) or (At > Max) then
+    begin
+      result := false;
+      Exit;
+    end;
+    Min := At + length(T) + WildSize;
+    Max := length(s);
+  end;
+  result := true;
 end;
 
 // ------------------------------------------------------------------------//

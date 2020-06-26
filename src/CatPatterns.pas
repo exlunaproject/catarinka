@@ -249,7 +249,7 @@ type
 
 implementation
 
-uses CatStrings, CatStringLoop, CatRegEx, CatTime;
+uses CatStrings, CatStringLoop, CatMatch, CatTime;
 
 const
   VAL_ISEMPTY = 0;
@@ -703,7 +703,7 @@ begin
       VAL_INLIST_STRINGLIST:
         Result := InList_StringList(value, f.Param_Str);
       VAL_MATCH_WILD:
-        Result := CatStrings.MatchStrings(value, f.Param_Str);
+        Result := MatchWildcard(value, f.Param_Str);
       VAL_HASLENGTH:
         Result := length(value) = f.Param_Int;
       VAL_HASLENGTH_BETWEEN:

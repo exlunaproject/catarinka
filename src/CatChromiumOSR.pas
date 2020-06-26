@@ -253,7 +253,7 @@ type
 
 implementation
 
-uses uAuthentication, CatStringLoop, CatUI, CatStrings, CatHTTP;
+uses uAuthentication, CatStringLoop, CatMatch, CatUI, CatStrings, CatHTTP;
 
 // ------------------------------------------------------------------------//
 // TCatChromiumOSR                                                            //
@@ -1056,7 +1056,7 @@ begin
     slp := TStringLoop.Create(req.Headers);
     while slp.found do
     begin
-      if MatchStrings(slp.current, '*:*') then
+      if MatchWildcard(slp.current, '*:*') then
       begin
         rheader := before(slp.current, ': ');
         rvalue := after(slp.current, ': ');

@@ -80,7 +80,7 @@ type
 
 implementation
 
-uses CatStrings, CatStringLoop, CatRegex,
+uses CatStrings, CatStringLoop, CatMatch,
 {$IFDEF MSWINDOWS}
   CatDCP,
 {$ELSE}
