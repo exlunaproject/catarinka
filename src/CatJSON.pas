@@ -275,7 +275,7 @@ begin
 end;
 
 procedure TCatJSON.SetValues(const Name:array of string; const Value: Variant);
-var b: Byte;
+var b: integer;
 begin
   for b := Low(Name) to High(Name) do
     if (Name[b] <> emptystr) then

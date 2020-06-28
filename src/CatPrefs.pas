@@ -227,7 +227,7 @@ end;
 procedure TCatPreferences.SetValues(const CIDs: array of string;
   const Value: Variant);
 var
-  b: Byte;
+  b: integer;
 begin
   for b := Low(CIDs) to High(CIDs) do
     if (CIDs[b] <> emptystr) then
@@ -304,7 +304,7 @@ end;
 procedure TCatPreferences.RegisterDefault(const CID: string;
   const DefaultValue: Variant; const Tags: array of string);
 var
-  b: Byte;
+  b: integer;
   taglist: string;
   opt: TCatPrefsCustomOption;
 begin

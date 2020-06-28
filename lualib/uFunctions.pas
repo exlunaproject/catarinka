@@ -124,7 +124,7 @@ implementation
 uses
   ExtPascalUtils, synacode, pLua, pLuaTable,
   uStrList, uStrListParser, uHTMLParser, uJSON, uTarman,
-  CatStrings, CatJSON, CatRegex, CatFiles, CatHTTP, CatUtils,
+  CatStrings, CatJSON, CatMatch, CatFiles, CatHTTP, CatUtils,
   CatInet, CatTasks, CatCLUtils, CatCSUtils, CatHashes;
 
 function console_printgreen(L: plua_State): integer; cdecl;
@@ -443,7 +443,7 @@ end;
 
 function str_wildmatch(L: plua_State): integer; cdecl;
 begin
-  lua_pushboolean(L, MatchStrings(lua_tostring(L, 1), lua_tostring(L, 2)));
+  lua_pushboolean(L, MatchWildcard(lua_tostring(L, 1), lua_tostring(L, 2)));
   result := 1;
 end;
 

@@ -67,7 +67,7 @@ begin
 end;
 
 procedure TStringListCache.ClearLists(const Key:array of string);
-var X: Byte;
+var X: Integer;
 begin
 for X := Low(Key) to High(Key) do
     if not (Key[X] = '') then

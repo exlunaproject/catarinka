@@ -73,7 +73,7 @@ function EndsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function ExtractFromString(const s, startstr, endstr: string): string;
 function GetLineByPos(const s: string; const Position: integer): integer;
-function GetToken(const aString, SepChar: string; const TokenNum: Byte): string;
+function GetToken(const aString, SepChar: string; const TokenNum: Integer): string;
 function GetValidCompName(const s: string): string;
 function HexToInt(const Hex: string; const WarnError: Boolean = false): integer;
 function HexToStr(const s: string): string;
@@ -168,7 +168,7 @@ end;
 
 function After(const s, substr: string): string;
 var
-  i: Byte;
+  i: integer;
 begin
   i := pos(substr, s);
   if i = 0 then
@@ -203,7 +203,7 @@ end;
 
 function Before(const s, substr: string): string;
 var
-  i: Byte;
+  i: integer;
 begin
   i := pos(substr, s);
   if i = 0 then
@@ -238,7 +238,7 @@ end;
 function BeginsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean;
 var
-  b: Byte;
+  b: integer;
 begin
   result := false;
   for b := Low(prefixes) to High(prefixes) do
@@ -378,7 +378,7 @@ end;
 function ContainsAllOfStrings(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 var
-  b: Byte;
+  b: integer;
 begin
   result := true;
   if IgnoreCase then
@@ -400,7 +400,7 @@ end;
 function ContainsAnyOfStrings(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 var
-  b: Byte;
+  b: integer;
 begin
   result := false;
   if IgnoreCase then
@@ -450,7 +450,7 @@ end;
 function EndsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean;
 var
-  b: Byte;
+  b: integer;
 begin
   result := false;
   for b := Low(prefixes) to High(prefixes) do
@@ -655,7 +655,7 @@ end;
 
 function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
 var
-  b: Byte;
+  b: integer;
 begin
   result := false;
   for b := Low(aArray) to High(aArray) do
@@ -670,7 +670,7 @@ end;
 function MatchStrInArray(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 var
-  b: Byte;
+  b: integer;
 begin
   result := false;
   if IgnoreCase then
@@ -1182,7 +1182,7 @@ begin
 end;
 
 // Based on an example from Thomas Scheffczyk
-function GetToken(const aString, SepChar: String; const TokenNum: Byte): String;
+function GetToken(const aString, SepChar: String; const TokenNum: Integer): String;
 var
   Token, tmpstr: String;
   StrLen, num, EndofToken: integer;
