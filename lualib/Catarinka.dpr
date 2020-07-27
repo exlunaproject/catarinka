@@ -2,7 +2,7 @@ library Catarinka;
 
 {
   Catarinka Lua Library
-  Copyright (c) 2013-2019 Felipe Daragon
+  Copyright (c) 2013-2020 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }

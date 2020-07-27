@@ -770,8 +770,13 @@ begin
 end;
 
 function task_kill(L: plua_State): integer; cdecl;
+var
+  fullname: boolean;
 begin
-  KillEXE(lua_tostring(L, 1));
+  fullname := false;
+  if lua_isnone(L, 2) = false then
+    fullname := lua_toboolean(L, 2);
+  KillTask(lua_tostring(L, 1), fullname);
   result := 1;
 end;
 

@@ -241,7 +241,7 @@ begin
     SHTD_STANDARD:
       ; // do nothing
     SHTD_FORCED:
-      KillProcessbyPID(GetCurrentProcessId);
+      KillTaskbyPID(GetCurrentProcessId);
     SHTD_MANUAL:
       begin
 {$IFDEF USEWACEF}

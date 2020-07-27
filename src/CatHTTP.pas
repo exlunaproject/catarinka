@@ -118,6 +118,7 @@ function RemoveHeaderFromResponse(const r: string): string;
 function CrackURL(const url: string): TURLParts;
 function ChangeURLPath(const url, newpath: string): string;
 function RemoveUrlPath(const url: string): string;
+function RemoveURLFilename(const URL:string;ExtensionRequired:boolean=false):string;
 function ExtractUrlFileExt(const url: string): string;
 function ExtractUrlFileName(const url: string): string;
 function ExtractUrlHost(const url: string): string;
@@ -139,7 +140,7 @@ function URLPathTitleCase(const s: string): string;
 implementation
 
 uses
-  CatStrings, CatJSON, CatEntities;
+  CatStrings, CatJSON, CatMatch, CatEntities;
   
 function BeginsWithHTTPProto(const url: string): boolean;
 begin
@@ -512,6 +513,25 @@ begin
     if pos('?', result) <> 0 then
       result := before(result, '?');
   end;
+end;
+
+// Removes the filename part of a URL, example:
+// http://www.somehost.com/index.php -> http://www.somehost.com/
+// If second parameter is true,
+// filename is only removed if filename with extension is found in URL
+function RemoveURLFilename(const URL:string;ExtensionRequired:boolean=false):string;
+var
+  fn:string;
+  len:integer;
+begin
+ result := URL;
+ fn := ExtractURLFileName(Url);
+ if fn = emptystr then
+  exit;
+ if (ExtensionRequired = true) and (MatchWildcard(fn, '*.??*') = false) then
+  exit;
+ len := Length(Url)-Length(fn);
+ result := Copy(URL, 1, len);
 end;
 
 // Removes the path from a URL, example:
