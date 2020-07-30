@@ -17,6 +17,16 @@ uses
 {$ELSE}
   SysUtils, Controls;
 {$ENDIF}
+type
+  TCatDecodedDate = record
+    AsString: string;
+    AsUnixtime: longint;
+    AsDateTime: TDateTime;
+    Year: word;
+    Month: word;
+    Day: word;
+  end;
+
 function CalcAge(const StartDate, Date: TDate): integer;
 function DateTimeToUnix(const Date: TDateTime): Longint;
 function DescribeDuration(const StartTime: TDateTime): string;
@@ -26,6 +36,7 @@ function DescribePassedTime(const t: string): string;
 function DiffDate(const day1, day2: TDateTime): integer;
 function GetDayOfWeekAsNumber: integer;
 function GetDayOfWeekAsText: string;
+function GetDecodedDate(const d: TDateTime):TCatDecodedDate;
 function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';
   const sep: Char = '/'): boolean;
 function UnixToDateTime(const sec: Longint): TDateTime;
@@ -187,6 +198,14 @@ begin
     7:
       Result := 'Saturday';
   end;
+end;
+
+function GetDecodedDate(const d: TDateTime):TCatDecodedDate;
+begin
+  result.AsDateTime := d;
+  DecodeDate(d, result.Year, result.Month, result.Day);
+  result.AsString := DateTimeToStr(d);
+  result.AsUnixtime := DateTimeToUnix(d);
 end;
 
 function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';

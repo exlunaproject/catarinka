@@ -20,12 +20,13 @@ uses
 {$ENDIF}
 function KillTask(const ExeFileName: string;FullName:boolean=false): Integer;
 function KillChildTasks: boolean;
+function MatchProcessFilename(pe:TProcessEntry32; const ExeFileName: string; FullName:boolean=false):boolean;
 function RunTask(const ExeFileName: string; const Wait: boolean = false;
   const WindowState: Integer = SW_SHOW): Cardinal;
-function TaskRunning(const ExeFileName: WideString): boolean;
-function TaskRunningCount(const ExeFileName: WideString): integer;
-function TaskRunningSingleInstance(const ExeFileName: WideString): boolean;
-function TaskRunningWithPID(const ExeFileName: WideString;const PID: Cardinal): boolean;
+function TaskRunning(const ExeFileName: WideString;const FullName:boolean): boolean;
+function TaskRunningCount(const ExeFileName: WideString;const FullName:boolean): integer;
+function TaskRunningSingleInstance(const ExeFileName: WideString;const FullName:boolean): boolean;
+function TaskRunningWithPID(const ExeFileName: WideString; const PID: Cardinal;const FullName:boolean): boolean;
 procedure GetTaskList(ProcList: TStrings;FileMask:string='');
 procedure GetTaskListEx(ProcList: TStrings;FileMask:string;FullName:boolean);
 procedure KillTaskByMask(FileMask:string);
@@ -117,6 +118,23 @@ begin
   CloseHandle(FSnapshotHandle);
 end;
 
+// Note: full name may require admin privileges to work for certain processes
+function MatchProcessFilename(pe:TProcessEntry32; const ExeFileName: string; FullName:boolean=false):boolean;
+var
+  fn, targetfn:string;
+begin
+  result := false;
+    if FullName = true then begin
+      fn := GetFileNameByPID(pe.th32ProcessID);
+      targetfn := exefilename;
+    end else begin
+      fn := pe.szExeFile;
+      targetfn := extractfilename(targetfn);
+    end;
+    if Uppercase(fn) = Uppercase(targetfn) = true then
+    result := true;
+end;
+
 // Kills all child tasks from current process ID
 function KillChildTasks: boolean;
 var
@@ -193,7 +211,7 @@ begin
 end;
 
 // Returns the number of running tasks
-function TaskRunningCount(const ExeFileName: WideString): integer;
+function TaskRunningCount(const ExeFileName: WideString;const FullName:boolean): integer;
 var
   ContinueLoop: BOOL;
   FSnapshotHandle: THandle;
@@ -205,8 +223,7 @@ begin
   ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
   while Integer(ContinueLoop) <> 0 do
   begin
-    if (UpperCase(ExtractFileName(FProcessEntry32.szExeFile))
-      = UpperCase(ExeFileName)) then
+    if MatchProcessFilename(FProcessEntry32, ExeFilename, FullName) then
       Inc(Result);
     ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
@@ -214,13 +231,13 @@ begin
 end;
 
 // Returns true if a task is running, false otherwise
-function TaskRunning(const ExeFileName: WideString): boolean;
+function TaskRunning(const ExeFileName: WideString;const FullName:boolean): boolean;
 begin
-  Result := TaskRunningCount(ExeFileName) <> 0;
+  Result := TaskRunningCount(ExeFileName, FullName) <> 0;
 end;
 
 // Returns true if a task is running with a specific PID, false otherwise
-function TaskRunningWithPID(const ExeFileName: WideString;const PID: Cardinal): boolean;
+function TaskRunningWithPID(const ExeFileName: WideString;const PID: Cardinal;const FullName:boolean): boolean;
 var
   ContinueLoop: BOOL;
   FSnapshotHandle: THandle;
@@ -232,8 +249,8 @@ begin
   ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
   while Integer(ContinueLoop) <> 0 do
   begin
-    if (UpperCase(ExtractFileName(FProcessEntry32.szExeFile))
-      = UpperCase(ExeFileName)) and (FProcessEntry32.th32ProcessID = PID) then
+    if (MatchProcessFilename(FProcessEntry32, ExeFilename, FullName) = true)
+     and (FProcessEntry32.th32ProcessID = PID) then
       result := true;
     ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
@@ -241,9 +258,9 @@ begin
 end;
 
 // Returns true if a single instance of a task is running, false otherwise
-function TaskRunningSingleInstance(const ExeFileName: WideString): boolean;
+function TaskRunningSingleInstance(const ExeFileName: WideString;const FullName:boolean): boolean;
 begin
-  Result := not (TaskRunningCount(ExeFileName) >= 2);
+  Result := not (TaskRunningCount(ExeFileName, FullName) >= 2);
 end;
 
 // Kills a process by its executable filename
@@ -255,7 +272,6 @@ var
   ContinueLoop: BOOL;
   FSnapshotHandle: THandle;
   FProcessEntry32: TProcessEntry32;
-  fn, targetfn: string;
 begin
   Result := 0;
   FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -264,18 +280,9 @@ begin
 
   while Integer(ContinueLoop) <> 0 do
   begin
-    if FullName = true then begin
-      fn := GetFileNameByPID(FProcessEntry32.th32ProcessID);
-      targetfn := exefilename;
-    end else begin
-      fn := FProcessEntry32.szExeFile;
-      targetfn := extractfilename(targetfn);
-    end;
-    if Uppercase(fn) = Uppercase(targetfn) = true then
-    begin
-      Result := Integer(TerminateProcess(OpenProcess(PROCESS_TERMINATE, BOOL(0),
+    if MatchProcessFilename(FProcessEntry32, exefilename, fullname) = true then
+    Result := Integer(TerminateProcess(OpenProcess(PROCESS_TERMINATE, BOOL(0),
         FProcessEntry32.th32ProcessID), 0));
-    end;
     ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
   CloseHandle(FSnapshotHandle);

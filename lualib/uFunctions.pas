@@ -752,8 +752,13 @@ begin
 end;
 
 function task_isrunning(L: plua_State): integer; cdecl;
+var
+  fullname: boolean;
 begin
-  lua_pushboolean(L, taskrunning(lua_tostring(L, 1)));
+  fullname := false;
+  if lua_isnone(L, 2) = false then
+    fullname := lua_toboolean(L, 2);
+  lua_pushboolean(L, taskrunning(lua_tostring(L, 1), fullname));
   result := 1;
 end;
 

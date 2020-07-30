@@ -137,8 +137,8 @@ These will return a boolean value.
 
 ### Task Functions (task.*)
 
-* **isrunning** ( exefilename ): Returns true if a process is running, false otherwise.
-* **kill** ( exefilename [,fullname] ): Closes a running process by its executable name. If second parameter is true, closes the process only if the full filename matches.
+* **isrunning** ( exefilename  [,fullname] ): Returns true if a process is running, false otherwise.
+* **kill** ( exefilename [,fullname] ): Closes a running process by its executable name. If the second parameter is true, closes the process only if the full filename matches.
 
 ### Utils (utils.*)
 
