@@ -28,6 +28,8 @@ type
     fLastLnLength: integer;
     fScreenHandle: THandle;
   public
+    function ReadLn:string;
+    function ReadPassword(const InputMask: Char = '*'): string;
     procedure ResetColor;
     procedure UpdateLn(s: string);
     procedure WriteDot;
@@ -106,6 +108,38 @@ begin
   TextColor(csclLIGHTGRAY); // default console color
 end;
 
+// Thanks Francesca Gaillard
+function Console_ReadPassword(const InputMask: Char = '*'): string;
+var
+  OldMode: Cardinal;
+  c: Char;
+begin
+  GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), OldMode);
+  SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), OldMode and
+    not(ENABLE_LINE_INPUT or ENABLE_ECHO_INPUT));
+  try
+    while not Eof do
+    begin
+      Read(c);
+      if c = #13 then // Carriage Return
+        Break;
+      if (c = #8) and (Length(Result) > 0) then // Back Space
+      begin
+        Delete(Result, Length(Result), 1);
+        Write(#8);
+      end
+      else
+      begin
+        Result := Result + c;
+        Write(InputMask);
+      end;
+    end;
+  finally
+    WriteLn;
+    SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), OldMode);
+  end;
+end;
+
 procedure TextColor(Color: Byte);
 begin
   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), Color);
@@ -114,18 +148,18 @@ end;
 procedure TCatCSHelper.UpdateLn(s: string);
 var
   CSBufInf: TConsoleScreenBufferInfo;
-  garbageIntegerVar: cardinal;
+  garbageIntegerVar: Cardinal;
   blankstr: string;
 begin
   if fScreenHandle = 0 then
     fScreenHandle := GetStdHandle(STD_OUTPUT_HANDLE);
   GetConsoleScreenBufferInfo(fScreenHandle, CSBufInf);
-  if length(s) > fLastLnLength then
-    fLastLnLength := length(s);
+  if Length(s) > fLastLnLength then
+    fLastLnLength := Length(s);
   blankstr := StringofChar(' ', fLastLnLength);
   WriteConsoleOutputCharacter(fScreenHandle,
-    {$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(s + blankstr),
-    length(s + blankstr), CSBufInf.dwCursorPosition, garbageIntegerVar);
+{$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(s + blankstr),
+    Length(s + blankstr), CSBufInf.dwCursorPosition, garbageIntegerVar);
 end;
 
 procedure TCatCSHelper.ResetColor;
@@ -151,6 +185,16 @@ end;
 procedure TCatCSHelper.WriteLn_White(s: string);
 begin
   WriteLnC(s, csclWHITE);
+end;
+
+function TCatCSHelper.ReadLn:string;
+begin
+  System.Readln(result);
+end;
+
+function TCatCSHelper.ReadPassword(const InputMask: Char = '*'): string;
+begin
+  result := Console_ReadPassword(inputmask);
 end;
 
 procedure TCatCSHelper.WriteDot;

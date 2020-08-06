@@ -412,7 +412,7 @@ begin
 end;
 
 type
-  TConsoleFields = (cs_printgreen, cs_printred, cs_printwhite);
+  TConsoleFields = (cs_printgreen, cs_printred, cs_printwhite, cs_readln, cs_readpwd);
 
 function get_consolefields(L: plua_State): integer; cdecl;
 begin
@@ -425,6 +425,10 @@ begin
       lua_pushcfunction(L, console_printred);
     cs_printwhite:
       lua_pushcfunction(L, console_printwhite);
+    cs_readln:
+      lua_pushcfunction(L, console_readline);
+    cs_readpwd:
+      lua_pushcfunction(L, console_readpassword);
   else
     result := 0;
   end;

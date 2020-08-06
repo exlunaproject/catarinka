@@ -38,6 +38,15 @@ type
     name: string;
     value: string;
   end;
+  
+// Useful for returning a boolean value together with a string like an error 
+// message or an integer when calling a function
+type
+ TCatFuncResult = record
+   B: boolean;
+   I: integer;
+   S: string;
+ end;  
 
 type
   TCatCaseLabel = record

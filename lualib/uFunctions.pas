@@ -95,6 +95,8 @@ function conv_commatexttostr(L: plua_State): integer; cdecl;
 function console_printgreen(L: plua_State): integer; cdecl;
 function console_printred(L: plua_State): integer; cdecl;
 function console_printwhite(L: plua_State): integer; cdecl;
+function console_readline(L: plua_State): integer; cdecl;
+function console_readpassword(L: plua_State): integer; cdecl;
 
 function html_escape(L: plua_State): integer; cdecl;
 function html_unescape(L: plua_State): integer; cdecl;
@@ -126,6 +128,18 @@ uses
   uStrList, uStrListParser, uHTMLParser, uJSON, uTarman,
   CatStrings, CatJSON, CatMatch, CatFiles, CatHTTP, CatUtils,
   CatInet, CatTasks, CatCLUtils, CatCSUtils, CatHashes;
+
+function console_readline(L: plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, cs.readln);
+  result := 1;
+end;
+
+function console_readpassword(L: plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, cs.readpassword);
+  result := 1;
+end;
 
 function console_printgreen(L: plua_State): integer; cdecl;
 begin
