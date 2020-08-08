@@ -27,6 +27,10 @@ type
 function RegExpFind(const s, re: string): string;
 function RegExpReplace(const s, re, sreplacement: string): string; overload;
 function RegExpReplace(const s, re: string; refunc: TRegExprReplaceFunction): string; overload;
+function CatCaseWildOf(const s: string; labels: array of string;
+  const casesensitive: Boolean = true): integer;
+function CatCaseWildXOf(const s: string; labels: array of string;
+  const casesensitive: Boolean = true): integer;  
 function CatMatchSignature(const sigpattern, s: string): boolean;
 function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
@@ -40,6 +44,56 @@ function MatchWildcardX(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 implementation
 
 uses CatStrings, CatStringLoop;
+
+{ 
+  Case Statement with wildcard matching
+  Usage examples:
+  case CatCaseWildOf(inputstring, ['1:do?', '2:c*', '3:b??d']) of
+   1: result := ...
+   2: result := ...
+   3: result := ...
+  else
+   result := 'nomatch';  
+  end;
+  case CatCaseWildOf(a, ['1:http://*', '2:https://*']) of
+   1: result := 'http URL';
+   2: result := 'https URL';
+  else
+   result := 'nomatch';
+  end;  
+  
+  
+  Check CatStrings.pas for non-wildcard version of this function
+}
+function CatCaseWildOf(const s: string; labels: array of string;
+  const casesensitive: Boolean = true): integer;
+var
+  i: integer;
+begin
+  result := -1; // label not found
+  for i := low(labels) to high(labels) do
+  begin
+    if MatchWildcard(s, after(labels[i],':'), not casesensitive) = true then
+      result := StrToIntDef(before(labels[i],':'), -1);
+    if result <> -1 then
+      break;
+  end;
+end;
+
+function CatCaseWildXOf(const s: string; labels: array of string;
+  const casesensitive: Boolean = true): integer;
+var
+  i: integer;
+begin
+  result := -1; // label not found
+  for i := low(labels) to high(labels) do
+  begin
+    if MatchWildcardX(s, after(labels[i],':'), not casesensitive) = true then
+      result := StrToIntDef(before(labels[i],':'), -1);
+    if result <> -1 then
+      break;
+  end;
+end;
 
 function RegExpReplace(const s, re, sreplacement: string): string;
 var
@@ -347,7 +401,9 @@ begin
     begin
       if (substr[J] = '#') and (IsInteger(s[Pred(i + J)]) <> true) then
         break;
-      if not(ContainsAnyOfChars(substr[J], ['?','#']) or (substr[J] = s[Pred(i + J)])) then
+      if (substr[J] = '¿') and (IsAlpha(s[Pred(i + J)]) <> true) then
+        break;
+      if not(ContainsAnyOfChars(substr[J], ['?','#','¿']) or (substr[J] = s[Pred(i + J)])) then
         break;
       inc(J);
     end;
@@ -360,8 +416,10 @@ begin
   result := 0;
 end;
 
-// Extended version of MatchWildcard() function that allows hash (#) to be used
-// as part of mask to match a number
+// Extended version of MatchWildcard() function that allows the following
+// additional chars to be used as part of the mask:
+// # (hash) to match a number
+// ¿ (inverted interrogation) to match a letter (A..Z, a..z)
 // by Felipe Daragon
 function MatchWildcardX(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 const

@@ -65,9 +65,6 @@ function BeginsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
-function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
-  const casesensitive: Boolean = true): integer;
-function CatCaseOf_GetName(const id: integer; labels: array of TCatCaseLabel): string;
 function CatWrapText(const text: string; const chars: integer): TStringList;
 function CharSetToStr(const c: TSysCharSet): string;
 function CommaTextToStr(const s: string): string;
@@ -81,7 +78,8 @@ function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
 function EndsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function ExtractFromString(const s, startstr, endstr: string): string;
-function GetLineByPos(const s: string; const Position: integer): integer;
+function GetLineNumberByPos(const s: string; const Position: integer): integer;
+function GetStringLine(const s:string;const line:integer):TCatFuncResult;
 function GetToken(const aString, SepChar: string; const TokenNum: Integer): string;
 function GetValidCompName(const s: string): string;
 function HexToInt(const Hex: string; const WarnError: Boolean = false): integer;
@@ -154,6 +152,58 @@ function CharInSet(c: Char; CharSet: TSysCharSet): Boolean;
 // string list related functions
 function CompareStrings(sl: TStringList; Index1, Index2: integer): integer;
 procedure StripBlankLines(const sl: TStringList);
+
+{ 
+  Case Statement with String:
+  Since Delphi 7 to XE and most Pascal compilers don't support case statement 
+  with string, many developers created workaround methods that work similar, 
+  but I never found one I really liked, so I came up with this.
+  It is ugly, but works very well.
+   
+  CatCaseLabelOf() requires an array of TCatCaseLabel
+  Usage example:
+
+  procedure TForm1.Button1Click(Sender: TObject);
+  const
+   c_ana = 1;
+   c_roberto = 2;
+   c_lucia = 3;
+  const
+   labels : array [1..3] of TCatCaseLabel =
+   (
+   (name:'ana';id:c_ana),
+   (name:'lucia';id:c_lucia),   
+   (name:'roberto';id:c_roberto)
+   );
+  begin
+   case CatCaseLabelOf(edit1.text,labels) of
+    c_ana: form1.caption:='ana!';
+    c_roberto: form1.caption:='roberto!';
+    c_lucia: form1.caption:='lucia!';
+   else
+    form1.Caption:=edit1.text+' not in case list!';
+   end;
+  end;  
+  
+  CatCaseOf() is a simple alternative of the above and works with an array of
+  strings
+  Usage example:
+  case CatCaseOf(inputstring, ['1:dog', '2:cat', '3:bird', '3:horse']) of
+   1: result := 'dog';
+   2: result := 'cat';
+   3: result := 'bird or horse';
+  else
+   result := 'nomatch';  
+  end;  
+  
+  CatCaseWildOf() in CatMatch.pas allows case statement based on wildcard strings
+  
+}
+function CatCaseOf(const s: string; labels: array of string;
+  const casesensitive: Boolean = true): integer; 
+function CatCaseLabelOf(const s: string; labels: array of TCatCaseLabel;
+  const casesensitive: Boolean = true): integer; 
+function CatCaseLabelOf_GetName(const id: integer; labels: array of TCatCaseLabel): string;
 
 const
   CRLF = #13 + #10;
@@ -276,35 +326,30 @@ begin
     result := 'No';
 end;
 
-{
-  A CaseOf function using arrays
-  Usage Example:
-
-  procedure TForm1.Button1Click(Sender: TObject);
-  const
-  ana = 1;
-  roberto = 2;
-  lucia = 3;
-  const
-  labels : array [1..3] of TCatCaseLabel =
-  (
-  (name:'ana';id:ana),
-  (name:'roberto';id:roberto),
-  (name:'lucia';id:lucia)
-  );
-  begin
-  case CatCaseOf(edit1.text,labels) of
-  ana: form1.caption:='ana!';
-  roberto: form1.caption:='roberto!';
-  lucia: form1.caption:='lucia!';
-  else
-  form1.Caption:=edit1.text+' not in case list!';
-  end;
-  end;
-
-}
-function CatCaseOf(const s: string; labels: array of TCatCaseLabel;
+function CatCaseOf(const s: string; labels: array of string;
   const casesensitive: Boolean = true): integer;
+var
+  i: integer;
+  astr: string;
+begin
+  result := -1; // label not found
+  astr := s;
+  if casesensitive = false then begin
+    astr := lowercase(astr);
+    for i := low(labels) to high(labels) do
+      labels[i] := lowercase(labels[i]);
+  end;
+  for i := low(labels) to high(labels) do
+  begin
+    if astr = after(labels[i],':') then
+      result := StrToIntDef(before(labels[i],':'), -1);
+    if result <> -1 then
+      break;
+  end;
+end;
+
+function CatCaseLabelOf(const s: string; labels: array of TCatCaseLabel;
+  const casesensitive: Boolean = true): integer; overload;
 var
   i: integer;
   astr: string;
@@ -325,7 +370,7 @@ begin
   end;
 end;
 
-function CatCaseOf_GetName(const id: integer; labels: array of TCatCaseLabel): string;
+function CatCaseLabelOf_GetName(const id: integer; labels: array of TCatCaseLabel): string;
 var
   i: integer;
 begin
@@ -472,7 +517,7 @@ begin
   end;
 end;
 
-function GetLineByPos(const s: string; const Position: integer): integer;
+function GetLineNumberByPos(const s: string; const Position: integer): integer;
 var
   i, ln: integer;
 begin
@@ -489,6 +534,25 @@ begin
     i := i + 1;
   end;
   result := ln;
+end;
+
+function GetStringLine(const s:string;const line:integer):TCatFuncResult;
+var
+  sl: TStringList;
+  i: integer;
+begin
+  result.B := false;
+  result.S := emptystr;
+  sl := TStringList.Create;
+  sl.Text := s;
+  for i := 0 to sl.Count -1 do begin
+    if i = line then begin
+      result.B := true;
+      result.S := sl[i];
+      break;
+    end;
+  end;
+  sl.Free;
 end;
 
 // Returns a valid Pascal component name (stripping invalid chars)
@@ -541,7 +605,7 @@ var
 begin
   result := true;
   for i := 1 to length(s) do
-    if CharInSet(s[i], ['0' .. '9']) then
+    if CharInSet(s[i], ['A' .. 'Z', 'a' .. 'z']) = false then
     begin
       result := false;
       break;
