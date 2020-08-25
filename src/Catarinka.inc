@@ -1,6 +1,12 @@
 {$IFDEF FPC}
  {$mode DELPHI}{$H+}
 {$ELSE}
+ {$IF CompilerVersion >= 30} // Delphi 10 Seattle or higher
+  {$DEFINE D10SEATTLE_OR_UP}
+ {$IFEND}
+ {$IF CompilerVersion >= 29} // Delphi XE8 or higher
+  {$DEFINE DXE8_OR_UP}
+ {$IFEND}
  {$IF CompilerVersion >= 28} // Delphi XE7 or higher
   {$DEFINE DXE7_OR_UP}
  {$IFEND}

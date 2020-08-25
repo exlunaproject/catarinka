@@ -2,10 +2,11 @@ unit CatHashes;
 {
   Catarinka - Hash functions
 
-  Copyright (c) 2003-2017 Felipe Daragon
+  Copyright (c) 2003-2020 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  If you have D10 Seattle or up, use System.Hash's MD5, otherwise use the
   MD5 function by Stijn Sanders (MIT license, included at the end of this file)
 }
 
@@ -18,14 +19,27 @@ uses
   {$IFDEF USECROSSVCL}
   WinAPI.Windows,
   {$ENDIF}
+  {$IFDEF D10SEATTLE_OR_UP}
+  System.Hash,
+  {$ENDIF}
   System.Classes, System.SysUtils;
 {$ELSE}
   Classes, SysUtils;
 {$ENDIF}
 
-function MD5Hash(s: UTF8String): UTF8String;
+function MD5Hash(const s: string): string;
+function MD5Hash_Sanders(s: UTF8String): UTF8String;
 
 implementation
+
+function MD5Hash(const s: string): string;
+begin
+  {$IFDEF D10SEATTLE_OR_UP}
+  result := THashMD5.GetHashString(s);
+  {$ELSE}
+  result := MD5Hash_Sanders(s);
+  {$ENDIF}
+end;
 
 {
 
@@ -39,7 +53,7 @@ implementation
 
 }
 
-function MD5Hash(s: UTF8String): UTF8String;
+function MD5Hash_Sanders(s: UTF8String): UTF8String;
 const
   roll1: array [0 .. 3] of cardinal = (7, 12, 17, 22);
   roll2: array [0 .. 3] of cardinal = (5, 9, 14, 20);
