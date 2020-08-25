@@ -129,7 +129,7 @@ begin
       targetfn := exefilename;
     end else begin
       fn := pe.szExeFile;
-      targetfn := extractfilename(targetfn);
+      targetfn := extractfilename(exefilename);
     end;
     if Uppercase(fn) = Uppercase(targetfn) = true then
     result := true;
