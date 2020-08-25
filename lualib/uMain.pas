@@ -47,7 +47,7 @@ end;
 type
   TStringFields = (s_after, s_before, s_beginswith, s_between, s_decrease,
     s_endswith, s_gettoken, s_increase, s_ishex, s_isint, s_lastchar, s_list,
-    s_loop, s_match, s_maxlen, s_occur, s_random, s_replace, s_replacefirst,
+    s_loop, s_match, s_matchx, s_maxlen, s_occur, s_random, s_replace, s_replacefirst,
     s_stripblanklines, s_stripquotes, s_trim);
 
 function get_string(L: plua_State): integer; cdecl;
@@ -83,6 +83,8 @@ begin
       push_catarinka_class(L, 'ctk_listparser', RegisterCatarinkaStrListParser);
     s_match:
       lua_pushcfunction(L, str_wildmatch);
+    s_matchx:
+      lua_pushcfunction(L, str_wildmatchx);      
     s_maxlen:
       lua_pushcfunction(L, str_maxlen);
     s_occur:

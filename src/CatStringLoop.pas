@@ -45,6 +45,9 @@
       showmessage(s.current);
 
   ChangeLog:
+    22.08.2020:
+  - Added CurrentNameValue and NameValueSeparator properties for dealign with
+    lines that are name value pair like: somename=somevalue
     26.08.2017:
   - Moved TStringLoop's CSV methods to a separate class (TCSVLoop)
   - Reset TSepStringLoop when setting a new string
@@ -68,7 +71,7 @@ uses
 {$ELSE}
   Classes, SysUtils, Variants,
 {$ENDIF}
-  CatPatterns;
+  CatStrings, CatPatterns;
 
 { TStringLoop loops through a string list }
 type
@@ -76,10 +79,12 @@ type
   protected
     fCurrent: string;
     fList: TStringList;
+    fNameValueSeparator: string;
     fPattern: TStringPattern;
     fPosition: integer;
     function GetCount: integer;
     function GetCountAsStr: string;
+    function GetCurrentNameValue:TCatNameValue;
     function GetCurrentLower: string;
     function GetCurrentUpper: string;
     procedure SetCurrent(const s: string); virtual;
@@ -105,8 +110,10 @@ type
     property Count: integer read GetCount;
     property CountAsStr:string read GetCountAsStr;
     property Current: string read fCurrent write SetCurrentLine;
+    property CurrentNameValue: TCatNameValue read GetCurrentNameValue;
     property CurrentLower: string read GetCurrentLower;
     property CurrentUpper: string read GetCurrentUpper;
+    property NameValueSeparator: string read fNameValueSeparator write fNameValueSeparator;
     property List: TStringList read FList;
     property Pattern: TStringPattern read fPattern;
   end;
@@ -162,8 +169,6 @@ type
 
 implementation
 
-uses CatStrings;
-
 function TStringLoop.GetCount: integer;
 begin
   result := fList.Count;
@@ -193,6 +198,11 @@ end;
 function TStringLoop.GetCurrentLower: string;
 begin
   result := lowercase(FCurrent);
+end;
+
+function TStringLoop.GetCurrentNameValue: TCatNameValue;
+begin
+  result := StrToNameValue(FCurrent, fNameValueSeparator);
 end;
 
 function TStringLoop.IndexAsStr: string;
@@ -285,6 +295,7 @@ end;
 
 constructor TStringLoop.Create(const sl: tstrings = nil);
 begin
+  fNameValueSeparator := '=';
   fList := tstringlist.Create;
   fPattern := TStringPattern.Create;
   fPattern.AllowLock := false;

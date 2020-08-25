@@ -134,6 +134,7 @@ function StrToCommaText(const s: string): string;
 function StrToHex(const s: string): string;
 function StrToHex16(const s: string): string;
 function StrToNameValue(const s: string; const aSeparator:string='='): TCatNameValue;
+function StrToYN(const s:string):string;
 function TitleCase(const s: string): string;
 
 {$IFDEF MSWINDOWS}
@@ -324,6 +325,11 @@ begin
     result := 'Yes'
   else
     result := 'No';
+end;
+
+function StrToYN(const s:string):string;
+begin
+  result := BoolToYN(StrToBool(s));
 end;
 
 function CatCaseOf(const s: string; labels: array of string;

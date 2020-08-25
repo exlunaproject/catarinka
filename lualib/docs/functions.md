@@ -51,6 +51,7 @@
 * **ishex** ( s ): Checks if a string is a hexadecimal representation.
 * **isint** ( s ): Checks if a string is integer.
 * **match** ( s, pattern ): Wildcard matching (* and ?).
+* **matchx** ( s, pattern ): Extended Wildcard matching, Catarinka's way (*, ?, # for number and ¿ to match a letter).
 
 These will return a boolean value.
 

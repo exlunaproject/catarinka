@@ -42,6 +42,7 @@ function str_ishex(L: plua_State): integer; cdecl;
 function str_isint(L: plua_State): integer; cdecl;
 function str_occur(L: plua_State): integer; cdecl;
 function str_wildmatch(L: plua_State): integer; cdecl;
+function str_wildmatchx(L: plua_State): integer; cdecl;
 function str_toalphanum(L: plua_State): integer; cdecl;
 function str_beautifyjs(L: plua_State): integer; cdecl;
 function str_beautifycss(L: plua_State): integer; cdecl;
@@ -458,6 +459,12 @@ end;
 function str_wildmatch(L: plua_State): integer; cdecl;
 begin
   lua_pushboolean(L, MatchWildcard(lua_tostring(L, 1), lua_tostring(L, 2)));
+  result := 1;
+end;
+
+function str_wildmatchx(L: plua_State): integer; cdecl;
+begin
+  lua_pushboolean(L, MatchWildcardX(lua_tostring(L, 1), lua_tostring(L, 2)));
   result := 1;
 end;
 
