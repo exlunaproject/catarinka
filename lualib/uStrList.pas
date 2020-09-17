@@ -10,7 +10,7 @@ unit uStrList;
 interface
 
 uses
-  Classes, SysUtils, Lua, pLua, LuaObject;
+  Classes, SysUtils, Lua, pLua, LuaObject, CatUtils;
 
 type
   { TCatarinkaStrList }
@@ -96,9 +96,11 @@ end;
 function method_indexof(L: PLua_State): Integer; cdecl;
 var
   ht: TCatarinkaStrList;
+  i: integer;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  lua_pushinteger(L, ht.obj.indexof(lua_tostring(L, 2)));
+  i := ht.obj.indexof(lua_tostring(L, 2));
+  plua_pushintnumber(L, i);
   result := 1;
 end;
 

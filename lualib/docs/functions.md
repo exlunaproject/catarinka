@@ -100,6 +100,7 @@ These will return a boolean value.
 
 ### JSON Functions (json.*)
 
+* **escape** ( s ): Escapes JSON special characters.
 * **object**: Returns a JSON object (see `classes.jsonobject.md`).
 
 ### HTTP Functions (http.*)

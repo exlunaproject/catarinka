@@ -103,6 +103,8 @@ function html_escape(L: plua_State): integer; cdecl;
 function html_unescape(L: plua_State): integer; cdecl;
 function html_striptags(L: plua_State): integer; cdecl;
 
+function json_escape(L: plua_State): integer; cdecl;
+
 function http_crackrequest(L: plua_State): integer; cdecl;
 function http_postdatatojson(L: plua_State): integer; cdecl;
 function http_gethdrfield(L: plua_State): integer; cdecl;
@@ -352,6 +354,12 @@ begin
   result := 1;
 end;
 
+function json_escape(L: plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, CatHTTP.jsonstringescape(lua_tostring(L, 1)));
+  result := 1;
+end;
+
 function str_stripquotes(L: plua_State): integer; cdecl;
 begin
   lua_pushstring(L, RemoveQuotes(lua_tostring(L, 1)));
@@ -410,7 +418,7 @@ end;
 
 function url_getport(L: plua_State): integer; cdecl;
 begin
-  lua_pushinteger(L, extracturlport(lua_tostring(L, 1)));
+  plua_pushintnumber(L, extracturlport(lua_tostring(L, 1)));
   result := 1;
 end;
 
@@ -434,7 +442,7 @@ end;
 
 function conv_hextoint(L: plua_State): integer; cdecl;
 begin
-  lua_pushinteger(L, HexToInt(lua_tostring(L, 1)));
+  plua_pushintnumber(L, HexToInt(lua_tostring(L, 1)));
   result := 1;
 end;
 
@@ -452,7 +460,7 @@ end;
 
 function str_occur(L: plua_State): integer; cdecl;
 begin
-  lua_pushinteger(L, Occurs(lua_tostring(L, 2), lua_tostring(L, 1)));
+  plua_pushintnumber(L, Occurs(lua_tostring(L, 2), lua_tostring(L, 1)));
   result := 1;
 end;
 
@@ -605,7 +613,7 @@ end;
 
 function file_getsize(L: plua_State): integer; cdecl;
 begin
-  lua_pushinteger(L, GetFileSize(lua_tostring(L, 1)));
+  plua_pushintnumber(L, GetFileSize(lua_tostring(L, 1)));
   result := 1;
 end;
 

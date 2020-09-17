@@ -12,21 +12,30 @@ uses
   Classes, CatActiveScript, SysUtils;
 
 type
+  TScarlettActiveScriptError = procedure(Line, Pos: Integer;
+    ASrc, ADescription: String) of object;
+
+type
   TScarlettActiveScript = class
   private
+    fasw_success: boolean;
+    fOnScriptError: TScarlettActiveScriptError;
+    procedure aswError(Sender: TObject; Line, Pos: Integer;
+      ASrc, ADescription: String);
   public
     engine: TObject;
     asw: TSyActiveScriptWindow;
-    asw_success: boolean;
     scriptheader: tstringlist;
     errors: tstringlist;
     script: string;
-    constructor Create(AOwner: TObject); // overload;
+    constructor Create(AOwner: TObject);
     destructor Destroy; override;
-    procedure aswError(Sender: TObject; Line, Pos: Integer;
-      ASrc, ADescription: String);
     function RunScript(s: string): boolean;
     function RunExpression(s: string): string;
+    // properties
+    property asw_success: boolean read fasw_success;
+    property OnScriptError: TScarlettActiveScriptError read fOnScriptError
+      write fOnScriptError;
   end;
 
 var
@@ -39,26 +48,27 @@ implementation
 
 function TScarlettActiveScript.RunExpression(s: string): string;
 begin
-  asw_success := true;
+  fasw_success := true;
   errors.clear;
   result := asw.RunExpression(s);
 end;
 
 function TScarlettActiveScript.RunScript(s: string): boolean;
 begin
-  asw_success := true;
+  fasw_success := true;
   errors.clear;
   script := scriptheader.text + s;
   asw.execute(script);
-  result := asw_success;
+  result := fasw_success;
 end;
 
 procedure TScarlettActiveScript.aswError(Sender: TObject; Line, Pos: Integer;
   ASrc, ADescription: String);
 begin
-  asw_success := false;
+  fasw_success := false;
   errors.add(inttostr(Line) + ': ' + ADescription + ' [' + ASrc + ']');
-  // Showmessage(ADescription + ': ' + ASrc);
+  if Assigned(fOnScriptError) then
+    fOnScriptError(Line, Pos, ASrc, ADescription);
 end;
 
 constructor TScarlettActiveScript.Create(AOwner: TObject);

@@ -107,13 +107,15 @@ begin
 end;
 
 type
-  TJSONFields = (j_object);
+  TJSONFields = (j_escape, j_object);
 
 function get_jsonfields(L: plua_State): integer; cdecl;
 begin
   result := 1;
   case TJSONFields(GetEnumValue(TypeInfo(TJSONFields),
     'j_' + lowercase(lua_tostring(L, 2)))) of
+    j_escape:
+      lua_pushcfunction(L, json_escape);    
     j_object:
       push_catarinka_class(L, 'ctk_json', RegisterCatarinkaJSON);
   else

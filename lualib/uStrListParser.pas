@@ -10,7 +10,7 @@ unit uStrListParser;
 interface
 
 uses
-  Classes, SysUtils, Lua, LuaObject, CatStringLoop;
+  Classes, SysUtils, Lua, pLua, LuaObject, CatStringLoop;
 
 type
   { TCatarinkaStrListParser }
@@ -29,8 +29,6 @@ type
 procedure RegisterCatarinkaStrListParser(L: PLua_State);
 
 implementation
-
-uses pLua;
 
 function method_parsing(L: PLua_State): Integer; cdecl;
 var
@@ -139,7 +137,7 @@ var
   ht: TCatarinkaStrListParser;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  lua_pushinteger(L, ht.obj.indexof(lua_tostring(L, 2)));
+  plua_pushintnumber(L, ht.obj.indexof(lua_tostring(L, 2)));
   result := 1;
 end;
 

@@ -89,7 +89,7 @@ type
     property ParamValue:string read fParamValue;
   end;
 
-  // HTML functions
+// HTML functions
 function BeginsWithHTTPProto(const url: string): boolean;
 function BoolToDisplayState(const b: boolean): string;
 function ColorToHTMLColor(const Color: TColor): string;
@@ -102,6 +102,9 @@ function HtmlEscape(const s: string): string;
 function HtmlUnescape(const s: string): string;
 function StripHTML(const s: string): string;
 function StripPHPCode(const s: string): string;
+
+// JSON functions
+function JSONStringEscape(const s: string): string;
 
 // HTTP functions
 function CrackHTTPHost(const Host: string): THTTPHostParts;
@@ -513,6 +516,37 @@ begin
     if pos('?', result) <> 0 then
       result := before(result, '?');
   end;
+end;
+
+// Converts JSON special characters to their escaped counterparts
+function JSONStringEscape(const s: string): string;
+const
+  cEscapeChars: TSysCharSet = ['"', '/', '\', #8, #9, #10, #12, #13];
+var
+  i, p, len: integer;
+begin
+  Result := EmptyStr;
+  p := 1;
+  len := Length(s) + 1;
+  for i := 1 to len do
+  begin
+    if CharInSet(s[i], cEscapeChars) then
+    begin
+      Result := Result+Copy(s, p, i - p);
+      case s[i] of
+        '\': Result := Result+ '\\';
+        '/': Result := Result+ '\/';
+        '"': Result := Result+ '\"';
+        #8: Result := Result+ '\b';
+        #9: Result := Result+ '\t';
+        #10: Result := Result+ '\n';
+        #12: Result := Result+ '\f';
+        #13: Result := Result+ '\r';
+      end;
+      p := i + 1;
+    end;
+  end;
+  Result := Result+ Copy(s, p, i - 1);
 end;
 
 // Removes the filename part of a URL, example:
