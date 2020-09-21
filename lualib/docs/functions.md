@@ -42,6 +42,7 @@
 * **replacefirst** ( s, find, rep ): Replaces just the first occurrence of a sub string in a string.
 * **stripquotes** ( s ): Returns a string with removed quotes.
 * **stripblanklines** ( s ): Returns a multi-line string without any blank lines.
+* **swapcase** (s): Returns a string with inverted character case (upper becomes lower and vice-versa).
 * **trim** ( s ): Returns a string without redundant whitespace.
 
 ### String Matching Functions

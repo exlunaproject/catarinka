@@ -38,7 +38,7 @@ type
   end;
 
     {$IFDEF DXE2_OR_UP}
-    procedure RunCmdWithCallBack(const ACommand, AParameters: String; CallBack: TArg<PAnsiChar>);
+    procedure RunCmdWithCallBack(const ACommand, AParameters: String; CallBack: TArg<string>);
     {$ENDIF}
 
 implementation
@@ -56,6 +56,7 @@ var
     dBuffer: array [0 .. CReadBuffer] of AnsiChar;
     dRead: DWord;
     dRunning: DWord;
+    ExitCode: Cardinal;
 begin
     saSecurity.nLength := SizeOf(TSecurityAttributes);
     saSecurity.bInheritHandle := True;
@@ -68,14 +69,17 @@ begin
         suiStartup.hStdInput := hRead;
         suiStartup.hStdOutput := hWrite;
         suiStartup.hStdError := hWrite;
-        suiStartup.dwFlags := STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
+        suiStartup.dwFlags := suiStartup.dwFlags or STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
         suiStartup.wShowWindow := SW_HIDE;
 
-        if CreateProcess(nil, pChar(ACommand + ' ' + AParameters), @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, nil, suiStartup, piProcess) then
+        if CreateProcess(nil, pChar(ACommand + ' ' + AParameters),
+        @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, nil, suiStartup, piProcess) then
         begin
             repeat
-                dRunning := WaitForSingleObject(piProcess.hProcess, 100);
-                Application.ProcessMessages();
+                Application.ProcessMessages;
+                GetExitCodeProcess(piProcess.hProcess, ExitCode);
+                // FD: Use WaitForSingleObject with INFINITE or the function will hang
+                dRunning := WaitForSingleObject(piProcess.hProcess, INFINITE);
                 repeat
                     dRead := 0;
                     ReadFile(hRead, pBuffer[0], CReadBuffer, dRead, nil);
@@ -98,7 +102,7 @@ end;
 
 {$IFDEF DXE2_OR_UP}
 // Thanks Jordi Corbilla and Lars Fosdal by the anonymous procedure approach
-procedure RunCmdWithCallBack(const ACommand, AParameters: String; CallBack: TArg<PAnsiChar>);
+procedure RunCmdWithCallBack(const ACommand, AParameters: String; CallBack: TArg<string>);
 const
     CReadBuffer = 2400;
 var
@@ -129,7 +133,8 @@ begin
         if CreateProcess(nil, pChar(ACommand + ' ' + AParameters), @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, nil, suiStartup, piProcess) then
         begin
             repeat
-                dRunning := WaitForSingleObject(piProcess.hProcess, 100);
+                // FD: Use WaitForSingleObject with INFINITE or the function will hang
+                dRunning := WaitForSingleObject(piProcess.hProcess, INFINITE);
                 Application.ProcessMessages();
                 repeat
                     dRead := 0;
@@ -139,7 +144,7 @@ begin
                     //OemToAnsi(pBuffer, pBuffer);
                     //Unicode support by Lars Fosdal
                     OemToCharA(pBuffer, dBuffer);
-                    CallBack(dBuffer);
+                    CallBack(string(dBuffer));
                 until (dRead < CReadBuffer);
             until (dRunning <> WAIT_TIMEOUT);
             CloseHandle(piProcess.hProcess);

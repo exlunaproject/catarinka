@@ -48,6 +48,7 @@ function str_beautifyjs(L: plua_State): integer; cdecl;
 function str_beautifycss(L: plua_State): integer; cdecl;
 function str_stripquotes(L: plua_State): integer; cdecl;
 function str_stripblanklines(L: plua_State): integer; cdecl;
+function str_swapcase(L: plua_State): integer; cdecl;
 function str_increase(L: plua_State): integer; cdecl;
 function str_decrease(L: plua_State): integer; cdecl;
 
@@ -230,14 +231,14 @@ end;
 
 function str_after(L: plua_State): integer; cdecl;
 begin
-  lua_pushstring(L, after(lua_tostring(L, 1), lua_tostring(L, 2)));
-  result := 1;
+  if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
+    lua_pushstring(L, after(lua_tostring(L, 1), lua_tostring(L, 2)));
 end;
 
 function str_before(L: plua_State): integer; cdecl;
 begin
-  lua_pushstring(L, before(lua_tostring(L, 1), lua_tostring(L, 2)));
-  result := 1;
+  if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
+    lua_pushstring(L, before(lua_tostring(L, 1), lua_tostring(L, 2)));
 end;
 
 function str_random(L: plua_State): integer; cdecl;
@@ -377,6 +378,12 @@ begin
   s := sl.text;
   sl.Free;
   lua_pushstring(L, s);
+  result := 1;
+end;
+
+function str_swapcase(L: plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, swapcase(lua_tostring(L, 1)));
   result := 1;
 end;
 

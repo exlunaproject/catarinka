@@ -67,6 +67,7 @@ function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
 function CatWrapText(const text: string; const chars: integer): TStringList;
 function CharSetToStr(const c: TSysCharSet): string;
+function CombineIntArray(const p:array of integer):integer;
 function CommaTextToStr(const s: string): string;
 function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
 function ContainsAnyOfStrings(s: string; aArray: array of string;
@@ -135,6 +136,7 @@ function StrToHex(const s: string): string;
 function StrToHex16(const s: string): string;
 function StrToNameValue(const s: string; const aSeparator:string='='): TCatNameValue;
 function StrToYN(const s:string):string;
+function SwapCase(const s: string): string;
 function TitleCase(const s: string): string;
 
 {$IFDEF MSWINDOWS}
@@ -496,6 +498,17 @@ begin
     result := -1
   else
     result := 1;
+end;
+
+function CombineIntArray(const p:array of integer):integer;
+var i:integer; s:string;
+begin
+  s := EmptyStr;
+  for i := low(p) to high(p) do begin
+    if (p[i] > -1) then
+    s := s+IntToStr(p[i]);
+  end;
+  result := StrToInt(s);
 end;
 
 function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
@@ -1129,6 +1142,21 @@ begin
     end
     else
       result := result + s[i];
+  end;
+end;
+
+function SwapCase(const s: string): string;
+const ToUpperSet: TSysCharSet = ['a' .. 'z'];
+const ToLowerSet: TSysCharSet = ['A' .. 'Z'];
+var
+  i: integer;
+begin
+  result := s;
+  for i := 1 to length(result) do begin
+      if CharInSet(result[i], ToLowerSet) then
+        Inc(result[i], 32)
+      else if CharInSet(result[i], ToUpperSet) then
+        Dec(result[i], 32);
   end;
 end;
 

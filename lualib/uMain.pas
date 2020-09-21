@@ -48,7 +48,7 @@ type
   TStringFields = (s_after, s_before, s_beginswith, s_between, s_decrease,
     s_endswith, s_gettoken, s_increase, s_ishex, s_isint, s_lastchar, s_list,
     s_loop, s_match, s_matchx, s_maxlen, s_occur, s_random, s_replace, s_replacefirst,
-    s_stripblanklines, s_stripquotes, s_trim);
+    s_stripblanklines, s_stripquotes, s_swapcase, s_trim);
 
 function get_string(L: plua_State): integer; cdecl;
 begin
@@ -99,6 +99,8 @@ begin
       lua_pushcfunction(L, str_stripblanklines);
     s_stripquotes:
       lua_pushcfunction(L, str_stripquotes);
+    s_swapcase:
+      lua_pushcfunction(L, str_swapcase);
     s_trim:
       lua_pushcfunction(L, str_trim);
   else
