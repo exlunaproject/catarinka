@@ -55,6 +55,7 @@ type
     fVBScript: TSynVBScriptSyn;
     function GetSynExport(HL: TSynCustomHighlighter; Source: string): string;
   public
+    function GetByFilename(const filename: string): TSynCustomHighlighter;
     function GetByFileExtension(const fileext: string): TSynCustomHighlighter;
     function GetByContentType(const contenttype: string): TSynCustomHighlighter;
     function GetByResponseText(const s: string): TSynCustomHighlighter;
@@ -104,7 +105,7 @@ type
   TCPPExts = (c, h, cpp, cc, cxx, hpp, hxx, hh, m, mm);
 
 function TCatHighlighters.GetByFileExtension(const fileext: string)
-  : TSynCustomHighlighter;
+: TSynCustomHighlighter;
 var
   ext: string;
 begin
@@ -125,7 +126,11 @@ begin
       result := nil;
     java:
       result := fJava;
-    js, json, jsie, tis:
+    js, jsie:
+      result := fWebJS;
+    json:
+      result := fWebJS;
+    tis:
       result := fWebJS;
     css:
       result := fWebCSS;
@@ -146,6 +151,11 @@ begin
     xml:
       result := fWebXML;
   end;
+end;
+
+function TCatHighlighters.GetByFilename(const filename: string): TSynCustomHighlighter;
+begin
+  result := GetByFileExtension(extractfileext(filename));
 end;
 
 function TCatHighlighters.GetSynExport(HL: TSynCustomHighlighter;

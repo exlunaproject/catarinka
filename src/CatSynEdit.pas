@@ -2,7 +2,7 @@ unit CatSynEdit;
 
 {
   Catarinka TCatSynEdit - Enhanced SynEdit with popup menu
-  Copyright (c) 2013-2014 Felipe Daragon
+  Copyright (c) 2013-2020 Felipe Daragon
   Based on uSynEditPopupEdit.pas by Rodrigo Ruz V
 
   License: MIT (http://opensource.org/licenses/mit-license.php)
@@ -30,8 +30,9 @@ uses
 type
   TCatSynEdit = class(SynEdit.TSynEdit)
   private
-    FActnList: TActionList;
-    FPopupMenu: TPopupMenu;
+    fActnList: TActionList;
+    fFilename: string;
+    fPopupMenu: TPopupMenu;
     procedure CreateActns;
     procedure FillPopupMenu(APopupMenu: TPopupMenu);
     procedure CutExecute(Sender: TObject);
@@ -58,8 +59,11 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure LoadFromFile(const filename:string);
+    procedure SaveToFile;
   published
     property PopupMenu: TPopupMenu read GetPopupMenu_ write SetPopupMenu_;
+    property Filename: string read fFilename write fFilename;
   end;
 
 implementation
@@ -167,6 +171,7 @@ begin
   CreateActns;
   FillPopupMenu(FPopupMenu);
   PopupMenu := FPopupMenu;
+  FFilename := EmptyStr;
 end;
 
 procedure TCatSynEdit.CreateActns;
@@ -249,6 +254,18 @@ begin
       MenuItem.Action := FActnList.Actions[I];
       APopupMenu.Items.Add(MenuItem);
     end;
+end;
+
+procedure TCatSynEdit.LoadFromFile(const filename:string);
+begin
+  fFilename := filename;
+  Lines.LoadFromFile(filename);
+end;
+
+procedure TCatSynEdit.SaveToFile;
+begin
+  if fFilename <> emptystr then
+   Lines.SaveToFile(fFilename);
 end;
 
 end.
