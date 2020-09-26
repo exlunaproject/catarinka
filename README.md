@@ -4,9 +4,9 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 
 ## Directories
 
- * `/docs_lua` - Documentation about the library's functions and classes
- * `/docs_pascal` - Documentation about the library's functions and classes
-* `/src` - Catarinka Lua Library source
+* `/docs_lua` - Documentation about the library's functions and classes for Lua usage
+* `/docs_pascal` - Documentation about the library's functions and classes for Pascal/Delphi usage
+* `/src` - Catarinka Lua Library source. `CtkCore.pas` is the main source code file that performs the Lua library registration during runtime
  
 ## Pascal Components
 
