@@ -1,7 +1,7 @@
 -- This script performs some simple tests to make sure that functions
 -- are working adequately
-package.path = package.path..";C:/Hybrid/Win32/Lib/lua/?.lua"
-package.cpath = package.cpath..";C:/Hybrid/Win32/Lib/clibs/?.dll"
+package.path = package.path..";R:/Win64/Lib/lua/?.lua"
+package.cpath = package.cpath..";R:/Win64/Lib/clibs/?.dll"
 
 local ctk = require "Catarinka"
 
@@ -71,7 +71,7 @@ function runtests()
   -- URL functions
   test('url.changepath', 'http://lua.org/demo/index.lp',ctk.url.changepath('http://lua.org/index.lp','/demo/index.lp'))
   test('url.combine', 'http://lua.org/demo/test.lp',ctk.url.combine('http://lua.org/demo/index.lp','test.lp'))
-  test('url.encode', 'download%2Ehtml',ctk.url.encode('download.html'))
+  test('url.encode', 'download.html%3Ftest%3D1',ctk.url.encode('download.html?test=1'))
   test('url.decode', 'download.html',ctk.url.decode('download%2Ehtml'))
   test('url.encodefull', '%64%6F%77%6E%6C%6F%61%64%2E%68%74%6D%6C',ctk.url.encodefull('download.html'))
   test('url.genfromhost (1)', 'http://www.lua.org',ctk.url.genfromhost('www.lua.org',80))
@@ -89,7 +89,7 @@ function runtests()
   test('url.crack (proto)', 'http', urlparts.proto)
   
   -- Net functions
-  test('net.iptoname', 'localhost', ctk.net.iptoname('127.0.0.1'))
+  test('net.iptoname', 'one.one.one.one', ctk.net.iptoname('1.1.1.1'))
   test('net.nametoip', '127.0.0.1', ctk.net.nametoip('localhost'))
   
   -- HTTP functions
