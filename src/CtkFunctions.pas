@@ -1,4 +1,4 @@
-unit uFunctions;
+unit CtkFunctions;
 
 {
   Catarinka Lua Library
@@ -129,7 +129,7 @@ implementation
 
 uses
   ExtPascalUtils, synacode, pLua, pLuaTable,
-  uStrList, uStrListParser, uHTMLParser, uJSON, uTarman,
+  CtkStrList, CtkStrListParser, CtkHTMLParser, CtkJSON, CtkTarman,
   CatStrings, CatJSON, CatMatch, CatFiles, CatHTTP, CatUtils,
   CatInet, CatTasks, CatCLUtils, CatCSUtils, CatHashes;
 

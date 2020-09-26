@@ -1,4 +1,4 @@
-unit uHTMLParser;
+unit CtkHTMLParser;
 
 {
   Catarinka Lua Library - HTML Parser Object

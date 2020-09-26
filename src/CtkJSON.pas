@@ -1,4 +1,4 @@
-unit uJSON;
+unit CtkJSON;
 
 {
   Catarinka Lua Library - JSON Object

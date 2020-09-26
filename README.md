@@ -4,13 +4,13 @@ Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of 
 
 ## Directories
 
-* `/lualib` - Catarinka Lua Library source
- * `/docs` - Documentation about the library's functions and classes
-* `/src` - a set of visual and non-visual components, and methods for Pascal/Delphi
+ * `/docs_lua` - Documentation about the library's functions and classes
+ * `/docs_pascal` - Documentation about the library's functions and classes
+* `/src` - Catarinka Lua Library source
  
 ## Pascal Components
 
- This kit includes the following components:
+Catarinka includes a set of visual and non-visual components, and methods for Pascal/Delphi. The kit includes the following components:
 
 * `TCatActiveScript` - Improved ActiveScript library based on code by Serhiy Perevoznyk.
 * `TCatChromium` - A web browser component built on top of WACEF3/DCEF3.

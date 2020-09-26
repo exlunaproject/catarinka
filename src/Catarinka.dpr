@@ -9,7 +9,7 @@ library Catarinka;
 
 uses
   Lua,
-  uMain in 'uMain.pas';
+  CtkCore in 'CtkCore.pas';
 
 
 {$I CatCompactLib.inc}

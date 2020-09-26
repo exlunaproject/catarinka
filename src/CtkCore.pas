@@ -1,7 +1,7 @@
-unit uMain;
+unit CtkCore;
 
 {
-  Catarinka Lua Extension Library
+  Catarinka Core Registration Library
   Copyright (c) 2013-2020 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
@@ -25,8 +25,8 @@ function RegisterCatarinka(L: plua_State): integer; cdecl;
 implementation
 
 uses
-  pLua, pLuaTable, uFunctions, uStrList, uStrListParser, uHTMLParser, uJSON,
-  uTarman, CatStrings;
+  pLua, pLuaTable, CtkFunctions, CtkStrList, CtkStrListParser, CtkHTMLParser,
+  CtkJSON, CtkTarman, CatStrings;
 
 function pushctkmethod(L: plua_State; const name:string;
   func_table:array of luaL_Reg): integer;

@@ -1,4 +1,4 @@
-unit uStrList;
+unit CtkStrList;
 
 {
   Catarinka Lua Library - String List Object
