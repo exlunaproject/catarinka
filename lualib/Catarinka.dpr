@@ -11,12 +11,8 @@ uses
   Lua,
   uMain in 'uMain.pas';
 
- // Reduces exe size
-{$IFDEF RELEASE}
-{$WEAKLINKRTTI ON}
-{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
-{$ENDIF}
- // Reduces exe size end
+
+{$I CatCompactLib.inc}
 
 {$R *.res}
 

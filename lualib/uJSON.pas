@@ -26,7 +26,7 @@ type
     destructor Destroy; override;
   end;
 
-procedure RegisterCatarinkaJSON(L: PLua_State);
+function RegisterCatarinkaJSON(L: PLua_State):TLuaObjectRegResult;
 
 implementation
 
@@ -104,9 +104,9 @@ begin
   result := new_LuaObject(L, cObjectName, p);
 end;
 
-procedure RegisterCatarinkaJSON(L: PLua_State);
+function RegisterCatarinkaJSON(L: PLua_State):TLuaObjectRegResult;
 begin
-  RegisterTLuaObject(L, cObjectName, @Create, @register_methods);
+  result := RegisterTLuaObjectAlt(L, cObjectName, @Create, @register_methods);
 end;
 
 constructor TCatarinkaJSON.Create(LuaState: PLua_State; AParent: TLuaObject);

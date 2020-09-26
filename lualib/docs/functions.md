@@ -126,9 +126,9 @@ These will return a boolean value.
 
 ### Conversion Functions (convert.*)
 
-* **commastrtostr** ( s ): Converts a comma string to a string.
+* **commatostr** ( s ): Converts a comma string to a string.
 * **strtoalphanum** ( s ): Converts a string to alphanumeric string.
-* **strtocommastr** ( s ): Converts a string to a comma string.
+* **strtocomma** ( s ): Converts a string to a comma string.
 * **strtohex** ( s ): Converts a string to a hexadecimal string.
 * **hextoint** ( s ): Converts a hex string to integer.
 * **hextostr** ( s ): Converts a hexadecimal string to string.

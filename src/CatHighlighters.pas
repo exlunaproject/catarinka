@@ -25,6 +25,7 @@ uses
   SynExportHTML,
   SynEditHighlighter,
   SynHighlighterCPP,
+  SynHighlighterCS,
   SynHighlighterJava,
   SynHighlighterRuby,
   SynHighlighterPerl,
@@ -46,6 +47,7 @@ type
     fWebXML: TSynWebXMLSyn;
     fWebPHP: TSynWebPHPPlainSyn;
     fCPP: TSynCPPSyn;
+    fCS: TSynCSSyn;
     fJava: TSynJavaSyn;
     fRuby: TSynRubySyn;
     fPascal: TSynPasSyn;
@@ -98,7 +100,7 @@ end;
 
 type
   TWebExts = (
-    css, dpr, htm, html, java, js, json, jsie, lua, lp, pas, pasrem, php,
+    cs, css, dpr, htm, html, java, js, json, jsie, lua, lp, pas, pasrem, php,
     pl, py, rb, sql, tis, vbs, xml);
 
 type
@@ -132,6 +134,8 @@ begin
       result := fWebJS;
     tis:
       result := fWebJS;
+    cs:
+      result := fCS;
     css:
       result := fWebCSS;
     php:
@@ -247,6 +251,7 @@ end;
 constructor TCatHighlighters.Create(AOwner: TObject);
 begin
   inherited Create;
+  fCS := TSynCSSyn.Create(nil);
   fCPP := TSynCPPSyn.Create(nil);
   fJava := TSynJavaSyn.Create(nil);
   fRuby := TSynRubySyn.Create(nil);
@@ -288,6 +293,7 @@ begin
   fRuby.Free;
   fJava.Free;
   fCPP.Free;
+  fCS.Free;
   inherited;
 end;
 

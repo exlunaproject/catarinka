@@ -10,7 +10,7 @@ unit uStrList;
 interface
 
 uses
-  Classes, SysUtils, Lua, pLua, LuaObject, CatUtils;
+  Classes, SysUtils, Lua, pLua, LuaObject, CatUtils, CatStrings;
 
 type
   { TCatarinkaStrList }
@@ -26,7 +26,7 @@ type
     destructor Destroy; override;
   end;
 
-procedure RegisterCatarinkaStrList(L: PLua_State);
+function RegisterCatarinkaStrList(L: PLua_State):TLuaObjectRegResult;
 
 implementation
 
@@ -35,8 +35,8 @@ var
   ht: TCatarinkaStrList;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  ht.obj.add(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+    ht.obj.add(lua_tostring(L, 2));
 end;
 
 function method_insert(L: PLua_State): Integer; cdecl;
@@ -44,8 +44,8 @@ var
   ht: TCatarinkaStrList;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  ht.obj.insert(lua_tointeger(L, 2), lua_tostring(L, 3));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TNUMBER, LUA_TSTRING]).OK then
+   ht.obj.insert(lua_tointeger(L, 2), lua_tostring(L, 3));
 end;
 
 function method_delete(L: PLua_State): Integer; cdecl;
@@ -53,8 +53,8 @@ var
   ht: TCatarinkaStrList;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  ht.obj.delete(lua_tointeger(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TNUMBER]).OK then
+    ht.obj.delete(lua_tointeger(L, 2));
 end;
 
 function method_savetofile(L: PLua_State): Integer; cdecl;
@@ -62,8 +62,8 @@ var
   ht: TCatarinkaStrList;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  ht.obj.savetofile(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+    ht.obj.savetofile(lua_tostring(L, 2));
 end;
 
 function method_loadfromfile(L: PLua_State): Integer; cdecl;
@@ -71,8 +71,8 @@ var
   ht: TCatarinkaStrList;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  ht.obj.loadfromfile(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+    ht.obj.loadfromfile(lua_tostring(L, 2));
 end;
 
 function method_clear(L: PLua_State): Integer; cdecl;
@@ -99,9 +99,10 @@ var
   i: integer;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  i := ht.obj.indexof(lua_tostring(L, 2));
-  plua_pushintnumber(L, i);
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then begin
+    i := ht.obj.indexof(lua_tostring(L, 2));
+    plua_pushintnumber(L, i);
+  end;
 end;
 
 function method_getvalue(L: PLua_State): Integer; cdecl;
@@ -109,17 +110,17 @@ var
   ht: TCatarinkaStrList;
 begin
   ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
-  lua_pushstring(L, ht.obj.values[lua_tostring(L, 2)]);
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+   lua_pushstring(L, ht.obj.values[lua_tostring(L, 2)]);
 end;
 
 function method_getstringfromindex(L: PLua_State): Integer; cdecl;
 var
   ht: TCatarinkaStrList;
 begin
-  ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
+ ht := TCatarinkaStrList(LuaToTLuaObject(L, 1));
+ if plua_validatemethodargs(L, result, [LUA_TNUMBER]).OK then
   lua_pushstring(L, ht.obj[lua_tointeger(L, 2)]);
-  result := 1;
 end;
 
 procedure register_methods(L: PLua_State; classTable: Integer);
@@ -152,9 +153,9 @@ begin
   result := new_LuaObject(L, ObjName, p);
 end;
 
-procedure RegisterCatarinkaStrList(L: PLua_State);
+function RegisterCatarinkaStrList(L: PLua_State):TLuaObjectRegResult;
 begin
-  RegisterTLuaObject(L, ObjName, @Create, @register_methods);
+  result := RegisterTLuaObjectAlt(L, ObjName, @Create, @register_methods);
 end;
 
 constructor TCatarinkaStrList.Create(LuaState: PLua_State; AParent: TLuaObject);
@@ -163,28 +164,39 @@ begin
   obj := TStringList.Create;
 end;
 
+const
+ _commatext = 1;
+ _count = 2;
+ _text = 3;
+const
+ cProps : array [1..3] of TCatCaseLabel =
+ (
+   (name:'commatext';id:_commatext),
+   (name:'count';id:_count),
+   (name:'text';id:_text)
+ );
+
 function TCatarinkaStrList.GetPropValue(propName: String): Variant;
 begin
-  if CompareText(propName, 'count') = 0 then
-    result := obj.Count
-  else if CompareText(propName, 'text') = 0 then
-    result := obj.Text
-  else if CompareText(propName, 'commatext') = 0 then
-    result := obj.CommaText
-  else
+   case CatCaseLabelOf(propname,cprops) of
+    _commatext: result := obj.CommaText;
+    _count: result := obj.Count;
+    _text: result := obj.Text;
+   else
     result := inherited GetPropValue(propName);
+   end;
 end;
 
 function TCatarinkaStrList.SetPropValue(propName: String;
   const AValue: Variant): Boolean;
 begin
   result := true;
-  if CompareText(propName, 'text') = 0 then
-    obj.Text := AValue
-  else if CompareText(propName, 'commatext') = 0 then
-    obj.CommaText := AValue
-  else
+   case CatCaseLabelOf(propname,cprops) of
+    _commatext: obj.CommaText := AValue;
+    _text: obj.Text := AValue;
+   else
     result := inherited SetPropValue(propName, AValue);
+   end;
 end;
 
 destructor TCatarinkaStrList.Destroy;

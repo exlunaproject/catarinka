@@ -114,7 +114,7 @@ Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)]]
   -- Conversion functions
   -- test('Ana\nRoberto\nMaria Clara',ctk.convert.commastrtostr('Ana,Roberto,"Maria Clara"'))
   test('convert.strtoalphanum', 'astring2',ctk.convert.strtoalphanum('astring.2'))
-  test('convert.strtocommastr', 'Ana,Roberto,"Maria Clara"',ctk.convert.strtocommastr('Ana\nRoberto\nMaria Clara'))
+  test('convert.strtocomma', 'Ana,Roberto,"Maria Clara"',ctk.convert.strtocomma('Ana\nRoberto\nMaria Clara'))
   test('convert.strtohex', '73656C656E697465',ctk.convert.strtohex('selenite'))
   test('convert.hextoint', 2013,ctk.convert.hextoint('7DD'))
   test('convert.hextostr', 'selenite',ctk.convert.hextostr('73656C656E697465'))

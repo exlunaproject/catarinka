@@ -17,7 +17,7 @@ uses
 {$ELSE}
   Windows, SysUtils;
 {$ENDIF}
-function GetCmdLine: string;
+function GetCmdLine(const start:integer=1): string;
 function GetCmdParam(const param: string; const def_value: string = ''): string;
 function GetCmdParamQuoted(const param: string;
   const def_value: string = ''): string;
@@ -28,13 +28,13 @@ implementation
 uses
   CatStrings;
 
-function GetCmdLine: string;
+function GetCmdLine(const start:integer=1): string;
 var
   i: integer;
 begin
   result := emptystr;
   if ParamCount > 0 then
-    for i := 1 to ParamCount do
+    for i := start to ParamCount do
       result := result + ' ' + (ParamStr(i));
 end;
 

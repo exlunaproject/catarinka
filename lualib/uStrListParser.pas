@@ -10,7 +10,7 @@ unit uStrListParser;
 interface
 
 uses
-  Classes, SysUtils, Lua, pLua, LuaObject, CatStringLoop;
+  Classes, SysUtils, Lua, pLua, LuaObject, CatStrings, CatStringLoop;
 
 type
   { TCatarinkaStrListParser }
@@ -26,7 +26,7 @@ type
     destructor Destroy; override;
   end;
 
-procedure RegisterCatarinkaStrListParser(L: PLua_State);
+function RegisterCatarinkaStrListParser(L: PLua_State):TLuaObjectRegResult;
 
 implementation
 
@@ -183,9 +183,9 @@ begin
   result := new_LuaObject(L, objname, p);
 end;
 
-procedure RegisterCatarinkaStrListParser(L: PLua_State);
+function RegisterCatarinkaStrListParser(L: PLua_State):TLuaObjectRegResult;
 begin
-  RegisterTLuaObject(L, objname, @Create, @register_methods);
+  Result := RegisterTLuaObjectAlt(L, objname, @Create, @register_methods);
 end;
 
 constructor TCatarinkaStrListParser.Create(LuaState: PLua_State;
@@ -195,37 +195,49 @@ begin
   obj := TStringLoop.Create;
 end;
 
+const
+ _commatext = 1;
+ _count = 2;
+ _current = 3;
+ _curindex = 4;
+ _text = 5;
+const
+ cProps : array [1..5] of TCatCaseLabel =
+ (
+   (name:'commatext';id:_commatext),
+   (name:'count';id:_count),
+   (name:'current';id:_current),
+   (name:'curindex';id:_curindex),
+   (name:'text';id:_text)
+ );
+
 function TCatarinkaStrListParser.GetPropValue(propName: String): Variant;
 begin
-  if CompareText(propName, 'commatext') = 0 then
-    result := obj.List.CommaText
-  else if CompareText(propName, 'count') = 0 then
-    result := obj.Count
-  else if CompareText(propName, 'current') = 0 then
-    result := obj.Current
-  else if CompareText(propName, 'curindex') = 0 then
-    result := obj.Index(false)
-  else if CompareText(propName, 'text') = 0 then
-    result := obj.List.Text
-  else
+   case CatCaseLabelOf(propname,cprops) of
+    _commatext: result := obj.List.CommaText;
+    _count: result := obj.Count;
+    _current: result := obj.Current;
+    _curindex: result := obj.Index(false);
+    _text: result := obj.List.Text;
+   else
     result := inherited GetPropValue(propName);
+   end;
 end;
 
 function TCatarinkaStrListParser.SetPropValue(propName: String;
   const AValue: Variant): Boolean;
 begin
   result := true;
-  if CompareText(propName, 'commatext') = 0 then
-  begin
-    obj.List.CommaText := AValue;
-    obj.reset;
-  end
-  else if CompareText(propName, 'current') = 0 then
-    obj.Current := AValue
-  else if CompareText(propName, 'text') = 0 then
-    obj.loadfromstring(AValue)
-  else
+   case CatCaseLabelOf(propname,cprops) of
+    _commatext: begin
+        obj.List.CommaText := AValue;
+        obj.reset;
+      end;
+    _current: obj.Current := AValue;
+    _text: obj.loadfromstring(AValue);
+   else
     result := inherited SetPropValue(propName, AValue);
+   end;
 end;
 
 destructor TCatarinkaStrListParser.Destroy;

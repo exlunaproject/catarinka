@@ -1,0 +1,7 @@
+ // Reduces executable size
+{$IFDEF RELEASE}
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$ENDIF}
+{$O+} {$SetPEFlags $0001}
+//{$O+} {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED}

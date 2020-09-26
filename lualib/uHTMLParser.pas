@@ -26,7 +26,7 @@ type
     destructor Destroy; override;
   end;
 
-procedure RegisterCatarinkaHTMLParser(L: PLua_State);
+function RegisterCatarinkaHTMLParser(L: PLua_State):TLuaObjectRegResult;
 
 implementation
 
@@ -125,9 +125,9 @@ begin
   result := new_LuaObject(L, objname, p);
 end;
 
-procedure RegisterCatarinkaHTMLParser(L: PLua_State);
+function RegisterCatarinkaHTMLParser(L: PLua_State):TLuaObjectRegResult;
 begin
-  RegisterTLuaObject(L, objname, @Create, @register_methods);
+  Result := RegisterTLuaObjectAlt(L, objname, @Create, @register_methods);
 end;
 
 constructor TCatarinkaHTMLParser.Create(LuaState: PLua_State;
@@ -137,32 +137,45 @@ begin
   obj := TCatHTMLParser.Create;
 end;
 
+const
+ _pos = 1;
+ _tagpos = 2;
+ _tagline = 3;
+ _tagcontent = 4;
+ _tagname = 5;
+const
+ cProps : array [1..5] of TCatCaseLabel =
+ (
+   (name:'pos';id:_pos),
+   (name:'tagpos';id:_tagpos),
+   (name:'tagline';id:_tagline),
+   (name:'tagcontent';id:_tagcontent),
+   (name:'tagname';id:_tagname)
+ );
+
 function TCatarinkaHTMLParser.GetPropValue(propName: String): Variant;
 begin
-  if CompareText(propName, 'pos') = 0 then
-    result := obj.Pos
-  else if CompareText(propName, 'tagpos') = 0 then
-    result := obj.TagPos
-  else if CompareText(propName, 'tagline') = 0 then
-    result := obj.TagLine
-  else if CompareText(propName, 'tagcontent') = 0 then
-    result := obj.TextBetween
-  else if CompareText(propName, 'tagname') = 0 then
-    result := lowercase(obj.tag.Name)
-  else
+   case CatCaseLabelOf(propname,cprops) of
+    _pos: result := obj.Pos;
+    _tagpos: result := obj.TagPos;
+    _tagline: result := obj.TagLine;
+    _tagcontent: result := obj.TextBetween;
+    _tagname: result := lowercase(obj.tag.Name);
+   else
     result := inherited GetPropValue(propName);
+   end;
 end;
 
 function TCatarinkaHTMLParser.SetPropValue(propName: String;
   const AValue: Variant): Boolean;
 begin
-  result := true; // 2013
-  if CompareText(propName, 'tagcontent') = 0 then
-    obj.TextBetween := AValue
-  else if CompareText(propName, 'tagname') = 0 then
-    obj.tag.Name := AValue
-  else
+   result := true;
+   case CatCaseLabelOf(propname,cprops) of
+    _tagcontent: obj.TextBetween := AValue;
+    _tagname: obj.tag.Name := AValue;
+   else
     result := inherited SetPropValue(propName, AValue);
+   end;
 end;
 
 destructor TCatarinkaHTMLParser.Destroy;
