@@ -5,6 +5,7 @@ Stores and manipulates a JSON object.
 ### Methods
 
 * **getjson** ( ): Returns the JSON object as a string. Alternatively, you can use the Lua tostring() function.
+* **getvalue** ( key, [,defaultvalue]): Returns the value of a key. If key is not found, returns the default value.
 * **load** ( s ): Loads a JSON object from a string.
 * **loadfromfile** ( filename ): Loads a JSON object from a file.
 * **savetofile** ( filename ): Saves the JSON object to a file.

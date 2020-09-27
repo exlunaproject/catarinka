@@ -7,6 +7,7 @@ __recovery/
 *.dll
 *.dproj
 *.dproj.local
+*.exe
 *.identcache
 *.stat
 Thumbs.db

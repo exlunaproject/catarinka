@@ -37,8 +37,8 @@ var
   o: TCatarinkaJSON;
 begin
   o := TCatarinkaJSON(LuaToTLuaObject(L, 1));
-  o.obj.text := lua_tostring(L, 2);
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+   o.obj.text := lua_tostring(L, 2);
 end;
 
 function method_loadfromfile(L: PLua_State): Integer; cdecl;
@@ -46,8 +46,8 @@ var
   o: TCatarinkaJSON;
 begin
   o := TCatarinkaJSON(LuaToTLuaObject(L, 1));
-  o.obj.LoadFromFile(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+   o.obj.LoadFromFile(lua_tostring(L, 2));
 end;
 
 function method_savetofile(L: PLua_State): Integer; cdecl;
@@ -55,8 +55,8 @@ var
   o: TCatarinkaJSON;
 begin
   o := TCatarinkaJSON(LuaToTLuaObject(L, 1));
-  o.obj.SaveToFile(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+   o.obj.SaveToFile(lua_tostring(L, 2));
 end;
 
 function method_gettext(L: PLua_State): Integer; cdecl;
@@ -65,6 +65,15 @@ var
 begin
   o := TCatarinkaJSON(LuaToTLuaObject(L, 1));
   lua_pushstring(L, o.obj.text);
+  result := 1;
+end;
+
+function method_getvalue(L: PLua_State): Integer; cdecl;
+var
+  o: TCatarinkaJSON;
+begin
+  o := TCatarinkaJSON(LuaToTLuaObject(L, 1));
+  plua_pushvariant(L, o.obj.GetValue(lua_tostring(L, 2),plua_tovariant(L, 3)));
   result := 1;
 end;
 
@@ -80,6 +89,7 @@ end;
 procedure register_methods(L: PLua_State; classTable: Integer);
 begin
   RegisterMethod(L, '__tostring', @method_gettext, classTable);
+  RegisterMethod(L, 'getvalue', @method_getvalue, classTable);
   RegisterMethod(L, 'getjson', @method_gettext, classTable);
   RegisterMethod(L, 'getjson_unquoted', @method_gettext_withunquotedkeys,
     classTable);

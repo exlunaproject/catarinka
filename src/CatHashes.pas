@@ -37,7 +37,7 @@ begin
   {$IFDEF D10SEATTLE_OR_UP}
   result := THashMD5.GetHashString(s);
   {$ELSE}
-  result := MD5Hash_Sanders(s);
+  result := string(UTF8string(MD5Hash_Sanders(s)));
   {$ENDIF}
 end;
 

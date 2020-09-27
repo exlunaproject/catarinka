@@ -46,7 +46,7 @@ var
   ht: TCatarinkaHTMLParser;
 begin
   ht := TCatarinkaHTMLParser(LuaToTLuaObject(L, 1));
-  ht.obj.text := '';
+  ht.obj.text := emptystr;
   result := 1;
 end;
 
@@ -74,10 +74,11 @@ var
   s: string;
 begin
   ht := TCatarinkaHTMLParser(LuaToTLuaObject(L, 1));
-  s := ht.obj.tag.params.values[lua_tostring(L, 2)];
-  s := removequotes(s);
-  lua_pushstring(L, s);
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then begin
+   s := ht.obj.tag.params.values[lua_tostring(L, 2)];
+   s := removequotes(s);
+   lua_pushstring(L, s);
+  end;
 end;
 
 function method_setattrib(L: PLua_State): Integer; cdecl;
@@ -85,8 +86,8 @@ var
   ht: TCatarinkaHTMLParser;
 begin
   ht := TCatarinkaHTMLParser(LuaToTLuaObject(L, 1));
-  ht.obj.tag.params.values[lua_tostring(L, 2)] := lua_tostring(L, 3);
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
+   ht.obj.tag.params.values[lua_tostring(L, 2)] := lua_tostring(L, 3);
 end;
 
 function method_loadfromstr(L: PLua_State): Integer; cdecl;
@@ -94,6 +95,7 @@ var
   ht: TCatarinkaHTMLParser;
 begin
   ht := TCatarinkaHTMLParser(LuaToTLuaObject(L, 1));
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
   ht.obj.text := lua_tostring(L, 2);
   result := 1;
 end;

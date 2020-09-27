@@ -6,8 +6,8 @@
 * **cleanname** (filename): Returns a filename with invalid characters stripped out.
 * **copy** ( source, dest ): Copies a file to a new file.
 * **delete** ( filename ): Deletes a file.
-* **exec** ( filename ): Executes a file.
-* **exechide** ( filename ): Executes a file in hidden state.
+* **exec** ( filename [,params, dir] ): Executes a file.
+* **exechide** ( filename [,params, dir] ): Executes a file in hidden state.
 * **exists** ( filename ): Returns true if a file exists, and false otherwise.
 * **getcontents** ( filename ): Returns the contents of a local file.
 * **getdir** ( filename ): Gets the directory part of a filename.
@@ -91,7 +91,7 @@ These will return a boolean value.
  * port - port number (eg: 80)
  * proto - protocol (eg: https)
 * **decode** ( s ): Decodes an URL.
-* **encode** ( s ): Encodes an URL.
+* **encode** ( s, [,encodeplussign]): Encodes an URL.
 * **encodefull** ( s ): Full URL Encode.
 * **fileurltofilename** ( fileurl ): Converts a file URL to a proper filename.
 * **genfromhost** ( hostname , port ): Generates an URL from a hostname and a port.

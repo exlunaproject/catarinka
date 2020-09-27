@@ -1004,10 +1004,10 @@ begin
   if length(result) <= MaxLen then
     Exit;
   SetLength(result, MaxLen);
-  if AddEllipsis = false then
-    Exit;
-  for i := MaxLen downto MaxLen - 2 do
-    result[i] := '.';
+  if AddEllipsis = true then begin
+      for i := MaxLen downto MaxLen - 2 do
+      result[i] := '.';
+  end;
 end;
 
 function StrToAlphaNum(const s: string): string;
@@ -1065,7 +1065,7 @@ var
 begin
   result := emptystr;
   for i := 0 to 255 do
-    if Chr(i) in c then
+    if CharInSet(Chr(i),c) then
       result := result + Chr(i);
 end;
 

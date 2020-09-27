@@ -89,8 +89,8 @@ var
   ht: TCatarinkaStrListParser;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  ht.obj.List.add(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+    ht.obj.List.add(lua_tostring(L, 2));
 end;
 
 function method_loadfromstr(L: PLua_State): Integer; cdecl;
@@ -98,8 +98,8 @@ var
   ht: TCatarinkaStrListParser;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  ht.obj.loadfromstring(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+   ht.obj.loadfromstring(lua_tostring(L, 2));
 end;
 
 function method_loadfromfile(L: PLua_State): Integer; cdecl;
@@ -107,8 +107,8 @@ var
   ht: TCatarinkaStrListParser;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  ht.obj.loadfromfile(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+    ht.obj.loadfromfile(lua_tostring(L, 2));
 end;
 
 function method_savetofile(L: PLua_State): Integer; cdecl;
@@ -116,8 +116,8 @@ var
   ht: TCatarinkaStrListParser;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  ht.obj.List.savetofile(lua_tostring(L, 2));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+    ht.obj.List.savetofile(lua_tostring(L, 2));
 end;
 
 function method_getvalue(L: PLua_State): Integer; cdecl;
@@ -125,11 +125,12 @@ var
   ht: TCatarinkaStrListParser; sl: TStringList;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  sl := TStringList.Create;
-  sl.CommaText := ht.obj.Current;
-  lua_pushstring(L, sl.values[lua_tostring(L, 2)]);
-  sl.Free;
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then begin
+   sl := TStringList.Create;
+   sl.CommaText := ht.obj.Current;
+   lua_pushstring(L, sl.values[lua_tostring(L, 2)]);
+   sl.Free;
+  end;
 end;
 
 function method_indexof(L: PLua_State): Integer; cdecl;
@@ -137,8 +138,8 @@ var
   ht: TCatarinkaStrListParser;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  plua_pushintnumber(L, ht.obj.indexof(lua_tostring(L, 2)));
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TSTRING]).OK then
+    plua_pushintnumber(L, ht.obj.indexof(lua_tostring(L, 2)));
 end;
 
 function method_getstringfromindex(L: PLua_State): Integer; cdecl;
@@ -146,8 +147,8 @@ var
   ht: TCatarinkaStrListParser;
 begin
   ht := TCatarinkaStrListParser(LuaToTLuaObject(L, 1));
-  lua_pushstring(L, ht.obj.list.strings[lua_tointeger(L, 2)]);
-  result := 1;
+  if plua_validatemethodargs(L, result, [LUA_TNUMBER]).OK then
+    lua_pushstring(L, ht.obj.list.strings[lua_tointeger(L, 2)]);
 end;
 
 procedure register_methods(L: PLua_State; classTable: Integer);

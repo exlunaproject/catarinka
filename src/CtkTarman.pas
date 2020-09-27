@@ -10,7 +10,7 @@ unit CtkTarman;
 interface
 
 uses
-  Lua, SysUtils, Classes;
+  Lua, pLua, SysUtils, Classes;
 
 procedure RegisterTarman(L: plua_State);
 function luaopen_Tarman(L: plua_State): integer; cdecl;
@@ -106,17 +106,18 @@ end;
 
 function Lua_TARToDir(L: plua_State): integer; cdecl;
 begin
-  TARToDir(lua_tostring(L, 1), lua_tostring(L, 2));
-  result := 1;
+ if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
+   TARToDir(lua_tostring(L, 1), lua_tostring(L, 2));
 end;
 
 function Lua_DirToTAR(L: plua_State): integer; cdecl;
 begin
-  if lua_isnone(L, 3) then
-    DirToTAR(lua_tostring(L, 1), lua_tostring(L, 2))
-  else
-    DirToTAR(lua_tostring(L, 1), lua_tostring(L, 2), lua_tostring(L, 3));
-  result := 1;
+if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING, LUA_TSTRING],[vaOptional1]).OK then begin
+   if lua_isnone(L, 3) then
+     DirToTAR(lua_tostring(L, 1), lua_tostring(L, 2))
+   else
+     DirToTAR(lua_tostring(L, 1), lua_tostring(L, 2), lua_tostring(L, 3));
+  end;
 end;
 
 function luaopen_Tarman(L: plua_State): integer; cdecl;
