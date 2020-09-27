@@ -9,6 +9,7 @@ unit CatCSCommand;
   by Lars Fosdal
 
   Changes:
+  * 27.09.2020, FD - Added CloseHandle(hWrite) to prevent ReadFile crash in console.
   * 22.09.2020, FD - Added Timeout with process kill.
   * 21.09.2020, FD - Call WaitForSingleObject with INFINITE (fixes loop).
 }
@@ -90,6 +91,8 @@ begin
         if CreateProcess(nil, pChar(ACommand + ' ' + AParameters),
         @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, nil, suiStartup, piProcess) then
         begin
+            // FD: Close hWrite handle or the function may hang in console mode
+            CloseHandle(hWrite);
             fPID := piProcess.dwProcessId;
             if fTimeout > 0 then
               fTimer.Enabled := true;
@@ -136,6 +139,7 @@ var
     dRunning: DWord;
     tmTimer: TConsoleTimer;
     PID: Cardinal;
+    ExitCode: Cardinal;
 begin
     tmTimer := TConsoleTimer.Create;
     tmTimer.Interval := TimeoutMS;
@@ -160,14 +164,15 @@ begin
 
         if CreateProcess(nil, pChar(ACommand + ' ' + AParameters), @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, nil, suiStartup, piProcess) then
         begin
+            // FD: Close hWrite handle or the function may hang in console mode
+            CloseHandle(hWrite);
             PID := piProcess.dwProcessId;
-            if TimeoutMS > 0 then
-              tmTimer.Enabled := true else
-              tmTimer.Enabled := false;
+            tmTimer.Enabled := (TimeoutMS > 0);
             repeat
                 // FD: Use WaitForSingleObject with INFINITE or the function will hang
                 dRunning := WaitForSingleObject(piProcess.hProcess, INFINITE);
                 Application.ProcessMessages();
+                GetExitCodeProcess(piProcess.hProcess, ExitCode);
                 repeat
                     if TimeoutMS > 0 then
                       tmTimer.Reset;
