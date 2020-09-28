@@ -61,7 +61,7 @@ end;
 
 function get_string(L: plua_State): integer; cdecl;
 const
-   string_table : array [1..23] of luaL_Reg =
+   string_table : array [1..24] of luaL_Reg =
    (
    (name:'after';func:str_after),
    (name:'before';func:str_before),
@@ -84,6 +84,7 @@ const
    (name:'stripblanklines';func:str_stripblanklines),
    (name:'stripquotes';func:str_stripquotes),
    (name:'swapcase';func:str_swapcase),
+   (name:'titlecase';func:str_titlecase),
    (name:'trim';func:str_trim),
    (name:nil;func:nil)
    );

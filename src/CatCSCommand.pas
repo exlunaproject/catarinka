@@ -5,13 +5,10 @@ unit CatCSCommand;
   Copyright (c) 2020 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
-  Original code of callback function by Jordi Corbilla with small contributions
-  by Lars Fosdal
+  Original code of callback function by David Heffernan (@davidheff)
 
   Changes:
-  * 27.09.2020, FD - Added CloseHandle(hWrite) to prevent ReadFile crash in console.
-  * 22.09.2020, FD - Added Timeout with process kill.
-  * 21.09.2020, FD - Call WaitForSingleObject with INFINITE (fixes loop).
+  * 28.09.2020, FD - Rewrite based on example by DH.
 }
 
 interface
@@ -20,11 +17,10 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  Winapi.Windows, Vcl.Forms, System.Classes, System.SysUtils,
+  Winapi.Windows, Vcl.Forms, System.Classes, System.SysUtils;
 {$ELSE}
-  Windows, Forms, Classes, SysUtils,
+  Windows, Forms, Classes, SysUtils;
 {$ENDIF}
-  CatTasks, CatUtils, CatCSTimer;
 
 type
   TCatCSCommandOutput = procedure(const s: String) of object;
@@ -37,187 +33,165 @@ type
 type
   TCatCSCommand = class
   private
-    fAnsiMode: boolean;
     fOnOutput: TCatCSCommandOutput;
     fPID: Cardinal;
-    fTimer: TConsoleTimer;
-    fTimeout: integer;
-    procedure SetTimeout(const ms:integer);
-    procedure Timer1Timer(Sender: TObject);
+    fTimeout: Cardinal;
+    procedure SetTimeout(const ms:Cardinal);
   public
-    procedure Run(const ACommand, AParameters: String);
+    procedure Run(const Command, Parameters: String);
     constructor Create;
     destructor Destroy; override;
-    property AnsiMode:boolean read fAnsiMode write fAnsiMode;
     property OnOutput:TCatCSCommandOutput read fOnOutput write fOnOutput;
-    property Timeout: integer read fTimeout write SetTimeout;
+    property PID: Cardinal read fPID;
+    property Timeout: Cardinal read fTimeout write SetTimeout;
   end;
 
     {$IFDEF DXE2_OR_UP}
-    procedure RunCmdWithCallBack(const ACommand, AParameters: String; CallBack: TCmdOutputArg<string>;const TimeoutMS:integer=0);
+    procedure RunCmdWithCallBack(const Command: string; const Parameters: string;
+  CallBack: TCmdOutputArg<string>;const Timeout:dword=100);
     {$ENDIF}
 
 implementation
 
-procedure TCatCSCommand.Run(const ACommand, AParameters: String);
 const
-    CReadBuffer = 2400;
+  InheritHandleSecurityAttributes: TSecurityAttributes =
+    (nLength: SizeOf(TSecurityAttributes); bInheritHandle: True);
+
+procedure TCatCSCommand.Run(const Command, Parameters: String);
 var
-    saSecurity: TSecurityAttributes;
-    hRead: THandle;
-    hWrite: THandle;
-    suiStartup: TStartupInfo;
-    piProcess: TProcessInformation;
-    pBuffer: array [0 .. CReadBuffer] of AnsiChar;
-    dBuffer: array [0 .. CReadBuffer] of AnsiChar;
-    dRead: DWord;
-    dRunning: DWord;
-    ExitCode: Cardinal;
+  hReadStdout, hWriteStdout: THandle;
+  si: TStartupInfo;
+  pi: TProcessInformation;
+  WaitRes, BytesRead: DWORD;
+  FileSize: Int64;
+  AnsiBuffer: array [0 .. 819200 - 1] of AnsiChar;
 begin
-    saSecurity.nLength := SizeOf(TSecurityAttributes);
-    saSecurity.bInheritHandle := True;
-    saSecurity.lpSecurityDescriptor := nil;
-
-    if CreatePipe(hRead, hWrite, @saSecurity, 0) then
-    begin
-        FillChar(suiStartup, SizeOf(TStartupInfo), #0);
-        suiStartup.cb := SizeOf(TStartupInfo);
-        suiStartup.hStdInput := hRead;
-        suiStartup.hStdOutput := hWrite;
-        suiStartup.hStdError := hWrite;
-        suiStartup.dwFlags := suiStartup.dwFlags or STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
-        suiStartup.wShowWindow := SW_HIDE;
-
-        if CreateProcess(nil, pChar(ACommand + ' ' + AParameters),
-        @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, nil, suiStartup, piProcess) then
+  Win32Check(CreatePipe(hReadStdout, hWriteStdout,
+    @InheritHandleSecurityAttributes, 0));
+  try
+    si := Default (TStartupInfo);
+    si.cb := SizeOf(TStartupInfo);
+    si.dwFlags := STARTF_USESTDHANDLES;
+    si.hStdOutput := hWriteStdout;
+    si.hStdError := hWriteStdout;
+    Win32Check(CreateProcess(nil, PChar(Command + ' ' + Parameters), nil, nil,
+      True, CREATE_NO_WINDOW, nil, nil, si, pi));
+    fPID := pi.dwProcessId;
+    try
+      while True do
+      begin
+        WaitRes := WaitForSingleObject(pi.hProcess, fTimeout);
+        Win32Check(WaitRes <> WAIT_FAILED);
+        while True do
         begin
-            // FD: Close hWrite handle or the function may hang in console mode
-            CloseHandle(hWrite);
-            fPID := piProcess.dwProcessId;
-            if fTimeout > 0 then
-              fTimer.Enabled := true;
-            repeat
-                Application.ProcessMessages;
-                GetExitCodeProcess(piProcess.hProcess, ExitCode);
-                // FD: Use WaitForSingleObject with INFINITE or the function will hang
-                dRunning := WaitForSingleObject(piProcess.hProcess, INFINITE);
-                repeat
-                    if fTimeout > 0 then
-                      fTimer.Reset;
-                    dRead := 0;
-                    ReadFile(hRead, pBuffer[0], CReadBuffer, dRead, nil);
-                    pBuffer[dRead] := #0;
-
-                    if fAnsiMode then
-                      OemToAnsi(pBuffer, pBuffer) else
-                      OemToCharA(pBuffer, dBuffer);
-                    if Assigned(OnOutput) then
-                    OnOutput(string(dBuffer));
-                until (dRead < CReadBuffer);
-            until (dRunning <> WAIT_TIMEOUT);
-            CloseHandle(piProcess.hProcess);
-            CloseHandle(piProcess.hThread);
+          Win32Check(GetFileSizeEx(hReadStdout, FileSize));
+          if FileSize = 0 then
+          begin
+            break;
+          end;
+          Win32Check(ReadFile(hReadStdout, AnsiBuffer, SizeOf(AnsiBuffer) - 1,
+            BytesRead, nil));
+          if BytesRead = 0 then
+          begin
+            break;
+          end;
+          AnsiBuffer[BytesRead] := #0;
+          OemToAnsi(AnsiBuffer, AnsiBuffer);
+          if Assigned(fOnOutput) then
+            fOnOutput(string(AnsiBuffer));
         end;
-        CloseHandle(hRead);
-        CloseHandle(hWrite);
+        if WaitRes = WAIT_OBJECT_0 then
+        begin
+          break;
+        end;
+      end;
+    finally
+      CloseHandle(pi.hProcess);
+      CloseHandle(pi.hThread);
     end;
+  finally
+    CloseHandle(hReadStdout);
+    CloseHandle(hWriteStdout);
+  end;
 end;
 
 {$IFDEF DXE2_OR_UP}
-procedure RunCmdWithCallBack(const ACommand, AParameters: String; CallBack: TCmdOutputArg<string>;const TimeoutMS:integer=0);
-const
-    CReadBuffer = 2400;
+procedure RunCmdWithCallBack(const Command: string; const Parameters: string;
+  CallBack: TCmdOutputArg<string>;const Timeout:dword=100);
 var
-    saSecurity: TSecurityAttributes;
-    hRead: THandle;
-    hWrite: THandle;
-    suiStartup: TStartupInfo;
-    piProcess: TProcessInformation;
-    pBuffer: array [0 .. CReadBuffer] of AnsiChar;
-    dBuffer: array [0 .. CReadBuffer] of AnsiChar;
-    dRead: DWord;
-    dRunning: DWord;
-    tmTimer: TConsoleTimer;
-    PID: Cardinal;
-    ExitCode: Cardinal;
+  hReadStdout, hWriteStdout: THandle;
+  si: TStartupInfo;
+  pi: TProcessInformation;
+  WaitRes, BytesRead: DWORD;
+  FileSize: Int64;
+  AnsiBuffer: array [0 .. 819200 -1] of AnsiChar; // original was 1024 -1
+  PID: Cardinal;
 begin
-    tmTimer := TConsoleTimer.Create;
-    tmTimer.Interval := TimeoutMS;
-    tmTimer.OnTimerCallBack := procedure()
+  Win32Check(CreatePipe(hReadStdout, hWriteStdout,
+    @InheritHandleSecurityAttributes, 0));
+  try
+    si := Default (TStartupInfo);
+    si.cb := SizeOf(TStartupInfo);
+    si.dwFlags := STARTF_USESTDHANDLES;
+    si.hStdOutput := hWriteStdout;
+    si.hStdError := hWriteStdout;
+    Win32Check(CreateProcess(nil, PChar(Command + ' ' + Parameters), nil, nil,
+      True, CREATE_NO_WINDOW, nil, nil, si, pi));
+    PID := pi.dwProcessId;
+    try
+      while True do
       begin
-        tmTimer.Enabled := false;
-        KillTaskbyPID(PID);
-      end;
-    saSecurity.nLength := SizeOf(TSecurityAttributes);
-    saSecurity.bInheritHandle := True;
-    saSecurity.lpSecurityDescriptor := nil;
-
-    if CreatePipe(hRead, hWrite, @saSecurity, 0) then
-    begin
-        FillChar(suiStartup, SizeOf(TStartupInfo), #0);
-        suiStartup.cb := SizeOf(TStartupInfo);
-        suiStartup.hStdInput := hRead;
-        suiStartup.hStdOutput := hWrite;
-        suiStartup.hStdError := hWrite;
-        suiStartup.dwFlags := STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
-        suiStartup.wShowWindow := SW_HIDE;
-
-        if CreateProcess(nil, pChar(ACommand + ' ' + AParameters), @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, nil, suiStartup, piProcess) then
+        WaitRes := WaitForSingleObject(pi.hProcess, Timeout);
+        Win32Check(WaitRes <> WAIT_FAILED);
+        while True do
         begin
-            // FD: Close hWrite handle or the function may hang in console mode
-            CloseHandle(hWrite);
-            PID := piProcess.dwProcessId;
-            tmTimer.Enabled := (TimeoutMS > 0);
-            repeat
-                // FD: Use WaitForSingleObject with INFINITE or the function will hang
-                dRunning := WaitForSingleObject(piProcess.hProcess, INFINITE);
-                Application.ProcessMessages();
-                GetExitCodeProcess(piProcess.hProcess, ExitCode);
-                repeat
-                    if TimeoutMS > 0 then
-                      tmTimer.Reset;
-                    dRead := 0;
-                    ReadFile(hRead, pBuffer[0], CReadBuffer, dRead, nil);
-                    pBuffer[dRead] := #0;
-                    OemToCharA(pBuffer, dBuffer);
-                    CallBack(string(dBuffer));
-                until (dRead < CReadBuffer);
-            until (dRunning <> WAIT_TIMEOUT);
-            CloseHandle(piProcess.hProcess);
-            CloseHandle(piProcess.hThread);
+          Win32Check(GetFileSizeEx(hReadStdout, FileSize));
+          if FileSize = 0 then
+          begin
+            break;
+          end;
+          Win32Check(ReadFile(hReadStdout, AnsiBuffer, SizeOf(AnsiBuffer) - 1,
+            BytesRead, nil));
+          if BytesRead = 0 then
+          begin
+            break;
+          end;
+          AnsiBuffer[BytesRead] := #0;
+          OemToAnsi(AnsiBuffer, AnsiBuffer);
+          if Assigned(CallBack) then
+          begin
+            CallBack(string(AnsiBuffer));
+          end;
         end;
-        CloseHandle(hRead);
-        CloseHandle(hWrite);
+        if WaitRes = WAIT_OBJECT_0 then
+        begin
+          break;
+        end;
+      end;
+    finally
+      CloseHandle(pi.hProcess);
+      CloseHandle(pi.hThread);
     end;
-    tmTimer.Free;
+  finally
+    CloseHandle(hReadStdout);
+    CloseHandle(hWriteStdout);
+  end;
 end;
 {$ENDIF}
 
-procedure TCatCSCommand.Timer1Timer(Sender: TObject);
+procedure TCatCSCommand.SetTimeout(const ms:Cardinal);
 begin
-  fTimer.Enabled := false;
-  KillTaskbyPID(fPID);
-end;
-
-procedure TCatCSCommand.SetTimeout(const ms:integer);
-begin
-  fTimer.Interval := ms;
   fTimeout := ms;
 end;
 
 constructor TCatCSCommand.Create;
 begin
   inherited Create;
-  fAnsiMode := false;
-  fTimer := TConsoleTimer.Create;
-  fTimer.OnTimerEvent := Timer1Timer;
-  SetTimeout(0);
-  fTimer.Enabled := false;
+  SetTimeout(100);
 end;
 
 destructor TCatCSCommand.Destroy;
 begin
-  fTimer.Free;
   inherited;
 end;
 

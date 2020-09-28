@@ -43,6 +43,7 @@
 * **stripquotes** ( s ): Returns a string with removed quotes.
 * **stripblanklines** ( s ): Returns a multi-line string without any blank lines.
 * **swapcase** (s): Returns a string with inverted character case (upper becomes lower and vice-versa).
+* **titlecase** (s): Converts a string to title case.
 * **trim** ( s ): Returns a string without redundant whitespace.
 
 ### String Matching Functions

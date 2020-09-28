@@ -49,6 +49,7 @@ function str_beautifycss(L: plua_State): integer; cdecl;
 function str_stripquotes(L: plua_State): integer; cdecl;
 function str_stripblanklines(L: plua_State): integer; cdecl;
 function str_swapcase(L: plua_State): integer; cdecl;
+function str_titlecase(L: plua_State): integer; cdecl;
 function str_increase(L: plua_State): integer; cdecl;
 function str_decrease(L: plua_State): integer; cdecl;
 
@@ -391,6 +392,12 @@ function str_swapcase(L: plua_State): integer; cdecl;
 begin
   if plua_validateargs(L, result, [LUA_TSTRING]).OK then
     lua_pushstring(L, swapcase(lua_tostring(L, 1)));
+end;
+
+function str_titlecase(L: plua_State): integer; cdecl;
+begin
+  if plua_validateargs(L, result, [LUA_TSTRING]).OK then
+    lua_pushstring(L, titlecase(lua_tostring(L, 1)));
 end;
 
 function url_encode(L: plua_State): integer; cdecl;
