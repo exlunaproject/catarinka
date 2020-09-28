@@ -13,9 +13,9 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.SysUtils, Vcl.Controls;
+  System.SysUtils, Vcl.Controls, System.Diagnostics, System.TimeSpan;
 {$ELSE}
-  SysUtils, Controls;
+  SysUtils, Controls, Windows;
 {$ENDIF}
 type
   TCatDecodedDate = record
@@ -25,6 +25,26 @@ type
     Year: word;
     Month: word;
     Day: word;
+  end;
+
+{$IFDEF DXE2_OR_UP}
+  {$DEFINE USESTOPWATCH}
+{$ENDIF}
+
+
+type
+{$IFDEF USESTOPWATCH}
+  // uses high precision stop watch
+  TCatStopWatch = TStopWatch;
+{$ELSE}
+  TCatStopWatch = record
+    StartTime: Cardinal;
+  end;
+{$ENDIF}
+type
+  TStopWatchTime = record
+    MsAsString:string;
+    Ms:Double;
   end;
 
 function CalcAge(const StartDate, Date: TDate): integer;
@@ -40,6 +60,9 @@ function GetDecodedDate(const d: TDateTime):TCatDecodedDate;
 function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';
   const sep: Char = '/'): boolean;
 function UnixToDateTime(const sec: Longint): TDateTime;
+
+function CatStopWatchNew:TCatStopWatch;
+function GetStopWatchElapsedTime(sw:TCatStopwatch):TStopWatchTime;
 
 implementation
 
@@ -226,6 +249,33 @@ function UnixToDateTime(const sec: Longint): TDateTime;
 begin
   Result := (sec / 86400) + UnixStartDate;
 end;
+
+{$IFDEF USESTOPWATCH}
+function GetStopWatchElapsedTime(sw:TCatStopwatch):TStopWatchTime;
+var Elapsed: TTimeSpan;
+begin
+  Elapsed := sw.Elapsed;
+  result.Ms := elapsed.TotalMilliseconds;
+  result.MsAsString := FloatToStr(elapsed.TotalMilliseconds)+' ms';
+end;
+function CatStopWatchNew:TCatStopWatch;
+begin
+  result := TStopwatch.StartNew;
+end;
+{$ELSE}
+function GetStopWatchElapsedTime(sw:TCatStopwatch):TStopWatchTime;
+var t: Cardinal; ms:Double;
+begin
+  t := GetTickCount;
+  ms := (t - sw.starttime)/1000;
+  result.Ms := t;
+  result.MsAsString :=FloatToStr(ms) + ' ms';
+end;
+function CatStopWatchNew:TCatStopWatch;
+begin
+  result.startTime := GetTickCount;
+end;
+{$ENDIF}
 
 // ------------------------------------------------------------------------//
 end.
