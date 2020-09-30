@@ -43,6 +43,7 @@ type
 {$ENDIF}
 type
   TStopWatchTime = record
+    AsString:string;
     MsAsString:string;
     Ms:Double;
   end;
@@ -257,6 +258,7 @@ begin
   Elapsed := sw.Elapsed;
   result.Ms := elapsed.TotalMilliseconds;
   result.MsAsString := FloatToStr(elapsed.TotalMilliseconds)+' ms';
+  result.AsString := elapsed.ToString;
 end;
 function CatStopWatchNew:TCatStopWatch;
 begin
@@ -270,6 +272,7 @@ begin
   ms := (t - sw.starttime)/1000;
   result.Ms := t;
   result.MsAsString :=FloatToStr(ms) + ' ms';
+  result.AsString := result.MsAsString;
 end;
 function CatStopWatchNew:TCatStopWatch;
 begin

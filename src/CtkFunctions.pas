@@ -148,19 +148,19 @@ end;
 
 function console_printgreen(L: plua_State): integer; cdecl;
 begin
-  if plua_validateargs(L, result, [LUA_TSTRING]).OK then
+  if plua_validateargsets(L, result, [[LUA_TSTRING,LUA_TNIL]]).OK then
     cs.writeln_green(lua_tostring(L, 1));
 end;
 
 function console_printred(L: plua_State): integer; cdecl;
 begin
-  if plua_validateargs(L, result, [LUA_TSTRING]).OK then
+if plua_validateargsets(L, result, [[LUA_TSTRING,LUA_TNIL]]).OK then
     cs.writeln_red(lua_tostring(L, 1));
 end;
 
 function console_printwhite(L: plua_State): integer; cdecl;
 begin
-  if plua_validateargs(L, result, [LUA_TSTRING]).OK then
+if plua_validateargsets(L, result, [[LUA_TSTRING,LUA_TNIL]]).OK then
    cs.writeln_white(lua_tostring(L, 1));
 end;
 
