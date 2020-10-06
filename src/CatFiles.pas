@@ -361,6 +361,7 @@ begin
   GetTempPath({$IFDEF UNICODE}Length{$ELSE}SizeOf{$ENDIF}(buf) - 1, buf);
   GetTempFileName(buf, '~', 0, buf);
   Result := StrPas(buf);
+  DeleteFile(result);
   if ext <> emptystr then // if the extension is empty will return a .tmp
     Result := changefileext(Result, ext);
 end;

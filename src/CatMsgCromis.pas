@@ -22,6 +22,9 @@ uses
 type
   TCatMsgCromisOnDataMessage = procedure(const msgid: integer;
     const str: string) of object;
+type
+  TCatMsgCromisOnRequest = procedure(const Context: ICommContext;
+      const Request, Response: IMessageData) of object;
 
 type
   TCatMsgCromis = class
@@ -30,6 +33,7 @@ type
     fMessageQueue: TThreadSafeQueue;
     fMsgHandle: HWND;
     fOnDataMessage: TCatMsgCromisOnDataMessage;
+    fOnRequest: TCatMsgCromisOnRequest;
     fRequestCount: integer;
     function GetServerName: string;
     procedure crmMessage(var AMsg: TMessage);
@@ -41,7 +45,9 @@ type
     destructor Destroy; override;
     property OnDataMessage: TCatMsgCromisOnDataMessage read fOnDataMessage
       write fOnDataMessage;
+    property OnRequest: TCatMsgCromisOnRequest read fOnRequest write fOnRequest;
     property MsgHandle: HWND read fMsgHandle;
+    property Server:TIPCServer read fIPCServer;
     property ServerName: string read GetServerName;
   end;
 
@@ -142,6 +148,8 @@ begin
   j['s'] := Command;
   HandleMessage(j.Text);
   j.Free;
+  if Assigned(fOnRequest) then
+     fOnRequest(context,request,response);
   // HandleMessage(Format('%s %s request recieved from client %s (Sent at: %s)',
   // [IntToStr(CmdId), Command,Context.Client.ID,Request.ID]));
   // increase the request count thread safe way

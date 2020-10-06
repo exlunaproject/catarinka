@@ -49,6 +49,7 @@ CatPrefs: Rename the `src\CatCryptKey.pas` file, edit it and add your own encryp
 * [DCEF](https://github.com/hgourvest/dcef3) or [WACEF](https://bitbucket.org/WaspAce/wacef), needed by CatChromium. See [dcef-mod](https://github.com/felipedaragon/dcef-mod) for a copy of the latest CEF components, with or without minor modifications
 * [DCPcrypt 2](https://bitbucket.org/wpostma/dcpcrypt2010) - needed by CatDCP.
 * [SynWeb 1.5](https://code.google.com/p/synweb/) and [SynEdit](http://sourceforge.net/projects/synedit/) - needed by CatSynEdit.
+* [Synopse](https://github.com/synopse/SynPDF) - needed by CatCryptoSyno.
 * [Structured Storage](https://github.com/gabr42/GpDelphiUnits) - need by CatStorage.
 * [Abbrevia 5.0](http://sourceforge.net/projects/tpabbrevia/) - needed by CatZIP.
 * [Cromis](http://www.cromis.net/blog/downloads/cromis-ipc/) - needed by CatMsgCromis.

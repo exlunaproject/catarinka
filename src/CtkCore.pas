@@ -276,7 +276,7 @@ end;
 
 function get_utilfields(L: plua_State): integer; cdecl;
 const
-   utils_table : array [1..7] of luaL_Reg =
+   utils_table : array [1..8] of luaL_Reg =
    (
    (name:'delay';func:utils_delay),
    (name:'getarg';func:utils_getarg),
@@ -284,6 +284,7 @@ const
    (name:'hassoftware';func:utils_hassoftwareinstalled),
    (name:'clipboard_gettext';func:utils_clipboard_gettext),
    (name:'clipboard_settext';func:utils_clipboard_settext),
+   (name:'settimeout';func:utils_settimeout),
    (name:nil;func:nil)
    );
 begin

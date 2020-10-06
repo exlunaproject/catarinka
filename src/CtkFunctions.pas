@@ -14,7 +14,7 @@ interface
 uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, System.Classes, System.SysUtils, Winapi.ShellAPI,
-  System.Win.Registry, Vcl.Clipbrd,
+  System.Win.Registry, Vcl.Clipbrd, Vcl.Dialogs,
 {$ELSE}
   Windows, Classes, SysUtils, ShellAPI, Registry, Clipbrd,
 {$ENDIF}
@@ -125,11 +125,12 @@ function utils_hasarg(L: plua_State): integer; cdecl;
 function utils_hassoftwareinstalled(L: plua_State): integer; cdecl;
 function utils_clipboard_gettext(L: plua_State): integer; cdecl;
 function utils_clipboard_settext(L: plua_State): integer; cdecl;
+function utils_settimeout(L: plua_State): integer; cdecl;
 
 implementation
 
 uses
-  ExtPascalUtils, synacode, pLua, pLuaTable,
+  ExtPascalUtils, synacode, pLua, pLuaTable, CatCSTimer,
   CtkStrList, CtkStrListParser, CtkHTMLParser, CtkJSON, CtkTarman,
   CatStrings, CatJSON, CatMatch, CatFiles, CatHTTP, CatUtils,
   CatInet, CatTasks, CatCLUtils, CatCSUtils, CatHashes;
@@ -914,6 +915,39 @@ function utils_clipboard_gettext(L: plua_State): integer; cdecl;
 begin
   lua_pushstring(L, Clipboard.AsText);
   result := 1;
+end;
+
+function utils_settimeout(L: plua_State): integer; cdecl;
+var
+  script:string;
+  func: lua_CFunction;
+  t:TConsoleTimer;
+  error:integer;
+begin
+  if plua_validateargsets(L, result, [[LUA_TNUMBER], [LUA_TSTRING, LUA_TFUNCTION]]).OK = false then
+    Exit;
+  t := TConsoleTimer.Create;
+  t.Interval := lua_tointeger(L, 1);
+  t.Enabled := true;
+
+  if lua_type(L, 2) = LUA_TFUNCTION then begin
+    func := lua_tocfunction(L, 2);
+    t.OnTimerCallBack := procedure()
+     begin
+       lua_pushcfunction(L, func);
+       lua_pcall(L, 0, 0, 0);
+       t.Enabled := false;
+       t.Free;
+     end;
+  end else begin
+    script := lua_tostring(L, 2);
+    t.OnTimerCallBack := procedure()
+     begin
+       plua_dostring(L, script);
+       t.Enabled := false;
+       t.Free;
+     end;
+  end;
 end;
 
 end.
