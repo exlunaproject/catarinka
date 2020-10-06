@@ -1,6 +1,6 @@
 # Catarinka
 
-Catarinka is a set of libraries for Lua and Pascal/Delphi, developed as part of the [Sandcat Browser](https://github.com/felipedaragon/sandcat) project.
+Catarinka is a set of libraries for Lua/LuaJIT and Pascal/Delphi, developed as part of the [Sandcat Browser](https://github.com/felipedaragon/sandcat) project.
 
 ## Directories
 
