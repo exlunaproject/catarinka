@@ -151,6 +151,7 @@ These will return a boolean value.
 * **hasarg** ( s ):  Returns true if the argument has been provided, false otherwise.
 * **clipboard_gettext** ( ): Returns the current Clipboard text (if any).
 * **clipboard_settext** ( s ): Copies a text to the Clipboard. 
-* **settimeout** (ms, code or function): sets a timer which executes a function or specified piece of code once the timer expires. Examples:
+* **settimeout** (ms, code or ms, cfunction, [,arg1,arg2,arg3]): sets a timer which executes a function or specified piece of code once the timer expires. Examples:
 ctk.utils.settimeout(1000, 'print("Hello World!")')
 ctk.utils.settimeout(1000, mytable.myfunc)
+ctk.utils.settimeout(1000, app.showmessage, "Hello World!")
