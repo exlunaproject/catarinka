@@ -80,7 +80,6 @@ end;
 function GetCmdParamQuoted(const param: string;
   const def_value: string = ''): string;
 var
-  i: integer;
   params: string;
 const
   quote = '"';

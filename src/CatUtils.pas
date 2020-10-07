@@ -16,7 +16,7 @@ uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, Messages, System.SysUtils, Vcl.Forms;
 {$ELSE}
-  Windows, SysUtils, Forms;
+  Windows, Messages, SysUtils, Forms;
 {$ENDIF}
 procedure CatDelay(const ms: Integer);
 procedure CatDelayAlt(const ms: Integer);

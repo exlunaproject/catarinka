@@ -14,7 +14,7 @@ interface
 uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, System.Classes, System.SysUtils, Winapi.ShellAPI,
-  System.TypInfo,
+  System.TypInfo, CtkTimer,
 {$ELSE}
   Windows, Classes, SysUtils, ShellAPI, TypInfo,
 {$ENDIF}
@@ -284,7 +284,11 @@ const
    (name:'hassoftware';func:utils_hassoftwareinstalled),
    (name:'clipboard_gettext';func:utils_clipboard_gettext),
    (name:'clipboard_settext';func:utils_clipboard_settext),
+   {$IFDEF DXE2_OR_UP}
    (name:'settimeout';func:utils_settimeout),
+   {$ELSE}
+   (name:'settimeout';func:utils_function_notavailable),
+   {$ENDIF}
    (name:nil;func:nil)
    );
 begin

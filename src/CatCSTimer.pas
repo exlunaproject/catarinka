@@ -18,13 +18,15 @@ interface
 {$I Catarinka.inc}
 
 uses
-  Windows, Classes, SyncObjs, Diagnostics;
-
-
 {$IFDEF DXE2_OR_UP}
-type
-    TTimerArg = reference to procedure;
+  Winapi.Windows, System.Classes, SyncObjs, Diagnostics;
+{$ELSE}
+  Windows, Classes, SyncObjs;
 {$ENDIF}
+
+
+type
+    TTimerArg = {$IFDEF DXE2_OR_UP}reference to procedure{$ELSE}procedure of object{$ENDIF};
 
 type
   TConsoleTimer = Class(TThread)
