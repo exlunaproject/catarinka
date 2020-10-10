@@ -24,11 +24,42 @@ uses
 
 function RandomPassword(const len:integer):string;
 function RandomKey:string;
+function SHA256(const s:string):string;
+function SHA384(const s:string):string;
+function SHA512(const s:string):string;
+
 
 implementation
 
 uses
   SynCrypto, CatStrings;
+
+function SHA512(const s:string):string;
+begin
+ {$IFDEF DXE2_OR_UP}
+  result := string(SynCrypto.SHA512(rawbytestring(s)));
+ {$ELSE}
+  result := string(SynCrypto.SHA512(s));
+ {$ENDIF}
+end;
+
+function SHA384(const s:string):string;
+begin
+ {$IFDEF DXE2_OR_UP}
+  result := string(SynCrypto.SHA384(rawbytestring(s)));
+ {$ELSE}
+  result := string(SynCrypto.SHA384(s));
+ {$ENDIF}
+end;
+
+function SHA256(const s:string):string;
+begin
+ {$IFDEF DXE2_OR_UP}
+  result := string(SynCrypto.SHA256(rawbytestring(s)));
+ {$ELSE}
+  result := string(SynCrypto.SHA256(s));
+ {$ENDIF}
+end;
 
 function RandomPassword(const len:integer):string;
 var p:TAESPRNG;

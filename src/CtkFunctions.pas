@@ -14,9 +14,9 @@ interface
 uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, System.Classes, System.SysUtils, Winapi.ShellAPI,
-  System.Win.Registry, Vcl.Clipbrd, Vcl.Dialogs,
+  System.Win.Registry, Vcl.Clipbrd, Vcl.Dialogs, CatCryptSyno,
 {$ELSE}
-  Windows, Classes, SysUtils, ShellAPI, Registry, Clipbrd,
+  Windows, Classes, SysUtils, ShellAPI, Registry, Clipbrd, CatCryptSyno,
 {$ENDIF}
   Lua;
 
@@ -52,6 +52,8 @@ function str_swapcase(L: plua_State): integer; cdecl;
 function str_titlecase(L: plua_State): integer; cdecl;
 function str_increase(L: plua_State): integer; cdecl;
 function str_decrease(L: plua_State): integer; cdecl;
+function str_randompassword(L: plua_State): integer; cdecl;
+function str_randompasswordadmin(L: plua_State): integer; cdecl;
 
 function file_getdirfiles(L: plua_State): integer; cdecl;
 function file_getdirs(L: plua_State): integer; cdecl;
@@ -92,6 +94,9 @@ function conv_hextostr(L: plua_State): integer; cdecl;
 function conv_strtohex(L: plua_State): integer; cdecl;
 function conv_strtomd5(L: plua_State): integer; cdecl;
 function conv_strtosha1(L: plua_State): integer; cdecl;
+function conv_strtosha256(L: plua_State): integer; cdecl;
+function conv_strtosha384(L: plua_State): integer; cdecl;
+function conv_strtosha512(L: plua_State): integer; cdecl;
 function conv_strtocommatext(L: plua_State): integer; cdecl;
 function conv_commatexttostr(L: plua_State): integer; cdecl;
 
@@ -401,6 +406,30 @@ begin
     lua_pushstring(L, titlecase(lua_tostring(L, 1)));
 end;
 
+function str_randompassword(L: plua_State): integer; cdecl;
+var len:integer;
+begin
+  if plua_validateargs(L, result, [LUA_TNUMBER], [vaOptional1]).OK then begin
+    len := 16;
+    // accept 8 as minimal password length
+    if (lua_isnone(L, 1) = false) and (lua_tointeger(L, 1) >= 8) then
+      len := lua_tointeger(L, 1);
+    lua_pushstring(L, randompassword(len));
+  end;
+end;
+
+function str_randompasswordadmin(L: plua_State): integer; cdecl;
+var len:integer;
+begin
+  if plua_validateargs(L, result, [LUA_TNUMBER], [vaOptional1]).OK then begin
+    len := 26;
+    // accept 16 as minimal admin password length
+    if (lua_isnone(L, 1) = false) and (lua_tointeger(L, 1) >= 16) then
+      len := lua_tointeger(L, 1);
+    lua_pushstring(L, randompassword(len));
+  end;
+end;
+
 function url_encode(L: plua_State): integer; cdecl;
 begin
  if plua_validateargs(L, result, [LUA_TSTRING, LUA_TBOOLEAN], [vaOptional1]).OK then begin
@@ -522,6 +551,24 @@ function conv_strtomd5(L: plua_State): integer; cdecl;
 begin
   if plua_validateargs(L, result, [LUA_TSTRING]).OK then
   lua_pushstring(L, MD5hash(lua_tostring(L, 1)));
+end;
+
+function conv_strtosha256(L: plua_State): integer; cdecl;
+begin
+  if plua_validateargs(L, result, [LUA_TSTRING]).OK then
+  lua_pushstring(L, SHA256(lua_tostring(L, 1)));
+end;
+
+function conv_strtosha384(L: plua_State): integer; cdecl;
+begin
+  if plua_validateargs(L, result, [LUA_TSTRING]).OK then
+  lua_pushstring(L, SHA384(lua_tostring(L, 1)));
+end;
+
+function conv_strtosha512(L: plua_State): integer; cdecl;
+begin
+  if plua_validateargs(L, result, [LUA_TSTRING]).OK then
+  lua_pushstring(L, SHA512(lua_tostring(L, 1)));
 end;
 
 function conv_strtosha1(L: plua_State): integer; cdecl;

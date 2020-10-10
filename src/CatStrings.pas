@@ -276,25 +276,10 @@ end;
 
 function BeginsWith(const s, prefix: string;
   IgnoreCase: Boolean = false): Boolean;
-var
-  tmpstr: string;
 begin
-  tmpstr := s;
-{$IFDEF DXE2_OR_UP}
-  {$IFDEF MSWINDOWS}
-  SetLength(tmpstr, System.AnsiStrings.StrLen
-    (System.PAnsiChar(AnsiString(prefix))));
-  {$ELSE}
-     SetLength(tmpstr, StrLen(PWideChar(WideString(prefix))));
-  {$ENDIF}
-
-{$ELSE}
-  SetLength(tmpstr, StrLen(PAnsiChar(prefix)));
-{$ENDIF}
   if IgnoreCase = false then
-    result := AnsiCompareStr(tmpstr, prefix) = 0
-  else
-    result := AnsiCompareText(tmpstr, prefix) = 0;
+  result := AnsiStartsStr(prefix, s) else
+  result := AnsiStartsText(prefix, s);
 end;
 
 function BeginsWith(const s: string; const prefixes: array of string;
@@ -305,7 +290,7 @@ begin
   result := false;
   for b := Low(prefixes) to High(prefixes) do
   begin
-    if BeginsWith(s, prefixes[b], IgnoreCase) then
+    if BeginsWith(s, prefixes[b], IgnoreCase) = true then
     begin
       result := true;
       break;

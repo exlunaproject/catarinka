@@ -166,10 +166,15 @@ end;
 
 function get_cryptofields(L: plua_State): integer; cdecl;
 const
-   crypto_table : array [1..3] of luaL_Reg =
+   crypto_table : array [1..8] of luaL_Reg =
    (
    (name:'md5';func:conv_strtomd5),
+   (name:'randompwd';func:str_randompassword),
+   (name:'randompwdadmin';func:str_randompasswordadmin),
    (name:'sha1';func:conv_strtosha1),
+   (name:'sha256';func:conv_strtosha256),
+   (name:'sha384';func:conv_strtosha384),
+   (name:'sha512';func:conv_strtosha512),
    (name:nil;func:nil)
    );
 begin

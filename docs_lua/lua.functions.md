@@ -137,7 +137,12 @@ These will return a boolean value.
 ### Crypto Functions (crypto.*)
 
 * **md5** ( s ): Returns the MD5 hash of a given string.
+* **randompwd** ([len]): Generates and returns a random password. 8 is the minimal accepted length. 16 is the default length.
+* **randompwdadmin** ([len]): Generates and returns a random administrator password. 16 is the minimal accepted length. 26 is the default length.
 * **sha1** ( s ): Returns the SHA-1 hash of a given string.
+* **sha256** ( s ): Returns the SHA-256 hash of a given string.
+* **sha384** ( s ): Returns the SHA-384 hash of a given string.
+* **sha512** ( s ): Returns the SHA-512 hash of a given string.
 
 ### Task Functions (task.*)
 

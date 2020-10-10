@@ -47,8 +47,15 @@ of this file under either the MPL or the GPL.
 
 interface
 
-uses Windows, Classes, StdCtrls, Controls, Graphics, Messages, Math, ClipBrd,
-  Types;
+{$I Catarinka.inc}
+
+uses
+{$IFDEF DXE2_OR_UP}
+  WinAPI.Windows, System.Classes, Vcl.StdCtrls, Vcl.Controls, Vcl.Graphics,
+  Winapi.Messages, System.Math, Vcl.ClipBrd, System.Types;
+{$ELSE}
+  Windows, Classes, StdCtrls, Controls, Graphics, Messages, Math, ClipBrd, Types;
+{$ENDIF}
 
 const
   // Constants defining the default look of the console
@@ -533,7 +540,7 @@ end;
 // HideCaret
 procedure TCustomConsole.HideCaret;
 begin
-  Windows.HideCaret(Handle);
+  {$IFDEF DXE2_OR_UP}WinAPI.{$ENDIF}Windows.HideCaret(Handle);
 end;
 
 // IncPaintLock: Increments the Paint Lock Counter
@@ -623,7 +630,7 @@ end;
 // InvalidateRect
 procedure TCustomConsole.InvalidateRect(const aRect: TRect; aErase: boolean);
 begin
-  Windows.InvalidateRect(Handle, @aRect, aErase);
+  {$IFDEF DXE2_OR_UP}WinAPI.{$ENDIF}Windows.InvalidateRect(Handle, @aRect, aErase);
 end;
 
 // KeyDown
@@ -783,7 +790,7 @@ end; }
 
 procedure TCustomConsole.ShowCaret;
 begin
-  Windows.ShowCaret(Handle);
+  {$IFDEF DXE2_OR_UP}WinAPI.{$ENDIF}Windows.ShowCaret(Handle);
 end;
 
 procedure TCustomConsole.SizeOrFontChanged(bFont: boolean);
@@ -835,7 +842,7 @@ end;
 procedure TCustomConsole.WMKillFocus(var Msg: TWMKillFocus);
 begin
   HideCaret;
-  Windows.DestroyCaret;
+  {$IFDEF DXE2_OR_UP}WinAPI.{$ENDIF}Windows.DestroyCaret;
 end;
 
 procedure TCustomConsole.WMMouseWheel(var Msg: TMessage);
@@ -930,7 +937,7 @@ end;
 
 procedure TCustomConsole.PasteFromClipboard;
 begin
-  fLines.CurrLine.Text := fLines.CurrLine.Text + Clipbrd.Clipboard.AsText;
+  fLines.CurrLine.Text := fLines.CurrLine.Text + {$IFDEF DXE2_OR_UP}Vcl.{$ENDIF}Clipbrd.Clipboard.AsText;
   CaretX := Length(fLines.CurrLine.Text) + 1;
   Invalidate;
 end;
@@ -988,7 +995,7 @@ procedure TCustomConsole.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 begin
   inherited;
-  Windows.SetFocus(Handle);
+  {$IFDEF DXE2_OR_UP}WinAPI.{$ENDIF}Windows.SetFocus(Handle);
 end;
 
 function TCustomConsole.GetPrompt: boolean;
