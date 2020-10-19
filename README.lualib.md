@@ -17,7 +17,9 @@ All Catarinka classes (described in `docs\classes.*`) have a "new" method that m
 
 ## Download
 
-* [Windows](https://syhunt.websiteseguro.com/pub/downloads/catarinka-1.0.zip) - 32-bit & 64-bit binaries
+Compiled binaries for Windows can be downloaded from the links below.
+
+* [64-bit](https://www.syhunt.com/pub/downloads/underscript-2.0.0.exe) (included with UnderScript setup)
 
 ## Dependencies
 
