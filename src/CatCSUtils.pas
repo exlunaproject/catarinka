@@ -44,6 +44,7 @@ type
 procedure TextColor(Color: Byte);
 procedure WriteLnC(s: string; Color: Byte);
 procedure WriteC(s: string; Color: Byte);
+function IsConsoleApp: boolean;
 
 var
   CS: TCatCSHelper;
@@ -93,6 +94,15 @@ const
   csclYELLOW = FOREGROUND_RED + FOREGROUND_GREEN + FOREGROUND_INTENSITY;
   csclWHITE = FOREGROUND_RED + FOREGROUND_GREEN + FOREGROUND_BLUE +
     FOREGROUND_INTENSITY;
+
+function IsConsoleApp: boolean;
+var
+  SI: TStartupInfo;
+begin
+  SI.cb := SizeOf(TStartupInfo);
+  GetStartupInfo(SI);
+  Result := ((SI.dwFlags and STARTF_USESHOWWINDOW) = 0);
+end;
 
 procedure WriteC(s: string; Color: Byte);
 begin

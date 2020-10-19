@@ -65,6 +65,7 @@ function BeginsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
+function CatAppendStr(var s:string;const astr:string;const sep:string=','):string;
 function CatWrapText(const text: string; const chars: integer): TStringList;
 function CharSetToStr(const c: TSysCharSet): string;
 function CombineIntArray(const p:array of integer):integer;
@@ -317,6 +318,15 @@ end;
 function StrToYN(const s:string):string;
 begin
   result := BoolToYN(StrToBool(s));
+end;
+
+// Appends a string with a separator string
+function CatAppendStr(var s:string;const astr:string;const sep:string=','):string;
+begin
+ if s = emptystr then
+   s := astr else begin
+   s := s + sep + astr;
+ end;
 end;
 
 function CatCaseOf(const s: string; labels: array of string;
