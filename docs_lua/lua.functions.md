@@ -31,7 +31,7 @@
 * **after** ( s, sub ): Returns the portion of the string after a specific sub-string.
 * **before** ( s, sub ): Returns the portion of the string before a specific sub-string.
 * **between** ( s, start, stop ): Returns a string between 2 strings.
-* **comparever** ( version1, version 1 ): Compare two version strings. If equal, returns 0. If version 1 is more up-to-date than version 2, returns 1 and if version 1 is older than version 2, returns -1.
+* **comparever** ( version1, version2 ): Compare two version strings. If versions are equal, returns 0. If version1 is newer than version2, returns 1 and if version1 is older than version2, returns -1.
 * **decrease** ( s [,step] ): Decreases the string characters.
 * **gettoken** ( s, delim, int ): Returns what comes after a delimiter.
 * **increase** ( s [,step] ): Increases the string characters.
