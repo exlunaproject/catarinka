@@ -333,12 +333,13 @@ begin
   result.originalstring := ver;
   result.version := ver;
   result.hasletter := false;
-  result.stage := GetVersionStage(ver);
+  result.stage := VERSTG_RELEASE;
   if IsAlphaNumeric(ver) then begin
     result.version := ExtractVersionFromString(ver);
     result.ext := After(ver, result.version);
     result.extnum := ExtractNumbers(result.ext);
     result.hasletter := (length(result.ext) = 1) and (result.ext[1] in ['a'..'z','A'..'Z']);
+    result.stage := GetVersionStage(ver);
   end;
 end;
 
