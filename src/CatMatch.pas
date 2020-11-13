@@ -27,6 +27,15 @@ uses
 type
   TCatRegExpr = TRegExpr;
 
+type
+ TVersionParts = record
+   originalstring: string;
+   version: string;
+   ext:string;
+   extnum: string;
+   hasletter: boolean;
+ end;
+
 function RegExpFind(const s, re: string): string;
 function RegExpReplace(const s, re, sreplacement: string): string; overload;
 function RegExpReplace(const s, re: string; refunc: TRegExprReplaceFunction): string; overload;
@@ -39,6 +48,7 @@ function CompareVersionNumber(const version1, version2: string;
   const Silent:boolean=true): Integer;
 function CompareVersionString(const version1, version2: string;
   const Silent:boolean=true): Integer;
+function CrackVersionString(const ver: string): TVersionParts;
 function IsWildCardString(const s:string):boolean;
 function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
@@ -288,6 +298,21 @@ begin
   end;
 end;
 
+function CrackVersionString(const ver: string): TVersionParts;
+begin
+  result.ext := emptystr;
+  result.extnum := emptystr;
+  result.originalstring := ver;
+  result.version := ver;
+  result.hasletter := false;
+  if IsAlphaNumeric(ver) then begin
+    result.version := ExtractVersionFromString(ver);
+    result.ext := After(ver, result.version);
+    result.extnum := ExtractNumbers(result.ext);
+    result.hasletter := (length(result.ext) = 1) and (result.ext[1] in ['a'..'z','A'..'Z']);
+  end;
+end;
+
 
 // This function I wrote extends the CompareVersion function by martinprikryl (above)
 // to compare versions that contain alphanumeric extensions like:
@@ -299,9 +324,7 @@ end;
 function CompareVersionString(const version1, version2: string;
   const Silent:boolean=true): Integer;
 var
- v1,v2:string;
- v1ext, v2ext:string;
- v1extnum, v2extnum: string;
+ v1,v2: TVersionParts;
  function CompareVersionAlphaExtension(curver, vercheck:string):integer;
  begin
    result := 0;
@@ -311,40 +334,24 @@ var
         result := 1;
  end;
 begin
-  v1ext := emptystr;
-  v2ext := emptystr;
-  v1extnum := emptystr;
-  v2extnum := emptystr;
-  v1 := version1;
-  v2 := version2;
-  if IsAlphaNumeric(v1) then begin
-    v1 := ExtractVersionFromString(v1);
-    v1ext := After(version1, v1);
-    v1extnum := ExtractNumbers(v1ext);
-  end;
-  if IsAlphaNumeric(v2) then begin
-    v2 := ExtractVersionFromString(v2);
-    v2ext := After(version2, v2);
-    v2extnum := ExtractNumbers(v2ext);
-  end;
-  result := CompareVersionNumber(v1, v2, silent);
+  v1 := CrackVersionString(version1);
+  v2 := CrackVersionString(version2);
+  result := CompareVersionNumber(v1.version, v2.version, silent);
 
   // If versions are identical and extended version information is available
   // conclude by comparing numbers from extension part
   if result = 0 then begin
-    // compares case like 1.5.0-beta.10 versus 1.5.0-beta.11
-    if (v1ext <> emptystr) and (v2ext <> emptystr) then
-    result := CompareVersionNumber(v1extnum, v2extnum, silent);
+    // Compares case like 1.5.0-beta.10 versus 1.5.0-beta.11
+    if (v1.ext <> emptystr) and (v2.ext <> emptystr) then
+    result := CompareVersionNumber(v1.extnum, v2.extnum, silent);
 
-    // compare cases like 1.0.1a, 1.0.1b
-    if (v1ext = emptystr) and (length(v2ext) = 1) and (v2ext[1] in ['a'..'z','A'..'Z']) then
-      v1ext := 'a';
-    if (v2ext = emptystr) and (length(v1ext) = 1) and (v1ext[1] in ['a'..'z','A'..'Z']) then
-      v2ext := 'a';
-    if (length(v1ext) =1) and (length(v2ext) = 1) then begin
-      result := CompareVersionAlphaExtension(lowercase(v1ext), lowercase(v2ext));
-
-    end;
+    // Assign letter if required and compare cases like 1.0.1a, 1.0.1b
+    if (v1.hasletter = true) and (v2.ext = emptystr) then
+      v2.ext := 'a';
+    if (v2.hasletter = true) and (v1.ext = emptystr) then
+      v1.ext := 'a';
+    if (length(v1.ext) =1) and (length(v2.ext) = 1) then
+      result := CompareVersionAlphaExtension(lowercase(v1.ext), lowercase(v2.ext));
   end;
 end;
 
