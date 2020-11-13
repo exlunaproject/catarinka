@@ -200,7 +200,8 @@ Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)]]
   test('string.comparever62', 1, ctk.string.comparever('1.0b', '1.0a'))    
   test('string.comparever63', -1, ctk.string.comparever('1.0beta1', '1.0b'))     
   test('string.comparever64', -1, ctk.string.comparever('1.0beta1', '1.0c'))      
-  test('string.comparever65', 1, ctk.string.comparever('1.0c', '1.0alpha1'))    
+  test('string.comparever65', 1, ctk.string.comparever('1.0c', '1.0alpha1'))   
+  test('string.comparever66', 1, ctk.string.comparever('1.0-pre1', '1.0-preview1'))       
   
   test('string.matchver1', true, ctk.string.matchver('1.0','1.0'))  
   test('string.matchver2', false, ctk.string.matchver('2.0','1.0'))    

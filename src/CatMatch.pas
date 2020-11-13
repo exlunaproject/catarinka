@@ -312,13 +312,13 @@ begin
   lv := lowercase(ver);
   result := VERSTG_RELEASE;
   if pos('rc', lv) <> 0 then
-    result := VERSTG_RELEASECANDIDATE else
+    result := VERSTG_RELEASECANDIDATE;
   if pos('pre', lv) <> 0 then // pre-release
-    result := VERSTG_RELEASECANDIDATE else
+    result := VERSTG_RELEASECANDIDATE;
   if pos('beta', lv) <> 0 then
-    result := VERSTG_BETA else
+    result := VERSTG_BETA;
   if pos('preview', lv) <> 0 then
-    result := VERSTG_BETA else
+    result := VERSTG_BETA;
   if pos('alpha', lv) <> 0 then
     result := VERSTG_ALPHA;
   // pre-alpha
