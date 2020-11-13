@@ -325,14 +325,14 @@ begin
     v2ext := After(version2, v2);
     v2extnum := ExtractNumbers(v2ext);
   end;
-  result := CompareVersionNumber(v1, v2);
+  result := CompareVersionNumber(v1, v2, silent);
 
   // If versions are identical and extended version information is available
   // conclude by comparing numbers from extension part
   if result = 0 then begin
     // compares case like 1.5.0-beta.10 versus 1.5.0-beta.11
     if (v1ext <> emptystr) and (v2ext <> emptystr) then
-    result := CompareVersionNumber(v1extnum, v2extnum);
+    result := CompareVersionNumber(v1extnum, v2extnum, silent);
 
     // compare cases like 1.0.1a, 1.0.1b
     if (v1ext = emptystr) and (length(v2ext) = 1) and (v2ext[1] in ['a'..'z','A'..'Z']) then
