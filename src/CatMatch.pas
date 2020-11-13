@@ -27,6 +27,13 @@ uses
 type
   TCatRegExpr = TRegExpr;
 
+const
+ VERSTG_RELEASE = 5;
+ VERSTG_RELEASECANDIDATE = 4;
+ VERSTG_BETA = 3;
+ VERSTG_ALPHA = 2;
+ VERSTG_PREALPHA = 1;
+
 type
  TVersionParts = record
    originalstring: string;
@@ -34,6 +41,7 @@ type
    ext:string;
    extnum: string;
    hasletter: boolean;
+   stage:integer;
  end;
 
 function RegExpFind(const s, re: string): string;
@@ -298,6 +306,26 @@ begin
   end;
 end;
 
+function GetVersionStage(const ver:string):integer;
+var lv:string;
+begin
+  lv := lowercase(ver);
+  result := VERSTG_RELEASE;
+  if pos('rc', lv) <> 0 then
+    result := VERSTG_RELEASECANDIDATE else
+  if pos('pre', lv) <> 0 then // pre-release
+    result := VERSTG_RELEASECANDIDATE else
+  if pos('beta', lv) <> 0 then
+    result := VERSTG_BETA else
+  if pos('preview', lv) <> 0 then
+    result := VERSTG_BETA else
+  if pos('alpha', lv) <> 0 then
+    result := VERSTG_ALPHA;
+  // pre-alpha
+  if (pos('pre', lv) <> 0) and (pos('alpha', lv) <> 0) then
+    result := VERSTG_PREALPHA;
+end;
+
 function CrackVersionString(const ver: string): TVersionParts;
 begin
   result.ext := emptystr;
@@ -305,6 +333,7 @@ begin
   result.originalstring := ver;
   result.version := ver;
   result.hasletter := false;
+  result.stage := GetVersionStage(ver);
   if IsAlphaNumeric(ver) then begin
     result.version := ExtractVersionFromString(ver);
     result.ext := After(ver, result.version);
@@ -316,11 +345,10 @@ end;
 
 // This function I wrote extends the CompareVersion function by martinprikryl (above)
 // to compare versions that contain alphanumeric extensions like:
-// v1.0 or V1.0
-// 1.0 RC1
-// 1.0a or 1.0A
-// 1.5.0-beta.11 and similar
-// ToDo: conclude comparison between alpha, beta and RC stages
+// v1.0 versus V1.1
+// 1.0 RC1 versus 1.0 RC2
+// 1.0a versus 1.0B or 1.0b
+// 1.5.0-rc1 versus 1.5.0-beta1 and similar
 function CompareVersionString(const version1, version2: string;
   const Silent:boolean=true): Integer;
 var
@@ -345,13 +373,18 @@ begin
     if (v1.ext <> emptystr) and (v2.ext <> emptystr) then
     result := CompareVersionNumber(v1.extnum, v2.extnum, silent);
 
-    // Assign letter if required and compare cases like 1.0.1a, 1.0.1b
+    // Assign letter if required and compare cases like
+    //1.0 versus 1.0a
+    //1.0.1a versus 1.0.1b
     if (v1.hasletter = true) and (v2.ext = emptystr) then
-      v2.ext := 'a';
+       result := 1;
     if (v2.hasletter = true) and (v1.ext = emptystr) then
-      v1.ext := 'a';
+       result := -1;
     if (length(v1.ext) =1) and (length(v2.ext) = 1) then
       result := CompareVersionAlphaExtension(lowercase(v1.ext), lowercase(v2.ext));
+    // if the development stage is different, the result must be the stage comparison
+    if (v1.stage <> v2.stage) then
+      result := CompareVersionNumber(IntToStr(v1.stage), IntToStr(v2.stage));
   end;
 end;
 
@@ -377,15 +410,20 @@ begin
   result := ContainsAnyOfChars(s, ['*','?']);
 end;
 
-// expects expression like: <3.4.0 or <=3.4.0
+// expects expression like:
+//  <3.4.0
+//  <=3.4.0
 // when using just the equal sign, can be followed by a wildcard, ex:
-// =* (matches any version), =3.*, =3.1.??
+//  =* (matches any version)
+//  =3.*
+//  =3.1.??
 function MatchVersion(curver, vercheck:string):boolean;
 var
   outver: string;
   compres: integer;
 begin
   result := false;
+  compres := -1; // avoid compiler message
   outver := ExtractVersionFromString(vercheck);
     if beginswith(vercheck, '=') = false then
       compres := CompareVersionNumber(curver, outver);
@@ -422,9 +460,9 @@ begin
     end;
 end;
 
-// expects a version check range separated by spaces like:
+// expects multiple version checks separated by spaces like:
 // >=1.4.2 <1.6.2
-// must match all to return true
+// will return true if all are matched, false otherwise
 function MatchVersionRange(curver, vercheck:string):boolean;
 var
   s: TSepStringLoop;

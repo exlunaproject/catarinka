@@ -32,6 +32,9 @@ function str_after(L: plua_State): integer; cdecl;
 function str_before(L: plua_State): integer; cdecl;
 function str_random(L: plua_State): integer; cdecl;
 function str_lastchar(L: plua_State): integer; cdecl;
+function str_matchversion(L: plua_State): integer; cdecl;
+function str_matchversionex(L: plua_State): integer; cdecl;
+function str_compareversion(L: plua_State): integer; cdecl;
 function str_maxlen(L: plua_State): integer; cdecl;
 function str_extracttagcontent(L: plua_State): integer; cdecl;
 function str_gettoken(L: plua_State): integer; cdecl;
@@ -515,6 +518,24 @@ function str_occur(L: plua_State): integer; cdecl;
 begin
   if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
    plua_pushintnumber(L, Occurs(lua_tostring(L, 2), lua_tostring(L, 1)));
+end;
+
+function str_matchversionex(L: plua_State): integer; cdecl;
+begin
+  if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
+   lua_pushboolean(L, MatchVersionEx(lua_tostring(L, 1), lua_tostring(L, 2)));
+end;
+
+function str_matchversion(L: plua_State): integer; cdecl;
+begin
+  if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
+   lua_pushboolean(L, CompareVersionString(lua_tostring(L, 1), lua_tostring(L, 2)) = 0);
+end;
+
+function str_compareversion(L: plua_State): integer; cdecl;
+begin
+  if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then
+   plua_pushintnumber(L, CompareVersionString(lua_tostring(L, 1), lua_tostring(L, 2)));
 end;
 
 function str_wildmatch(L: plua_State): integer; cdecl;

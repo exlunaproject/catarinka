@@ -31,6 +31,7 @@
 * **after** ( s, sub ): Returns the portion of the string after a specific sub-string.
 * **before** ( s, sub ): Returns the portion of the string before a specific sub-string.
 * **between** ( s, start, stop ): Returns a string between 2 strings.
+* **comparever** ( version1, version 1 ): Compare two version strings. If equal, returns 0. If version 1 is more up-to-date than version 2, returns 1 and if version 1 is older than version 2, returns -1.
 * **decrease** ( s [,step] ): Decreases the string characters.
 * **gettoken** ( s, delim, int ): Returns what comes after a delimiter.
 * **increase** ( s [,step] ): Increases the string characters.
@@ -54,6 +55,8 @@
 * **isint** ( s ): Checks if a string is integer.
 * **match** ( s, pattern ): Wildcard matching (* and ?).
 * **matchx** ( s, pattern ): Extended Wildcard matching, Catarinka's way (*, ?, # for number and ¿ to match a letter).
+* **matchver** ( version1, version2 ): Version string matching. Returns true if versions compared are equal.
+* **matchverpat** ( version, pattern ): Version string matching using a pattern (see test.lua for examples).
 
 These will return a boolean value.
 
