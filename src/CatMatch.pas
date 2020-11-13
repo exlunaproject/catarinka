@@ -313,6 +313,8 @@ var
 begin
   v1ext := emptystr;
   v2ext := emptystr;
+  v1extnum := emptystr;
+  v2extnum := emptystr;
   v1 := version1;
   v2 := version2;
   if IsAlphaNumeric(v1) then begin
