@@ -80,6 +80,7 @@ function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
 function EndsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function ExtractFromString(const s, startstr, endstr: string): string;
+function ExtractNumbers(const s: string): string;
 function GetLineNumberByPos(const s: string; const Position: integer): integer;
 function GetStringLine(const s:string;const line:integer):TCatFuncResult;
 function GetToken(const aString, SepChar: string; const TokenNum: Integer): string;
@@ -1281,6 +1282,21 @@ begin
     inc(ps, length(startstr));
     result := Copy(s, ps, pe - ps);
   end;
+end;
+
+function ExtractNumbers(const s: string): string;
+var
+  i, l: integer;
+begin
+  SetLength(result, length(s));
+  l := 0;
+  for i := 1 to length(s) do
+    if (CharInSet(s[i], ['0' .. '9'])) then
+    begin
+      inc(l);
+      result[l] := s[i];
+    end;
+  SetLength(result, l);
 end;
 
 // Based on an example from Thomas Scheffczyk
