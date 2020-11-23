@@ -1,6 +1,6 @@
 # Catarinka Lua Library
 
-This is a multi-purpose set of Lua extensions developed to be used in the [Sandcat Browser](https://github.com/felipedaragon/sandcat) but that can also be used separately with any Lua-based application. Currently, this library extends Lua with [over 60 functions](https://github.com/felipedaragon/catarinka/blob/master/lualib/docs/functions.md) and some useful classes. The project's goal is to make the development of Lua applications easier and to push the boundaries of the Lua language to do innovative things. This will always be a work in progress with new additions and regular updates.
+This is a multi-purpose set of Lua extensions developed to be used in the [Sandcat Browser](https://github.com/felipedaragon/sandcat) but that can also be used separately with any Lua-based application. Currently, this library extends Lua with [over 60 functions](https://github.com/exlunaproject/catarinka/blob/master/lualib/docs/functions.md) and some useful classes. The project's goal is to make the development of Lua applications easier and to push the boundaries of the Lua language to do innovative things. This will always be a work in progress with new additions and regular updates.
 
 ## Directories
 
@@ -9,7 +9,7 @@ This is a multi-purpose set of Lua extensions developed to be used in the [Sandc
 
 ## Usage
 
-To use Catarinka, you just need to load the library using `require "Catarinka"`. After this you can use any of the library's functions. For a list of functions, see [here](https://github.com/felipedaragon/catarinka/blob/master/lualib/docs/functions.md).
+To use Catarinka, you just need to load the library using `require "Catarinka"`. After this you can use any of the library's functions. For a list of functions, see [here](https://github.com/exlunaproject/catarinka/blob/master/lualib/docs/functions.md).
 
 ### Classes
 
@@ -19,8 +19,8 @@ All Catarinka classes (described in `docs\classes.*`) have a "new" method that m
 
 Compiled binaries for Windows can be downloaded from the links below.
 
-* [64-bit](https://www.syhunt.com/pub/downloads/underscript-2.0.0.exe) (included with UnderScript setup)
+* http://www.exluna.org/
 
 ## Dependencies
 
-For compiling Catarinka you will need [pLua](https://github.com/felipedaragon/pLua-XE) and  [LibTar](http://www.destructor.de/libtar/).
+For compiling Catarinka you will need [pLua](https://github.com/exlunaproject/pLua-XE) and  [LibTar](http://www.destructor.de/libtar/).
