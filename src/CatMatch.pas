@@ -2,7 +2,7 @@ unit CatMatch;
 {
   Catarinka - Regular Expression and various other useful matching functions
 
-  Copyright (c) 2003-2020 Felipe Daragon
+  Copyright (c) 2003-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -167,6 +167,7 @@ end;
 // Allows to match a string using different methods:
 // [somestring] -- case sensitive contains
 // wild:[somestring] -- case sensitive wild match
+// wildx:[somestring] -- case sensitive wild match extended
 // regexp:[expression] -- regular expression
 // icase:[somestring] -- case insensitive contains
 // icase:wild:[somestring] -- case insensitive wild match (* and ?)
@@ -175,6 +176,7 @@ const
   cIgnoreCase = 'icase:';
   cReEx = 'regexp:';
   cWild = 'wild:';
+  cWildX = 'wildx';
 var
   sig, content, pat: string;
 begin
@@ -196,6 +198,12 @@ begin
   begin
     pat := after(sig, cWild);
     result := MatchWildcard(content, pat);
+  end
+  else
+  if BeginsWith(sig,cWildx) then
+  begin
+    pat := after(sig, cWildx);
+    result := MatchWildcardX(content, pat);
   end
   else
   begin
@@ -337,6 +345,9 @@ begin
   if IsAlphaNumeric(ver) then begin
     result.version := ExtractVersionFromString(ver);
     result.ext := After(ver, result.version);
+    // handles version like 1.0.0b-somename
+    if pos('-', result.ext) <> 0 then
+    result.ext := Before(result.ext, '-');
     result.extnum := ExtractNumbers(result.ext);
     result.hasletter := (length(result.ext) = 1) and (result.ext[1] in ['a'..'z','A'..'Z']);
     result.stage := GetVersionStage(ver);
@@ -425,33 +436,37 @@ var
 begin
   result := false;
   compres := -1; // avoid compiler message
-  outver := ExtractVersionFromString(vercheck);
-    if beginswith(vercheck, '=') = false then
-      compres := CompareVersionNumber(curver, outver);
+  outver := vercheck; //ExtractVersionFromString(vercheck);
+    //if beginswith(vercheck, '=') = false then
+    //  compres := CompareVersionNumber(curver, outver);
     if beginswith(vercheck, '>=') then begin
-        //if curver >= outver  then
+        outver := after(vercheck, '>=');
+        compres := CompareVersionString(curver, outver);
         if (compres = 1) or (compres = 0) then
         result := true;
     end else
     if beginswith(vercheck, '<=') then begin
-        //if curver <= outver  then
+        outver := after(vercheck, '<=');
+        compres := CompareVersionString(curver, outver);
         if (compres = -1) or (compres = 0) then
         result := true;
     end else
     if beginswith(vercheck, '<') then begin
-        //if curver < outver  then
+        outver := after(vercheck, '<');
+        compres := CompareVersionString(curver, outver);
         if (compres = -1) then
         result := true;
     end else
     if beginswith(vercheck, '>') then begin
-        //if curver > outver  then
+        outver := after(vercheck, '>');
+        compres := CompareVersionString(curver, outver);
         if (compres = 1) then
         result := true;
     end else
     if beginswith(vercheck, '=') then begin
         outver := after(vercheck, '=');
         if IsWildCardString(outver) = false then begin
-          compres := CompareVersionNumber(curver, outver);
+          compres := CompareVersionString(curver, outver);
           if (compres = 0) then
           result := true;
         end else begin

@@ -2,7 +2,7 @@ unit CatHashes;
 {
   Catarinka - Hash functions
 
-  Copyright (c) 2003-2020 Felipe Daragon
+  Copyright (c) 2003-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -30,7 +30,48 @@ uses
 function MD5Hash(const s: string): string;
 function MD5Hash_Sanders(s: UTF8String): UTF8String;
 
+function MD5File(const filename:string): string;
+
+function StreamToMD5(m: TStream): String;
+function StreamToSHA1(m: TStream): String;
+
 implementation
+
+function MD5File(const filename:string): string;
+var
+  f: TFileStream;
+begin
+  f := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+  with f do
+  begin
+    try
+      Result := StreamToMD5(f);
+    except
+      Result := emptystr;
+    end;
+    Free;
+  end;
+end;
+
+function StreamToMD5(m: TStream): String;
+begin
+  {$IFDEF D10SEATTLE_OR_UP}
+  result := THashMD5.GetHashString(m);
+  {$ELSE}
+  // TODO...
+  result := emptystr;
+  {$ENDIF}
+end;
+
+function StreamToSHA1(m: TStream): String;
+begin
+  {$IFDEF D10SEATTLE_OR_UP}
+  result := THashSHA1.GetHashString(m);
+  {$ELSE}
+  // TODO...
+  result := emptystr;
+  {$ENDIF}
+end;
 
 function MD5Hash(const s: string): string;
 begin
