@@ -2,11 +2,13 @@ unit CatSynEdit;
 
 {
   Catarinka TCatSynEdit - Enhanced SynEdit with popup menu
-  Copyright (c) 2013-2020 Felipe Daragon
+  Copyright (c) 2013-2021 Felipe Daragon
   Based on uSynEditPopupEdit.pas by Rodrigo Ruz V
 
   License: MIT (http://opensource.org/licenses/mit-license.php)
   Same license as the original code.
+
+  The LoadFromFile() method is also a better alternative to Lines.LoadFromFile()
 }
 
 interface
@@ -23,7 +25,7 @@ uses
 {$IF DXE3_OR_UP}
   System.Actions,
 {$IFEND}
-  SynEdit;
+  SynEdit, CatStringList;
 
 {$DEFINE OVMOUSEWHEEL}
 
@@ -256,10 +258,16 @@ begin
     end;
 end;
 
+// Alternative to lines.loadfromfile() which uses improved file loading from
+// TCatStringList that deals with rare UTF8 encoding problems when loading a file
 procedure TCatSynEdit.LoadFromFile(const filename:string);
+var sl:TCatStringList;
 begin
   fFilename := filename;
-  Lines.LoadFromFile(filename);
+  sl := TCatStringList.Create;
+  sl.LoadFromFile(filename);
+  Lines.Text := sl.Text;
+  sl.Free;
 end;
 
 procedure TCatSynEdit.SaveToFile;
