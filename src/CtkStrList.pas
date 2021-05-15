@@ -2,7 +2,7 @@ unit CtkStrList;
 
 {
   Catarinka Lua Library - String List Object
-  Copyright (c) 2013-2014 Felipe Daragon
+  Copyright (c) 2013-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -10,14 +10,14 @@ unit CtkStrList;
 interface
 
 uses
-  Classes, SysUtils, Lua, pLua, LuaObject, CatUtils, CatStrings;
+  Classes, SysUtils, Lua, pLua, LuaObject, CatUtils, CatStrings, CatStringList;
 
 type
   { TCatarinkaStrList }
   TCatarinkaStrList = class(TLuaObject)
   private
   public
-    obj: TStringList;
+    obj: TCatStringList;
     constructor Create(LuaState: PLua_State; AParent: TLuaObject = nil);
       overload; override;
     function GetPropValue(propName: String): Variant; override;
@@ -161,7 +161,7 @@ end;
 constructor TCatarinkaStrList.Create(LuaState: PLua_State; AParent: TLuaObject);
 begin
   inherited Create(LuaState, AParent);
-  obj := TStringList.Create;
+  obj := TCatStringList.Create;
 end;
 
 const

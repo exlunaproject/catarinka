@@ -23,8 +23,6 @@ function IsFileUTF8_BOM(const filename: string): Boolean;
 
 implementation
 
-{ TCatStringList }
-
 // Returns true if the file is UTF8, false otherwise
 // Thanks to Martin Holmes who crafted this FileMayBeUTF8() function based on
 // examples from an old post at http://mail.nl.linux.org/linux-utf8/1999-09/msg00110.html

@@ -25,11 +25,15 @@ uses
 type
   TCatStringList = class(TStringList)
   protected
+   {$IFDEF UNICODE}
     procedure LoadFromFile(const filename: string); override;
     procedure LoadFromFile(const filename: string;
       encoding: TEncoding); override;
+    {$ENDIF}
   private
+    {$IFDEF UNICODE}
     procedure LoadFromFileUTF8(const filename: string);
+    {$ENDIF}
   public
   end;
 
@@ -37,6 +41,7 @@ implementation
 
 { TCatStringList }
 
+{$IFDEF UNICODE}
 // Workaround for rare UTF8 Signature related error
 procedure TCatStringList.LoadFromFileUTF8(const filename: string);
 var
@@ -65,5 +70,6 @@ begin
   else
     inherited LoadFromFile(filename, encoding)
 end;
+{$ENDIF}
 
 end.
