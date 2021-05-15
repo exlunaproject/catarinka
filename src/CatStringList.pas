@@ -4,8 +4,8 @@
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
-  This TStringList alternative includes support for loading UTF8 Signature
-  encoded files
+  This TStringList alternative includes support for loading UTF8 encoded files
+  that contain invalid characters
 }
 
 unit CatStringList;
@@ -42,7 +42,8 @@ implementation
 { TCatStringList }
 
 {$IFDEF UNICODE}
-// Workaround for rare UTF8 Signature related error
+// Workaround for rare invalid character error with bad UTF8 Signature encoded 
+// files
 procedure TCatStringList.LoadFromFileUTF8(const filename: string);
 var
   enc: TUTF8Encoding;
@@ -54,7 +55,7 @@ end;
 
 procedure TCatStringList.LoadFromFile(const filename: string);
 begin
-  // Let LoadFromFile use the default encoding only if not UTF8 file
+  // Use standard LoadFromFile only if not UTF8 file
   if IsFileUTF8(filename) = true then
     LoadFromFileUTF8(filename)
   else
@@ -64,7 +65,7 @@ end;
 procedure TCatStringList.LoadFromFile(const filename: string;
   encoding: TEncoding);
 begin
-  // Call standard LoadFromFile only if not UTF8 encoding
+  // Call standard LoadFromFile only if not UTF8 encoding specified
   if encoding = TEncoding.UTF8 then
     LoadFromFileUTF8(filename)
   else
