@@ -25,6 +25,7 @@ function CleanFilename(const filename: string;
   const invCharRep: Char = '_'): string;
 function DeleteFolder(const dir: string): boolean;
 function DirExists(const dir: string): boolean;
+function DirIsEmpty(const dir: string): boolean;
 function FileCanBeOpened(const filename: String): boolean;
 function FileCopy(const source, dest: string): boolean;
 function FilenameToMimeType(const filename: string): string;
@@ -113,6 +114,24 @@ end;
 function DirExists(const dir: string): boolean;
 begin
   Result := DirectoryExists(dir);
+end;
+
+// Returns true if a directory is empty, false otherwise. If the directory does
+// not exists, also returns true
+function DirIsEmpty(const dir: string): boolean;
+var
+  i: Integer;
+  sr: TSearchRec;
+begin
+  if DirExists(dir) = true then begin
+    Result := false;
+    FindFirst(IncludeTrailingPathDelimiter(dir) + '*', faAnyFile, sr);
+    for i := 1 to 2 do
+      if (sr.Name = '.') or (sr.Name = '..') then
+        Result := FindNext(sr) <> 0;
+    FindClose(sr);
+  end else
+  Result := true;
 end;
 
 function FileCanBeOpened(const filename: string): boolean;

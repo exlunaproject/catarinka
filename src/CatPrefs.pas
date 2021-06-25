@@ -78,6 +78,8 @@ type
       write SetValue; default;
   end;
 
+  function IsEncryptedCID(CID: string): boolean;
+
 implementation
 
 uses CatStrings, CatStringLoop, CatMatch,
