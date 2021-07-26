@@ -1,7 +1,7 @@
 unit CatTarman;
 
 {
-  TAR File Format Management Lua library
+  TAR File Format Management library
   Copyright (c) 2013-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
@@ -18,6 +18,7 @@ procedure ExtractTARFileToStream(const tarfilename, filename: string;
   ms: TMemoryStream);
 function TAR_GetDirList(tarfilename:string):string;
 function TAR_GetFileList(tarfilename:string; includedirs:boolean=false):string;
+function TAR_CountFileExt(const filename:string; extlist: array of string):integer;
 
 implementation
 
@@ -173,6 +174,23 @@ begin
   end;
   ta.Free;
   sl.Free;
+end;
+
+function TAR_CountFileExt(const filename:string; extlist: array of string):integer;
+var
+  slp: TStringLoop;
+  ext : string;
+begin
+   result := 0;
+   slp := TStringLoop.Create;
+   slp.list.text := TAR_GetFileList(filename);
+   slp.Reset;
+    while slp.Found do begin
+      ext := extractfileext(slp.Current);
+      if MatchStrInArray(ext, extlist) then
+      inc(result);
+    end;
+   slp.Free;
 end;
 
 end.
