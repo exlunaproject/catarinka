@@ -17,6 +17,13 @@ uses
 {$ELSE}
   SysUtils, Controls, Windows;
 {$ENDIF}
+
+const
+ cMonthNamesLongEN: array[1..12] of string = ('January', 'February', 'March', 'April',
+   'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+ cMonthNamesShortEN: array[1..12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+
+
 type
   TCatDecodedDate = record
     AsString: string;
@@ -27,6 +34,14 @@ type
     Day: word;
   end;
 
+type
+  TCatDateRec = record
+    Day:integer;
+    Month:integer;
+    Year:integer;
+    AsString:string;
+  end;
+
 function CalcAge(const StartDate, Date: TDate): integer;
 function DateTimeToUnix(const Date: TDateTime): Longint;
 function DescribeDuration(const StartTime: TDateTime): string;
@@ -34,6 +49,7 @@ function DescribePassedDays(const aNow, aThen: TDateTime): string;
 function DescribePassedDateTime(const starttime: TDateTime): string;
 function DescribePassedTime(const t: string): string;
 function DiffDate(const day1, day2: TDateTime): integer;
+function ExtractDateFromTokenStr(const d,m,y:integer;s:string;sep:string=' '):TCatDateRec;
 function GetDayOfWeekAsNumber: integer;
 function GetDayOfWeekAsText: string;
 function GetDecodedDate(const d: TDateTime):TCatDecodedDate;
@@ -167,6 +183,35 @@ var
 begin
   diff := day2 - day1;
   Result := Round(diff);
+end;
+
+// Extracts a date from a tokenized string on which you know the position of day, month
+// and year.
+// Example:
+//   ExtractDateFromTokenStr(1,2,3, '21, June 2021 ...')
+//   returns a record with the day, month and year
+function ExtractDateFromTokenStr(const d,m,y:integer;s:string;sep:string=' '):TCatDateRec;
+  function Extract(const tknum:integer;ismonth:boolean=false):integer;
+  var
+    tk, sn : string;
+  begin
+    tk := GetToken(s,sep,tknum);
+    sn := ExtractNumbers(tk);
+    result := StrToIntDef(sn,0);
+    if ismonth then begin
+      if MatchStrInArrayIdx(tk,cMonthNamesLongEN) <> 0 then
+        result := MatchStrInArrayIdx(tk,cMonthNamesLongEN);
+      if MatchStrInArrayIdx(tk,cMonthNamesShortEN) <> 0 then
+        result := MatchStrInArrayIdx(tk,cMonthNamesShortEN);
+    end;
+  end;
+begin
+  result.day := Extract(d);
+  result.month := Extract(m, true);
+  result.year := Extract(y);
+  result.asstring := CatPadLeft(IntToStr(result.year),'0',4);
+  result.asstring := result.asstring+'-'+CatPadLeft(IntToStr(result.month),'0',2);
+  result.asstring := result.asstring+'-'+CatPadLeft(IntToStr(result.day),'0',2);
 end;
 
 function GetDayOfWeekAsNumber: integer;

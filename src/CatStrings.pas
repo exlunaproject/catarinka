@@ -2,7 +2,7 @@ unit CatStrings;
 {
   Catarinka - String Operation functions
 
-  Copyright (c) 2003-2020 Felipe Daragon
+  Copyright (c) 2003-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -66,6 +66,8 @@ function BeginsWith(const s: string; const prefixes: array of string;
 function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
 function CatAppendStr(var s:string;const astr:string;const sep:string=','):string;
+function CatPadLeft(const s: string; const c: Char; const len: integer): string;
+function CatPadRight(const s: string; const c: Char; const len: integer): string;
 function CatWrapText(const text: string; const chars: integer): TStringList;
 function CharSetToStr(const c: TSysCharSet): string;
 function CombineIntArray(const p:array of integer):integer;
@@ -95,17 +97,19 @@ function IIF(const Cond: Boolean; const TrueInt: integer;
 function IScan(ch: Char; const s: string; fromPos: integer): integer;
 function IsAlpha(const s: string): Boolean;
 function IsAlphaNumeric(const s: string): Boolean;
+function IsAlphaOrNumeric(const c: Char): Boolean;
 function IsHexStr(const s: string): Boolean;
 function IsInteger(const s: string): Boolean;
 function IsLowercase(const s: string): Boolean;
 function IsUppercase(const s: string): Boolean;
 function IsRoman(const s: string): Boolean;
 function LastChar(const s: string): Char;
-function LeftPad(const s: string; const c: Char; const len: integer): string;
 function LeftStr(s: string; c: longword): string;
 function MatchIntInArray(const i: integer; aArray: array of integer): Boolean;
 function MatchStrInArray(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
+function MatchStrInArrayIdx(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): integer;
 function MemStreamToStr(m: TMemoryStream): String;
 function Occurs(substr, s: string): integer;
 function RandomCase(const s: string;
@@ -122,7 +126,6 @@ function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
 function ReplaceStr(const s, substr, repstr: string): string;
 function RestStr(const s: string; const index: longword): string;
-function RightPad(const s: string; const c: Char; const len: integer): string;
 function StrDecrease(const s: string; const step: integer = 1): string;
 function StrIncrease(const s: string; const step: integer = 1): string;
 function StripChars(const s: string; const aSet: TSysCharSet): string;
@@ -131,6 +134,7 @@ function StrMaxLen(const s: string; const MaxLen: integer;
   const AddEllipsis: Boolean = false): string;
 function StrToAlphaNum(const s: string): string;
 function StrArrayToCommaText(aArray: array of string):string;
+function StrArrayToText(aArray: array of string):string;
 function StrToBool(const s: string): Boolean;
 function StrToCharSet(const s: string): TSysCharSet;
 function StrToCommaText(const s: string): string;
@@ -627,6 +631,7 @@ begin
     end;
 end;
 
+// String must contain a least 1 letter and 1 number
 function IsAlphaNumeric(const s: string): Boolean;
 var
   i: integer;
@@ -642,6 +647,12 @@ begin
       num := true;
   end;
   result := alpha and num;
+end;
+
+// Character must be alpha or numeric
+function IsAlphaOrNumeric(const c: Char): Boolean;
+begin
+  result := CharInSet(c, ['A' .. 'Z', 'a' .. 'z', '0' .. '9']);
 end;
 
 function IsInteger(const s: string): Boolean;
@@ -714,7 +725,7 @@ begin
     result := s[length(s)];
 end;
 
-function LeftPad(const s: string; const c: Char; const len: integer): string;
+function CatPadRight(const s: string; const c: Char; const len: integer): string;
 var
   i: integer;
 begin
@@ -725,7 +736,7 @@ begin
   result := s + StringOfChar(c, i);
 end;
 
-function RightPad(const s: string; const c: Char; const len: integer): string;
+function CatPadLeft(const s: string; const c: Char; const len: integer): string;
 var
   i: integer;
 begin
@@ -771,6 +782,29 @@ begin
   begin
     if s = aArray[b] then begin
       result := true;
+      break;
+    end;
+  end;
+end;
+
+// Works like MatchStrInArray, but instead of boolean, returns 0 if not matched
+// or the non-zero based index of the matched string
+function MatchStrInArrayIdx(s: string; aArray: array of string;
+  IgnoreCase: Boolean = false): integer;
+var
+  b: integer;
+begin
+  result := 0;
+  if IgnoreCase then
+  begin
+    s := lowercase(s);
+    for b := Low(aArray) to High(aArray) do
+      aArray[b] := lowercase(aArray[b]);
+  end;
+  for b := Low(aArray) to High(aArray) do
+  begin
+    if s = aArray[b] then begin
+      result := b+1;
       break;
     end;
   end;
@@ -1029,6 +1063,18 @@ begin
   for b := Low(aArray) to High(aArray) do
     sl.add(aArray[b]);
   result := sl.CommaText;
+  sl.Free;
+end;
+
+function StrArrayToText(aArray: array of string):string;
+var
+  b: integer;
+  sl: TStringList;
+begin
+  sl := TStringList.Create;
+  for b := Low(aArray) to High(aArray) do
+    sl.add(aArray[b]);
+  result := sl.Text;
   sl.Free;
 end;
 

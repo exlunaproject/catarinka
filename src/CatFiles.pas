@@ -37,7 +37,7 @@ function GetFileSize(const filename: string): Int64;
 function GetFileToStr(const filename: string): string;
 function GetFileVersion(const filename: string;
   const ResFormat: string = '%d.%d.%d.%d'): string;
-function GetSizeDescription(const bytes: cardinal): string;
+function GetSizeDescription(const bytes: int64): string;
 function GetTextFileLinesCount(const filename: string): integer;
 function GetTempFile(const ext: string): string;
 function GetWindowsTempDir: string;
@@ -351,7 +351,7 @@ begin
 {$ENDIF}
 end;
 
-function GetSizeDescription(const bytes: cardinal): string;
+function GetSizeDescription(const bytes: int64): string;
 const
   cFF = '0.0';
 begin

@@ -2,7 +2,7 @@ unit CatLogger;
 {
   Catarinka Debug Logger class with elapsed time calculation functions
 
-  Copyright (c) 2003-2020 Felipe Daragon
+  Copyright (c) 2003-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -35,6 +35,7 @@ type
   TCatElapsedTime = record
     AsString: string;
     AsStringFriendly: string;
+    AsStringFriendlyShort: string;
     MsAsString: string;
     Ms: Double;
   end;
@@ -75,7 +76,7 @@ type
   end;
 
 function CatStopWatchNew: TCatStopWatch;
-function ElapsedTimeToFriendlyTime(el:TTimeSpan):string;
+function ElapsedTimeToFriendlyTime(el:TTimeSpan;includems:boolean=true):string;
 function GetStopWatchElapsedTime(sw: TCatStopWatch): TCatElapsedTime;
 
 implementation
@@ -84,7 +85,7 @@ uses CatStrings;
 
 {$IFDEF USEDIAGNOSTICS}
 
-function ElapsedTimeToFriendlyTime(el:TTimeSpan):string;
+function ElapsedTimeToFriendlyTime(el:TTimeSpan;includems:boolean=true):string;
 begin
   result := emptystr;
   if el.Hours <> 0 then
@@ -93,7 +94,13 @@ begin
     result := result + IntToStr(el.Minutes)+'min';
   if el.Seconds <> 0 then
     result := result + IntToStr(el.Seconds)+'sec';
-  result := result + IntToStr(el.Milliseconds)+'ms';
+
+  if includems = true then begin
+    result := result + IntToStr(el.Milliseconds)+'ms';
+  end else begin
+    if (el.Hours+el.Minutes+el.Seconds = 0) then
+    result := result + IntToStr(el.Milliseconds)+'ms';
+  end;
 end;
 
 function GetStopWatchElapsedTime(sw: TCatStopWatch): TCatElapsedTime;
@@ -105,6 +112,7 @@ begin
   result.MsAsString := FloatToStr(el.TotalMilliseconds) + ' ms';
   result.AsString := el.ToString;
   result.AsStringFriendly := ElapsedTimeToFriendlyTime(el);
+  result.AsStringFriendlyShort := ElapsedTimeToFriendlyTime(el, false);
 end;
 
 function CatStopWatchNew: TCatStopWatch;

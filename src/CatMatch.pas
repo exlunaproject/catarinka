@@ -28,6 +28,7 @@ type
   TCatRegExpr = TRegExpr;
 
 const
+ cWCXLVariable = '%WCXL%';
  VERSTG_RELEASE = 5;
  VERSTG_RELEASECANDIDATE = 4;
  VERSTG_BETA = 3;
@@ -61,11 +62,14 @@ function IsWildCardString(const s:string):boolean;
 function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
 function MatchStrInSepStr(const s,tags:string;separator:string=','):boolean;
+function MatchStringLUT(const sub, s:string):boolean;
 function MatchVersion(curver, vercheck:string):boolean;
 function MatchVersionRange(curver, vercheck:string):boolean;
 function MatchVersionEx(curver, vercheck:string):boolean;
 function MatchWildcard(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 function MatchWildcardX(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
+function MatchWildcardXL(s, Mask: string; sarr:array of string;
+  IgnoreCase: Boolean = false): Boolean;
 
 implementation
 
@@ -417,6 +421,18 @@ begin
   end;
 end;
 
+// Matches a string in lower, upper and title case formats
+function MatchStringLUT(const sub, s:string):boolean;
+begin
+  result := false;
+  if pos(lowercase(sub), s) <> 0 then
+    result := true
+  else if pos(uppercase(sub), s) <> 0 then
+    result := true
+  else if pos(titlecase(sub), s) <> 0 then
+    result := true;
+end;
+
 function IsWildCardString(const s:string):boolean;
 begin
   result := ContainsAnyOfChars(s, ['*','?']);
@@ -606,7 +622,9 @@ begin
         break;
       if (substr[J] = '¿') and (IsAlpha(s[Pred(i + J)]) <> true) then
         break;
-      if not(ContainsAnyOfChars(substr[J], ['?','#','¿']) or (substr[J] = s[Pred(i + J)])) then
+      if (substr[J] = '¡') and (IsAlphaOrNumeric(s[Pred(i + J)]) <> true) then
+        break;
+      if not(ContainsAnyOfChars(substr[J], ['?','#','¿','¡']) or (substr[J] = s[Pred(i + J)])) then
         break;
       inc(J);
     end;
@@ -623,6 +641,7 @@ end;
 // additional chars to be used as part of the mask:
 // # (hash) to match a number
 // ¿ (inverted interrogation) to match a letter (A..Z, a..z)
+// ¡ (inverted exclamation) to match alpha or numeric character (A..Z, a..z, 0..9)
 // by Felipe Daragon
 function MatchWildcardX(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 const
@@ -658,6 +677,23 @@ begin
     Max := length(s);
   end;
   result := true;
+end;
+
+function MatchWildcardXL(s, Mask: string; sarr:array of string;
+  IgnoreCase: Boolean = false): Boolean;
+var
+  i: integer;
+  maskmut:string;
+begin
+  result := false;
+  for i := low(sarr) to high(sarr) do
+  begin
+    maskmut := replacestr(mask,cWCXLVariable,sarr[i]);
+    if MatchWildcardX(s, maskmut, ignorecase) = true then begin
+      result := true;
+      break;
+    end;
+  end;
 end;
 
 // ------------------------------------------------------------------------//
