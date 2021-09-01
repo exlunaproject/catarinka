@@ -17,6 +17,7 @@ type
   private
     fClassID: TGUID;
   public
+    function ExtractFileToStr(const pakfilename, filename: string):string;
     procedure ExtractFileToStream(const pakfilename, filename: string;
       ms: TMemoryStream);
     function GetDirList(const pakfilename: string): string;
@@ -239,6 +240,16 @@ procedure TCat7Z.ExtractFileToStream(const pakfilename, filename: string;
   ms: TMemoryStream);
 begin
   Z7_ExtractFileToStream(fClassID, pakfilename, filename, ms);
+end;
+
+function TCat7Z.ExtractFileToStr(const pakfilename, filename: string):string;
+var
+  ms: TMemoryStream;
+begin
+  ms := TMemoryStream.Create;
+  Z7_ExtractFileToStream(fClassID, pakfilename, filename, ms);
+  result := MemStreamToStr(ms);
+  ms.Free;
 end;
 
 function TCat7Z.GetDirList(const pakfilename: string): string;

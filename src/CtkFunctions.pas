@@ -922,7 +922,7 @@ var
   reg: TRegistry;
 begin
   result := false;
-  reg := TRegistry.create;
+  reg := TRegistry.create(KEY_READ);
   try
     reg.Rootkey := HKEY_CURRENT_USER;
     if reg.OpenKey('Software\' + s, false) then

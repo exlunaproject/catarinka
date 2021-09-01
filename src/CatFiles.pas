@@ -2,7 +2,7 @@ unit CatFiles;
 {
   Catarinka - File System functions
 
-  Copyright (c) 2003-2014 Felipe Daragon
+  Copyright (c) 2003-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -38,6 +38,7 @@ function GetFileToStr(const filename: string): string;
 function GetFileVersion(const filename: string;
   const ResFormat: string = '%d.%d.%d.%d'): string;
 function GetSizeDescription(const bytes: int64): string;
+function GetSizeDescriptionBytes(const desc: string): int64;
 function GetTextFileLinesCount(const filename: string): integer;
 function GetTempFile(const ext: string): string;
 function GetWindowsTempDir: string;
@@ -52,6 +53,7 @@ procedure GetDirs(const dir: string; const Result: TStrings;
   SortResult: boolean = true);
 procedure GetFiles(const dir: string; const Result: TStrings;
   const IncludeDir: boolean = false; const IncludeExt: boolean = true);
+procedure GetFilesRecursive(const Result: TStrings; Dir, Mask: string);
 procedure WipeFile(const filename: string);
 
 implementation
@@ -282,6 +284,42 @@ begin
   FindClose(sr);
 end;
 
+procedure GetFilesRecursive(const Result: TStrings; Dir, Mask: string);
+var
+  dirs: TStrings;
+  SR: TSearchRec;
+  f: boolean;
+  i: integer;
+begin
+  if LastChar(Dir) <> PathDelim then
+    Dir := Dir + PathDelim;
+
+  f := FindFirst(Dir + Mask, faAnyFile - faDirectory, SR) = 0;
+  while f = true do
+  begin
+    Result.Add(Dir + SR.Name);
+    f := FindNext(SR) = 0;
+  end;
+  FindClose(SR);
+
+  // Makes a list of the subdirectories
+  dirs := TStringList.Create;
+  f := FindFirst(Dir + '*.*', faAnyFile, SR) = 0;
+  while f do
+  begin
+    if ((SR.Attr and faDirectory) <> 0) and (SR.Name[1] <> '.') then
+      dirs.Add(Dir + SR.Name);
+    f := FindNext(SR) = 0;
+  end;
+  FindClose(SR);
+
+  // Gets the list of files in each subdirectory
+  for i := 0 to dirs.Count - 1 do
+    GetFilesRecursive(Result, dirs[i], Mask);
+
+  dirs.Free;
+end;
+
 function GetFileSize(const filename: string): Int64;
 var
   f: TWin32FindData;
@@ -368,6 +406,42 @@ begin
     else
       Result := FormatFloat(cFF, bytes / 1073741824) + ' GB';
     end;
+end;
+
+// Reverts a size description like 1mb or "1 megabyte" to the equivalent
+// number of bytes
+function GetSizeDescriptionBytes(const desc: string): int64;
+var
+  sz: double;
+  szstr, szlet, adesc: string;
+begin
+  result := 0;
+  adesc := replacechars(desc, ['(', ')'], ' ');
+  adesc := replacestr(adesc, ' ', emptystr);
+  adesc := replacestr(adesc, ',', '.');
+  adesc := lowercase(adesc);
+  if lastchar(adesc) = 's' then
+    adesc := removelastchar(adesc);
+  szstr := ExtractChars(adesc, ['0' .. '9', '.']);
+  szlet := ExtractChars(adesc, ['A' .. 'Z', 'a'..'z']);
+  try
+    sz := StrToFloat(szstr);
+    if szlet = 'b' then
+      result := Trunc(sz)
+    else if szlet = 'byte' then
+      result := Trunc(sz)
+    else if MatchStrInArray(szlet, ['kilobyte', 'kbyte', 'kb']) then
+      result := Trunc(sz * 1024)
+    else if MatchStrInArray(szlet, ['megabyte', 'mb', 'm']) then
+      result := Trunc(sz * 1048576)
+    else if MatchStrInArray(szlet, ['gigabyte', 'gb']) then
+      result := Trunc(sz * 1073741824)
+    else if MatchStrInArray(szlet, ['terabyte', 'tb']) then
+      result := Trunc(sz * 1099511627776)
+    else if MatchStrInArray(adesc, ['petabyte', 'pb']) then
+      result := Trunc(sz * 1125899906842624);
+  except
+  end;
 end;
 
 // Returns a temporary filename (located in the Windows Temporary directory)

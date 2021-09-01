@@ -7,10 +7,13 @@ unit CatMatch;
   See https://github.com/felipedaragon/catarinka/ for details
 
   Uses the RegExpr library by Andrey V. Sorokin.
-  MatchWildcard function by Arsne von Wyss
   CompareVersionNumber() function by Martin Prikryl (@martinprikryl) with small
   changes and suggestions by Tithen-Firion
   CompareVersionString() function is my extension to Martin's function
+
+  I extended the MatchWildcard function by Arsne von Wyss and added
+  a few additional functions based on it:
+    MatchWildcardX(), MatchWildcardXL() and ExtractMatchX()
 }
 
 interface
@@ -58,6 +61,7 @@ function CompareVersionNumber(const version1, version2: string;
 function CompareVersionString(const version1, version2: string;
   const Silent:boolean=true): Integer;
 function CrackVersionString(const ver: string): TVersionParts;
+function ExtractMatchX(const s,mask:string;const sep:string=','):string;
 function IsWildCardString(const s:string):boolean;
 function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
@@ -694,6 +698,25 @@ begin
       break;
     end;
   end;
+end;
+
+// Loops through a comma-separated string and returns the first match
+// or an empty string if there is no match
+// Example:
+// ExtractMatchX('test,11/11/2020,123','##/##/##')
+//  will return 11/11/2020
+function ExtractMatchX(const s,mask:string;const sep:string=','):string;
+var slp:TSepStringLoop;
+begin
+  result := emptystr;
+  slp := TSepstringLoop.Create(s,sep);
+  while slp.Found do begin
+    if MatchWildcardX(slp.current,mask) = true then begin
+      result := slp.Current;
+      break;
+    end;
+  end;
+  slp.Free;
 end;
 
 // ------------------------------------------------------------------------//

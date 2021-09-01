@@ -3,7 +3,7 @@ unit CatUI;
 {
   Catarinka - User Interface related functions
 
-  Copyright (c) 2003-2017 Felipe Daragon
+  Copyright (c) 2003-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -20,20 +20,23 @@ uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, Vcl.Forms, Vcl.Menus, System.SysUtils,
   System.Classes, Vcl.ComCtrls, Vcl.Clipbrd,
-  Winapi.CommCtrl, Winapi.Messages, Winapi.ShlObj, System.TypInfo;
+  Winapi.CommCtrl, Winapi.Messages, Winapi.ShlObj, System.TypInfo,
 {$ELSE}
   Windows, Forms, Menus, SysUtils, Classes, ComCtrls,
-  CommCtrl, Messages, ShlObj, TypInfo, Clipbrd;
+  CommCtrl, Messages, ShlObj, TypInfo, Clipbrd,
 {$ENDIF}
+  CatStrings;
+
 function AskYN(const question: string): Boolean;
 function GetWindowState: integer;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 function GetWindowClassHandle(const Title: string): integer;
-function GetPercentage(const percent, Value: integer): Int64;
+function GetPercentage(const pos, max: integer): Int64;
 function GetSpecialFolderPath(const Folder: integer;
   const CanCreate: Boolean): string;
 function MakeNotifyEvent(forObject: TObject; const procname: string)
   : TNotifyEvent;
+function ProgramDirExists(const pname:string):TCatFuncResult;
 procedure ApplyWindowState(const i: integer);
 procedure CloseWindowByClass(const classname: string);
 procedure FlashUI(const times: integer = 2; const delay: integer = 500);
@@ -140,7 +143,7 @@ const
 implementation
 
 uses
-  CatPointer, CatStrings;
+  CatFiles, CatPointer;
 
 procedure AddListViewItem(lv: TListView; const capt: string; const ii: integer;
   const mv: Boolean);
@@ -352,13 +355,13 @@ begin
     Clipboard.AsText := t;
 end;
 
-function GetPercentage(const percent, Value: integer): Int64;
+function GetPercentage(const pos, max: integer): Int64;
 var
   p: Real;
 begin
-  if Value <> 0 then
+  if max <> 0 then
   begin
-    p := ((percent / Value) * 100);
+    p := ((pos / max) * 100);
     result := Round(p);
   end
   else
@@ -465,6 +468,24 @@ begin
   end;
 end;
 
+// Checks if the directory of a program exists in the Program Files directory
+function ProgramDirExists(const pname:string):TCatFuncResult;
+var jdir:string;
+begin
+  result.B := false;
+  result.S := emptystr;
+  jdir := emptystr;
+ {$IFDEF WIN32}
+  jdir := GetSpecialFolderPath(CSIDL_PROGRAM_FILES,false)+'\'+pname+'\';
+ {$ENDIF}
+ {$IFDEF WIN64}
+  jdir := GetEnvironmentVariable('ProgramW6432')+'\'+pname+'\';
+ {$ENDIF}
+  if (jdir <> emptystr) and (direxists(jdir) = true) then begin
+    result.B := true;
+    result.S := jdir;
+  end;
+end;
 
 procedure QuickSortTreeViewItems(tv: TTreeView);
 var

@@ -44,7 +44,7 @@ type
 type
  TCatFuncResult = record
    B: boolean;
-   I: integer;
+   I: int64;
    S: string;
  end;  
 
@@ -65,7 +65,8 @@ function BeginsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function BoolToStr(const b: Boolean): string;
 function BoolToYN(const b: Boolean): string;
-function CatAppendStr(var s:string;const astr:string;const sep:string=','):string;
+procedure CatAppendStr(var s:string;const astr:string;const sep:string=',');
+procedure CatAppendTag(var s:string; const tag:string; const sep:string=',');
 function CatPadLeft(const s: string; const c: Char; const len: integer): string;
 function CatPadRight(const s: string; const c: Char; const len: integer): string;
 function CatWrapText(const text: string; const chars: integer): TStringList;
@@ -82,10 +83,12 @@ function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
 function EndsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
 function ExtractFromString(const s, startstr, endstr: string): string;
+function ExtractChars(const s:string;const aSet: TSysCharSet):string;
 function ExtractNumbers(const s: string): string;
 function GetLineNumberByPos(const s: string; const Position: integer): integer;
 function GetStringLine(const s:string;const line:integer):TCatFuncResult;
 function GetToken(const aString, SepChar: string; const TokenNum: Integer): string;
+function GetTokenFromRight(const aString, SepChar: string; const TokenNum: Integer): string;
 function GetValidCompName(const s: string): string;
 function HexToInt(const Hex: string; const WarnError: Boolean = false): integer;
 function HexToStr(const s: string): string;
@@ -111,12 +114,15 @@ function MatchStrInArray(s: string; aArray: array of string;
 function MatchStrInArrayIdx(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): integer;
 function MemStreamToStr(m: TMemoryStream): String;
+function NumToWords(dblValue : Double) : String;
+function NumToWordsShort(dblValue : Double) : string;
 function Occurs(substr, s: string): integer;
 function RandomCase(const s: string;
   const ToUpperSet: TSysCharSet = ['a' .. 'z'];
   const ToLowerSet: TSysCharSet = ['A' .. 'Z']): string;
 function RandomString(const len: integer;
   const chars: string = 'abcdefghijklmnopqrstuvwxyz'): string;
+function RemoveDuplicatedTags(const s:string):string;
 function RemoveLastChar(const s: string): string;
 function RemoveNumbers(const s: string): string;
 function RemoveQuotes(const s: string): string;
@@ -126,6 +132,7 @@ function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
 function ReplaceStr(const s, substr, repstr: string): string;
 function RestStr(const s: string; const index: longword): string;
+procedure SL_RemoveDuplicates(const sl : TStringList);
 function StrDecrease(const s: string; const step: integer = 1): string;
 function StrIncrease(const s: string; const step: integer = 1): string;
 function StripChars(const s: string; const aSet: TSysCharSet): string;
@@ -326,12 +333,62 @@ begin
 end;
 
 // Appends a string with a separator string
-function CatAppendStr(var s:string;const astr:string;const sep:string=','):string;
+procedure CatAppendStr(var s:string; const astr:string; const sep:string=',');
 begin
  if s = emptystr then
    s := astr else begin
    s := s + sep + astr;
  end;
+end;
+
+// Similar to CatAppendStr, but does not allow empty string or duplicated entries
+procedure CatAppendTag(var s:string; const tag:string; const sep:string=',');
+var atag:string;
+begin
+  atag := trim(tag);
+  if atag = sep then
+    atag := emptystr;
+  if s = emptystr then begin
+    s := atag;
+  end else begin
+    if (atag <> emptystr) then begin
+      s := s + sep + atag;
+      if sep = ',' then
+      s := RemoveDuplicatedTags(s);
+    end;
+  end;
+end;
+
+// Removes duplicated entries from string (comma-separated)
+function RemoveDuplicatedTags(const s:string):string;
+var sl: TStringList;
+begin
+  sl := TStringList.Create;
+  sl.CommaText := s;
+  SL_RemoveDuplicates(sl);
+  result := trim(sl.CommaText);
+  sl.Free;
+end;
+
+// Removes duplicate items in string list
+procedure SL_RemoveDuplicates(const sl : TStringList);
+var
+   buf: TStringList;
+   i: integer;
+begin
+   sl.Sort;
+   buf := TStringList.Create;
+   try
+     buf.Sorted := True;
+     buf.Duplicates := dupIgnore;
+     buf.BeginUpdate;
+     for i := 0 to sl.Count - 1 do
+       buf.Add(sl[i]) ;
+     buf.EndUpdate;
+     sl.Assign(buf) ;
+   finally
+     FreeandNil(buf);
+   end;
 end;
 
 function CatCaseOf(const s: string; labels: array of string;
@@ -1330,14 +1387,14 @@ begin
   end;
 end;
 
-function ExtractNumbers(const s: string): string;
+function ExtractChars(const s:string;const aSet: TSysCharSet):string;
 var
   i, l: integer;
 begin
   SetLength(result, length(s));
   l := 0;
   for i := 1 to length(s) do
-    if (CharInSet(s[i], ['0' .. '9'])) then
+    if (CharInSet(s[i], aSet)) then
     begin
       inc(l);
       result[l] := s[i];
@@ -1345,6 +1402,12 @@ begin
   SetLength(result, l);
 end;
 
+function ExtractNumbers(const s: string): string;
+begin
+  result := ExtractChars(s, ['0' .. '9']);
+end;
+
+// Gets a string part of a separated string starting from left
 // Based on an example from Thomas Scheffczyk
 function GetToken(const aString, SepChar: String; const TokenNum: Integer): String;
 var
@@ -1373,9 +1436,174 @@ begin
     result := emptystr;
 end;
 
+// Gets a string part of a separated string starting from right
+// Works like GetToken() above, but this one starts from right to left
+function GetTokenFromRight(const aString, SepChar: string; const TokenNum: Integer): string;
+var
+ revstring, revsep:string;
+begin
+ // Quick hack to reverse the search...
+ revstring := ReverseString(astring);
+ revsep := ReverseString(sepchar);
+ Result := GetToken(revstring,revsep,tokennum);
+ Result := ReverseString(result);
+end;
+
 function MemStreamToStr(m: TMemoryStream): String;
 begin
   SetString(Result, PAnsiChar(AnsiString(m.Memory)), M.Size);
+end;
+
+function NumToWordsShort(dblValue : Double) : string;
+  procedure Shorten(const s:string);
+  begin
+    if pos(s,result) <> 0 then
+      result := before(result,s)+' '+s;
+  end;
+begin
+  result := NumToWords(dblvalue);
+  Shorten('trillion');
+  Shorten('billion');
+  Shorten('million');
+  Shorten('thousand');
+end;
+
+// Thanks to rahsoft (http://rahsoft.blogspot.com)
+function NumToWords(dblValue : Double) : String;
+var
+  ones : array[0..9] of String;
+  teens : array[0..9] of String;
+  tens : array[0..9] of String;
+  thousands : array[0..4] of String;
+  i, nPosition, nDigit, bAllZeros : Integer;
+  strResult, strTemp, tmpBuff : String;
+
+begin
+
+  ones[0] := 'ZERO';
+  ones[1] := 'ONE';
+  ones[2] := 'TWO';
+  ones[3] := 'THREE';
+  ones[4] := 'FOUR';
+  ones[5] := 'FIVE';
+  ones[6] := 'SIX';
+  ones[7] := 'SEVEN';
+  ones[8] := 'EIGHT';
+  ones[9] := 'NINE';
+
+  teens[0] := 'TEN';
+  teens[1] := 'ELEVEN';
+  teens[2] := 'TWELVE';
+  teens[3] := 'THIRTEEN';
+  teens[4] := 'FOURTEEN';
+  teens[5] := 'FIFTEEN';
+  teens[6] := 'SIXTEEN';
+  teens[7] := 'SEVENTEEN';
+  teens[8] := 'EIGHTEEN';
+  teens[9] := 'NINETEEN';
+
+  tens[0] := '';
+  tens[1] := ''; //TEN1
+
+  tens[2] := 'TWENTY';
+  tens[3] := 'THIRTY';
+  tens[4] := 'FORTY';
+  tens[5] := 'FIFTY';
+  tens[6] := 'SIXTY';
+  tens[7] := 'SEVENTY';
+  tens[8] := 'EIGHTY';
+  tens[9] := 'NINETY';
+
+  thousands[0] := '';
+  thousands[1] := 'THOUSAND';
+  thousands[2] := 'MILLION';
+  thousands[3] := 'BILLION';
+  thousands[4] := 'TRILLION';
+
+ try
+
+  strResult := '';
+  strTemp := IntToStr(round(dblValue));
+  //Iterate through string
+  For i := Length(strTemp) downTo 1 do
+  begin
+
+    //Get value of this digit
+    nDigit := StrToInt(MidStr(strTemp, i, 1));
+    //Get column position
+    nPosition := (Length(strTemp) - i) + 1;
+    //Action depends on 1's, 10's or 100's column
+    //Select Case (nPosition Mod 3)
+    case (nPosition Mod 3) of
+
+    1 :  //Case 1  //'1's position
+    begin
+        bAllZeros := 0;
+        if i = 1 Then
+
+          tmpBuff := ones[nDigit] + ' '
+        else
+        if MidStr(strTemp, i - 1, 1) = '1' Then
+
+        begin
+          tmpBuff := teens[nDigit] + ' ';
+        end
+        else
+        if nDigit > 0 Then
+
+          tmpBuff := ones[nDigit] + ' '
+        else
+        begin
+          //If next 10s & 100s columns are also
+          //zero, then don't show 'thousands'
+          bAllZeros := 1;
+          if i > 1 Then
+
+          begin
+            If MidStr(strTemp, i - 1, 1) <> '0' Then
+              bAllZeros := 0;
+          end;
+          If i > 2 Then
+
+          begin
+            If MidStr(strTemp, i - 2, 1) <> '0' Then
+              bAllZeros := 0;
+
+          End;
+          tmpBuff := '';
+        end;
+        If (bAllZeros = 0) and (nPosition > 1) Then
+
+          tmpBuff := tmpBuff + thousands[nPosition div 3] + ' ';
+
+        strResult := tmpBuff + strResult;
+
+    end;
+    2 :  //Tens position
+    begin
+
+        if nDigit > 0 Then
+          //if MidStr(strTemp, i - 1, 1) <> '1' Then
+          strResult := tens[nDigit] +  ' ' + strResult;
+
+    end;
+    0 :  //Hundreds position
+
+    begin
+
+        if nDigit > 0 Then
+          strResult := ones[nDigit] + ' HUNDRED ' + strResult;
+
+    end;
+    end;
+  end;
+
+  Result := lowercase(strResult);
+
+ except
+  Result := emptystr;
+ end;
+
 end;
 
 // ------------------------------------------------------------------------//

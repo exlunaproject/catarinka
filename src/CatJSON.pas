@@ -2,10 +2,12 @@ unit CatJSON;
 
 {
   Catarinka TCatJSON - JSON Manipulation Object
-  Copyright (c) 2010-2019 Felipe Daragon
+  Copyright (c) 2010-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  16.08.2021:
+  - Perform UTF8 decode when getting string
   14.08.2019:
   - Added compatibility with xsuperobject
   - Added RemovePath() method
@@ -46,6 +48,7 @@ const
 type
   TCatJSON = class
   private
+    fDecodeUTF8: boolean;
     fDefaultValue: Variant;
     fObject: ISuperObject;
     function GetCount:integer;
@@ -66,6 +69,7 @@ type
     constructor Create(const JSON: string = '');
     destructor Destroy; override;
     // properties
+    property DecodeUTF8: boolean read fDecodeUTF8 write fDecodeUTF8;
     property Count: integer read GetCount;
     property GlobalDefaultValue: Variant read fDefaultValue write fDefaultValue;
     property sObject: ISuperObject read fObject;
@@ -232,6 +236,11 @@ end;
 
 constructor TCatJSON.Create(const JSON: string = '');
 begin
+{$IFDEF DXE2_OR_UP}
+  fDecodeUTF8 := true;
+{$ELSE}
+  fDecodeUTF8 := false;
+{$ENDIF}
   fDefaultValue := null;
 {$IFDEF USEXSUPEROBJECT}
   if json<>emptystr then
@@ -319,6 +328,8 @@ begin
       stInt:
         Result := fObject.i[Name];
       stString:
+        if fDecodeUTF8 = true then
+        Result := UTF8Decode(fObject.S[Name]) else
         Result := fObject.S[Name];
       stObject, stArray, stMethod:
         Result := DefaultValue;

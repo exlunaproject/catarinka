@@ -14,16 +14,30 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  Winapi.Windows, Messages, System.SysUtils, Vcl.Forms;
+  Winapi.Windows, Messages, System.SysUtils, System.Win.Registry, Vcl.Forms;
 {$ELSE}
-  Windows, Messages, SysUtils, Forms;
+  Windows, Messages, SysUtils, Registry, Forms;
 {$ENDIF}
+
+type
+ TCatUninstallProgInfo = record
+   Available:boolean;
+   IsUptodate:boolean;
+   DisplayVersion:string;
+   InstallLocation:string;
+ end;
+
+function GetProgramUninstallInfo(const key: string;const version:string=''):TCatUninstallProgInfo;
+function GetInstallLanguage(const defaultLang:integer=409):integer;
 procedure CatDelay(const ms: Integer);
 procedure CatDelayAlt(const ms: Integer);
 procedure OutDebug(const s: string);
 procedure SetShortDateFormat(const s: string);
 
 implementation
+
+uses
+  CatMatch;
 
 type
   // Creates a sub-class in scope which we can use in a typecast
@@ -101,6 +115,61 @@ begin
     elapsed := Trunc(Now * 24 * 60 * 60 * 1000) - start;
 
   until (elapsed >= ms);
+end;
+
+// Gets Windows install language code from the Registry
+function GetInstallLanguage(const defaultLang:integer=409):integer;
+var
+  Reg: TRegistry;
+begin
+  result := defaultLang; // 409 EN
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
+    if Reg.OpenKey
+      ('\SYSTEM\CurrentControlSet\Control\Nls\Language\', false)
+    then
+    begin
+      result := StrToIntDef(Reg.ReadString('InstallLanguage'),defaultLang);
+      Reg.CloseKey;
+    end;
+  finally
+    Reg.Free;
+  end;
+end;
+
+// Gets some key uninstall info from the Program Uninstall key in Registry
+// If a version number is passed as the second parameter, the version is compared with
+// the installed version and if it is an older version, the IsUptodate key returns false
+function GetProgramUninstallInfo(const key: string;const version:string=''):TCatUninstallProgInfo;
+var
+  Reg: TRegistry;
+begin
+  result.Available := false;
+  result.IsUptodate := true;
+  result.InstallLocation := emptystr;
+  result.DisplayVersion := emptystr;
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
+    if Reg.OpenKey
+      ('\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\'+key+'_is1\', false)
+    then
+    begin
+      result.Available := true;
+      result.DisplayVersion := Reg.ReadString('DisplayVersion');
+      result.InstallLocation := Reg.ReadString('InstallLocation');
+      if version <> emptystr then begin
+        // Compare the version. If installed version is older than passed version
+        // IsUpdate is set to false
+        if CompareVersionNumber(result.DisplayVersion, version) = -1 then
+        result.IsUptodate := false;
+      end;
+      Reg.CloseKey;
+    end;
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure OutDebug(const s: string);
