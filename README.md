@@ -16,6 +16,7 @@ Catarinka includes a set of visual and non-visual components, and methods for Pa
 * `TCatChromium` - A web browser component built on top of WACEF3/DCEF3.
 * `TCatConsole` - Console component built on top of a modified version of the Console component by Michael Elsd�rfer.
 * `TCatCSCommand` - Allows to call a console application and capture its output.
+* `TDashedRecord` - DDV: an alternative to the CSV format and simple library for writing and reading the format.
 * `TConsoleTimer` - A timer that works from within console applications. Based on component by LU RD.
 * `TCatHighlighters` - Provides quick access to multiple SynEdit highlighters with a color scheme adapted from the CodeRay project.
 * `TClipboardListener` - Monitors changes to the Windows clipboard.
