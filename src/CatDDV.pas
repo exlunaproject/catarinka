@@ -230,6 +230,8 @@ begin
   if pos(fSeparator,ddv) <> 0 then begin
     fMasterValue := Before(ddv,fSeparator);
     fRecord.CommaText := After(ddv,fSeparator);
+  end else begin
+    fMasterValue := ddv;
   end;
 end;
 
