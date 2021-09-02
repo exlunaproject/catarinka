@@ -1,9 +1,10 @@
 # DDV
 
 Feel that you could use something simpler than CSV for data?
-Perhaps the DDV format is better for your project.
+Perhaps the DDV (Double Dashed Values) format is better for your project.
 
-I created the DDV format as a more compact, easier to visualize and flexible alternative to the widely adopted CSV format. I said good-bye to the CSV format and started using just DDV.
+I created the DDV format as a more compact, easier to visualize and flexible alternative to the widely adopted CSV (Comma Separated Values) data format. 
+I said good-bye to the CSV format and started using just DDV.
 
 ## A Comparison between DDV and CSV
 
@@ -13,6 +14,7 @@ DDV:
 * Alphabetic sorting becomes possible
 * Better data visualization and uses less disk/memory space if you have a large quantity of records with undefined values
 * Faster processing if you need to handle the master string before reading the values
+* Quotes in values gets escaped just like CSV: --v1=myvalue1,"v2=""mvalue2"""
 
 CSV:
 * Organized by fixed columns. Example: `masterstring,123,456,etc`
@@ -91,6 +93,10 @@ Use the Text property to load a DDV record:
 ```
 
 This will print Mercury
+
+## Source
+
+The source code is available in file  `src\CatDDV.pas`
 
 ## License
 
