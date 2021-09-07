@@ -353,9 +353,13 @@ begin
   if IsAlphaNumeric(ver) then begin
     result.version := ExtractVersionFromString(ver);
     result.ext := After(ver, result.version);
-    // handles version like 1.0.0b-somename
-    if pos('-', result.ext) <> 0 then
-    result.ext := Before(result.ext, '-');
+    // handles versions like: 1.0.0b-somename and 1.0-beta1
+    if pos('-', result.ext) <> 0 then begin
+      if beginswith(result.ext,'-') = true then
+      result.ext := After(result.ext, '-')
+      else
+      result.ext := Before(result.ext, '-');
+    end;
     result.extnum := ExtractNumbers(result.ext);
     result.hasletter := (length(result.ext) = 1) and (result.ext[1] in ['a'..'z','A'..'Z']);
     result.stage := GetVersionStage(ver);
