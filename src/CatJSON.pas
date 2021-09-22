@@ -6,6 +6,8 @@ unit CatJSON;
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  11.09.2021:
+  - Add AddToValue method
   16.08.2021:
   - Perform UTF8 decode when getting string
   14.08.2019:
@@ -48,7 +50,7 @@ const
 type
   TCatJSON = class
   private
-    fDecodeUTF8: boolean;
+    fUseUnicode: boolean;
     fDefaultValue: Variant;
     fObject: ISuperObject;
     function GetCount:integer;
@@ -63,13 +65,15 @@ type
     procedure RemovePath(const Name: string);
     procedure LoadFromFile(const Filename: string);
     procedure SaveToFile(const Filename: string);
+    procedure AddToValue(const Name: string; const Value: string;
+      const AddIfRepeated:boolean);
     procedure SetValue(const Name: string; const Value: Variant);
     procedure SetValues(const Name:array of string; const Value: Variant);
     procedure Clear;
     constructor Create(const JSON: string = '');
     destructor Destroy; override;
     // properties
-    property DecodeUTF8: boolean read fDecodeUTF8 write fDecodeUTF8;
+    property UseUnicode: boolean read fUseUnicode write fUseUnicode;
     property Count: integer read GetCount;
     property GlobalDefaultValue: Variant read fDefaultValue write fDefaultValue;
     property sObject: ISuperObject read fObject;
@@ -126,10 +130,22 @@ type
 
 function GetJSONVal(const JSON, Name: string;const DefaultValue: Variant): Variant;
 function IsValidJSONName(const S: string): Boolean;
+function JSONStringUnescape(const s:string):string;
 
 implementation
 
 uses CatFiles, CatStrings;
+
+function JSONStringUnescape(const s:string):string;
+var
+ j:TCatJSON;
+ jsonvalue:string;
+begin
+ jsonvalue := RemoveSurroundingChar(s,['"']);
+ j := TCatJSON.Create('{"v":"'+jsonvalue+'"}');
+ result := j.GetValue('v',emptystr);
+ j.Free;
+end;
 
 function IsValidJSONName(const s: string): Boolean;
 const
@@ -237,9 +253,9 @@ end;
 constructor TCatJSON.Create(const JSON: string = '');
 begin
 {$IFDEF DXE2_OR_UP}
-  fDecodeUTF8 := true;
+  fUseUnicode := true;
 {$ELSE}
-  fDecodeUTF8 := false;
+  fUseUnicode := false;
 {$ENDIF}
   fDefaultValue := null;
 {$IFDEF USEXSUPEROBJECT}
@@ -262,6 +278,24 @@ function TCatJSON.IncValue(const Name: string; Int: integer = 1):integer;
 begin
   result := GetValue(Name,0) + Int;
   fObject.I[name] := result;
+end;
+
+procedure TCatJSON.AddToValue(const Name: string; const Value: string;
+      const AddIfRepeated:boolean);
+var
+  sl: TStringlist;
+begin
+  sl := TStringlist.Create;
+  sl.commatext := GetValue(name, emptystr);
+  if AddIfRepeated = true then
+    sl.Add(Value)
+  else
+  begin
+    if sl.indexof(Value) = -1 then
+      sl.Add(Value);
+  end;
+  SetValue(name, sl.commatext);
+  sl.Free;
 end;
 
 procedure TCatJSON.SetValue(const Name: string; const Value: Variant);
@@ -328,8 +362,8 @@ begin
       stInt:
         Result := fObject.i[Name];
       stString:
-        if fDecodeUTF8 = true then
-        Result := UTF8Decode(fObject.S[Name]) else
+        if fUseUnicode = true then
+        Result := UnicodeString(fObject.S[Name]) else
         Result := fObject.S[Name];
       stObject, stArray, stMethod:
         Result := DefaultValue;

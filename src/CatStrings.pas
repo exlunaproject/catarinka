@@ -78,6 +78,7 @@ function ContainsAnyOfStrings(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 function ContainsAllOfStrings(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
+function ContainsEmptyStr(const list: array of string): boolean;
 function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
   : Boolean; overload;
 function EndsWith(const s: string; const prefixes: array of string;
@@ -127,6 +128,7 @@ function RemoveLastChar(const s: string): string;
 function RemoveNumbers(const s: string): string;
 function RemoveQuotes(const s: string): string;
 function RemoveShortcuts(const s: string): string;
+function RemoveSurroundingChar(const s: string;const aSet:TSysCharSet): string;
 function RepeatString(const s: string; count: cardinal): string;
 function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
@@ -538,6 +540,20 @@ begin
   end;
 end;
 
+// Checks if an array of strings contains an empty string
+function ContainsEmptyStr(const list: array of string): boolean;
+var
+  i: integer;
+begin
+  result := false;
+    for i := low(list) to high(list) do begin
+      if list[i] = emptystr then begin
+        result := true;
+        break;
+      end;
+    end;
+end;
+
 // Useful for sorting a string list containing filenames
 // Usage sl.CustomSort(CompareStrings);
 function CompareStrings(sl: TStringList; Index1, Index2: integer): integer;
@@ -912,10 +928,7 @@ begin
   until (length(result) = len);
 end;
 
-// Strips a quote pair off a string if it exists
-// The leading and trailing quotes will only be removed if both exist
-// Otherwise, the string is left unchanged
-function RemoveQuotes(const s: string): string;
+function RemoveSurroundingChar(const s: string;const aSet:TSysCharSet): string;
 var
   i: integer;
 begin
@@ -923,11 +936,19 @@ begin
   i := length(s);
   if i = 0 then
     Exit;
-  if (CharInSet(s[1], ['"', '''']) = true) and (s[1] = LastChar(s)) then
+  if (CharInSet(s[1], aSet) = true) and (s[1] = LastChar(s)) then
   begin
     Delete(result, 1, 1);
     SetLength(result, length(result) - 1);
   end;
+end;
+
+// Strips a quote pair off a string if it exists
+// The leading and trailing quotes will only be removed if both exist
+// Otherwise, the string is left unchanged
+function RemoveQuotes(const s: string): string;
+begin
+  result := RemoveSurroundingChar(s, ['"', '''']);
 end;
 
 // Removes the last character from a string

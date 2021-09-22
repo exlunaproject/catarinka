@@ -13,10 +13,12 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.Classes;
+  System.Classes, System.SysUtils;
 {$ELSE}
-  Classes;
+  Classes, SysUtils;
 {$ENDIF}
+procedure DirToZIP(basedirectory, outzipfilename: string; mask: string = '*';
+  password: string = '');
 procedure ExtractZIPFile(const zipname, filename, outfilename: string);
 procedure ExtractZIPFileToStream(const zipname, filename: string;
   ms: TMemoryStream);
@@ -28,7 +30,7 @@ function ZIPFileExists(const zipname, filename: string): boolean;
 
 implementation
 
-uses CatStrings, AbZipKit, AbUtils, AbGzTyp;
+uses CatStrings, CatStringLoop, CatFiles, AbZipKit, AbZipper, AbArcTyp, AbUtils, AbGzTyp;
 
 procedure GUnZipStream(Document: TMemoryStream);
 var
@@ -81,6 +83,25 @@ begin
   outstream.free;
   ms.free;
   kit.free;
+end;
+
+// Creates a ZIP file with the contents of a directory
+procedure DirToZIP(basedirectory, outzipfilename: string; mask: string = '*';
+  password: string = '');
+var
+  z:TAbZipper;
+begin
+  z := TAbZipper.Create(nil);
+ try
+  z.FileName := outzipfilename;
+  z.Password := password;
+  z.BaseDirectory := basedirectory;
+  z.StoreOptions := [soRecurse];
+  z.AddFiles(mask, faAnyFile);
+  z.Save;
+ finally
+  z.Free;
+  end;
 end;
 
 procedure ExtractZIPFileToStream(const zipname, filename: string;

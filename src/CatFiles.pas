@@ -29,9 +29,12 @@ function DirIsEmpty(const dir: string): boolean;
 function FileCanBeOpened(const filename: String): boolean;
 function FileCopy(const source, dest: string): boolean;
 function FilenameToMimeType(const filename: string): string;
+function FindDiskDriveByVolumeName(const AVolumeName: String;
+  IncludeRemovables:boolean=true): String;
 function ForceDir(const dir: string): boolean;
 function GetDirAge(const Dir: string): TDateTime;
 function GetDiskSerialNumber(const drive: string): string;
+function GetVolumeName(const ADriveLetter: Char): string;
 function GetDllFilename:string;
 function GetFileSize(const filename: string): Int64;
 function GetFileToStr(const filename: string): string;
@@ -55,6 +58,7 @@ procedure GetFiles(const dir: string; const Result: TStrings;
   const IncludeDir: boolean = false; const IncludeExt: boolean = true);
 procedure GetFilesRecursive(const Result: TStrings; Dir, Mask: string);
 procedure WipeFile(const filename: string);
+procedure GetDiskDrives(var ADriveList: TStrings; IncludeRemovables:boolean=true);
 
 implementation
 
@@ -674,6 +678,74 @@ begin
     fs.Free;
   end;
   DeleteFile(filename);
+end;
+
+{
+ GetDiskDrives, GetVolumeName, FindDiskDriveByVolumeName functions:
+ Adapted from Steve F. and Gianluca Colombo's
+ https://stackoverflow.com/questions/26303575/how-to-get-drive-letter-of-a-usb-memory-stick-drive-given-its-volume-label
+}
+
+procedure GetDiskDrives(var ADriveList: TStrings; IncludeRemovables:boolean=true);
+var
+  r: LongWord;
+  Drives: array [0 .. 128] of Char;
+  pDrive: pchar;
+begin
+
+  ADriveList.Clear;
+
+  r := GetLogicalDriveStrings(sizeof(Drives), Drives);
+  if r = 0 then
+    exit;
+  if r > sizeof(Drives) then
+    raise Exception.Create(SysErrorMessage(ERROR_OUTOFMEMORY));
+  pDrive := Drives; // Point to the first drive
+  while pDrive^ <> #0 do
+  begin
+    if IncludeRemovables = false then begin
+        if GetDriveType(pDrive) <> DRIVE_REMOVABLE then
+          ADriveList.Add(pDrive);
+    end else
+    ADriveList.Add(pDrive);
+    inc(pDrive, 4); // Point to the next drive
+  end;
+end;
+
+function GetVolumeName(const ADriveLetter: Char): string;
+var
+  dummy: DWORD;
+  buffer: array [0 .. MAX_PATH] of Char;
+  oldmode: LongInt;
+begin
+  oldmode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    GetVolumeInformation(pchar(ADriveLetter + ':\'), buffer, sizeof(buffer), nil, dummy, dummy, nil, 0);
+    Result := StrPas(buffer);
+  finally
+    SetErrorMode(oldmode);
+  end;
+end;
+
+function FindDiskDriveByVolumeName(const AVolumeName: String;
+  IncludeRemovables:boolean=true): String;
+var
+  dl: TStringList;
+  c: Integer;
+begin
+  Result := emptystr;
+
+  dl := TStringList.Create;
+  try
+    GetDiskDrives(TStrings(dl), IncludeRemovables);
+    for c := 0 to dl.Count - 1 do
+      if (AVolumeName = GetVolumeName(dl[c][1])) then
+        Result := dl[c][1];
+
+  finally
+    dl.Free;
+  end;
+
 end;
 
 // ------------------------------------------------------------------------//

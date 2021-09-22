@@ -35,6 +35,14 @@ type
     destructor Destroy; override;
   end;
 
+procedure Z7_PackDir(const dirname, outfilename: string;
+  mask:string='*.*'; password:string='');
+procedure Z7_PackDirEx(const format:string;const dirname, outfilename: string;
+  mask:string='*.*'; password:string='');
+procedure Z7_UnpackToDir(const pakfilename, outdirname: string; password:string='');
+procedure Z7_UnpackToDirEx(const format:string;const pakfilename, outdirname: string;
+  password:string='');
+
 procedure Z7_ExtractFileToStream(const classid: TGUID;
   const pakfilename, filename: string; ms: TMemoryStream);
 function Z7_FileExtToClassID(const ext:string):TGUID;
@@ -89,11 +97,63 @@ begin
   result := TGUID.Empty;
   aext := lowercase(ext);
   for i := low(clist) to high(clist) do begin
-    if matchstrinarray(aext, clist[i].ext) then begin
+    if matchstrinarray(aext, clist[i].ext, true) then begin
       result := clist[i].id;
       break;
     end;
   end;
+end;
+
+procedure Z7_UnpackToDirEx(const format:string;const pakfilename, outdirname: string;
+  password:string='');
+var
+  Arch: I7zInArchive;
+  guid:TGUID;
+  i:integer;
+begin
+  guid := Z7_FileExtToClassID(format);
+  Arch := CreateInArchive(guid);
+  if password <> emptystr then
+  Arch.SetPassword(password);
+  with arch do
+  begin
+    OpenFile(pakfilename);
+    ExtractTo(outdirname);
+  end;
+end;
+
+procedure Z7_PackDirEx(const format:string;const dirname, outfilename: string;
+  mask:string='*.*'; password:string='');
+var
+  Arch: I7zOutArchive;
+  i: integer;
+  df: TStringLoop;
+  guid:TGUID;
+begin
+  guid := Z7_FileExtToClassID(format);
+  df := TStringLoop.Create;
+  Arch := CreateOutArchive(guid);
+  if password <> emptystr then
+  Arch.SetPassword(password);
+  GetFiles(dirname + '\' + mask, df.List);
+  while df.Found do
+  begin
+    Arch.AddFile(dirname + '\' + df.current, df.current);
+  end;
+  df.Free;
+  // Arch.AddStream(ms, soReference, faArchive, CurrentFileTime, CurrentFileTime, infilename, false, false);
+  Arch.SaveToFile(outfilename);
+end;
+
+procedure Z7_PackDir(const dirname, outfilename: string; mask:string='*.*';
+  password:string='');
+begin
+  Z7_PackDirEx(extractfileext(outfilename), dirname, outfilename, mask, password);
+end;
+
+procedure Z7_UnpackToDir(const pakfilename, outdirname: string; password:string='');
+begin
+  Z7_UnpackToDirEx(extractfileext(pakfilename), pakfilename, outdirname);
 end;
 
 function FixPackPath(const path: string): string;
