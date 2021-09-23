@@ -20,7 +20,7 @@ uses
 {$ENDIF}
   Lua, LuaObject;
 
-function RegisterCatarinka(L: plua_State): integer; cdecl;
+function RegisterCatalunya(L: plua_State): integer; cdecl;
 
 implementation
 
@@ -331,7 +331,7 @@ begin
  result := pushctkmethod(L, lua_tostring(L,2), cs_table);
 end;
 
-function RegisterCatarinka(L: plua_State): integer; cdecl;
+function RegisterCatalunya(L: plua_State): integer; cdecl;
 begin
   lua_newtable(L);
   plua_SetFieldValueRW(L, 'base64', @get_base64fields, nil);

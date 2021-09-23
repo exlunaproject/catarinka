@@ -1,28 +1,35 @@
-library Catarinka;
+library Catalunya;
 
 {
-  Catarinka Lua Library
-  Copyright (c) 2013-2020 Felipe Daragon
+  Catalunya Lua (LuaJIT) Library
+  Copyright (c) 2013-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
 
 uses
   Lua,
-  CtkCore in '..\CtkCore.pas';
+  CtkCore in '..\units\CtkCore.pas',
+  CtkFunctions in '..\units\CtkFunctions.pas',
+  CtkHTMLParser in '..\units\CtkHTMLParser.pas',
+  CtkJSON in '..\units\CtkJSON.pas',
+  CtkStrList in '..\units\CtkStrList.pas',
+  CtkStrListParser in '..\units\CtkStrListParser.pas',
+  CtkTarman in '..\units\CtkTarman.pas',
+  CtkTimer in '..\units\CtkTimer.pas';
 
 
 {$I CatCompactLib.inc}
 
 {$R *.res}
 
-function luaopen_Catarinka(L: plua_State): integer; cdecl;
+function luaopen_Catalunya(L: plua_State): integer; cdecl;
 begin
-  Result := RegisterCatarinka(L);
+  Result := RegisterCatalunya(L);
 end;
 
 Exports
-  luaopen_Catarinka;
+  luaopen_Catalunya;
 
 begin
 
