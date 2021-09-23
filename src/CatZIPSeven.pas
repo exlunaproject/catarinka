@@ -16,6 +16,7 @@ type
   TCat7Z = class
   private
     fClassID: TGUID;
+    fPassword: string;
   public
     function ExtractFileToStr(const pakfilename, filename: string):string;
     procedure ExtractFileToStream(const pakfilename, filename: string;
@@ -33,6 +34,7 @@ type
     constructor Create(const classid: TGUID);
     function SetClassByExt(const ext:string):boolean;
     destructor Destroy; override;
+    property Password:string read fPassword write fPassword;
   end;
 
 procedure Z7_PackDir(const dirname, outfilename: string;
@@ -43,8 +45,11 @@ procedure Z7_UnpackToDir(const pakfilename, outdirname: string; password:string=
 procedure Z7_UnpackToDirEx(const format:string;const pakfilename, outdirname: string;
   password:string='');
 
-procedure Z7_ExtractFileToStream(const classid: TGUID;
-  const pakfilename, filename: string; ms: TMemoryStream);
+procedure Z7_ExtractFileToStream(ms: TMemoryStream; const classid: TGUID;
+  const pakfilename, filename: string; password:string='');
+function Z7_ExtractFileToStr(const classid: TGUID;
+  const pakfilename, filename: string; password:string=''):string;
+
 function Z7_FileExtToClassID(const ext:string):TGUID;
 function Z7_GetDirList(const classid: TGUID; pakfilename: string): string;
 function Z7_GetFileList(const classid: TGUID; pakfilename: string;
@@ -113,8 +118,9 @@ var
 begin
   guid := Z7_FileExtToClassID(format);
   Arch := CreateInArchive(guid);
-  if password <> emptystr then
-  Arch.SetPassword(password);
+  if password <> emptystr then begin
+    Arch.SetPassword(password);
+  end;
   with arch do
   begin
     OpenFile(pakfilename);
@@ -133,8 +139,10 @@ begin
   guid := Z7_FileExtToClassID(format);
   df := TStringLoop.Create;
   Arch := CreateOutArchive(guid);
-  if password <> emptystr then
-  Arch.SetPassword(password);
+  if password <> emptystr then begin
+    Arch.SetPassword(password);
+    SetEncryptionMethod(arch, emAES256);
+  end;
   GetFiles(dirname + '\' + mask, df.List);
   while df.Found do
   begin
@@ -238,8 +246,8 @@ begin
   sl.Free;
 end;
 
-procedure Z7_ExtractFileToStream(const classid: TGUID;
-  const pakfilename, filename: string; ms: TMemoryStream);
+procedure Z7_ExtractFileToStream(ms: TMemoryStream; const classid: TGUID;
+  const pakfilename, filename: string; password:string='');
 var
   i: integer;
   afilename: string;
@@ -248,6 +256,8 @@ begin
 
   with CreateInArchive(classid) do
   begin
+    if password <> emptystr then
+      SetPassword(password);
     OpenFile(pakfilename);
     for i := 0 to NumberOfItems - 1 do
       if (ItemIsFolder[i] = false) and (ItemPath[i] = filename) then
@@ -257,6 +267,17 @@ begin
         break;
       end;
   end;
+end;
+
+function Z7_ExtractFileToStr(const classid: TGUID;
+  const pakfilename, filename: string; password:string=''):string;
+var
+  ms: TMemoryStream;
+begin
+  ms := TMemoryStream.Create;
+  Z7_ExtractFileToStream(ms, classid, pakfilename, filename, password);
+  result := MemStreamToStr(ms);
+  ms.Free;
 end;
 
 function Z7_CountFiles(const classid: TGUID; const pakfilename: string):integer;
@@ -299,17 +320,12 @@ end;
 procedure TCat7Z.ExtractFileToStream(const pakfilename, filename: string;
   ms: TMemoryStream);
 begin
-  Z7_ExtractFileToStream(fClassID, pakfilename, filename, ms);
+  Z7_ExtractFileToStream(ms, fClassID, pakfilename, filename, fPassword);
 end;
 
 function TCat7Z.ExtractFileToStr(const pakfilename, filename: string):string;
-var
-  ms: TMemoryStream;
 begin
-  ms := TMemoryStream.Create;
-  Z7_ExtractFileToStream(fClassID, pakfilename, filename, ms);
-  result := MemStreamToStr(ms);
-  ms.Free;
+  result := Z7_ExtractFileToStr(fClassID, pakfilename, filename, fPassword);
 end;
 
 function TCat7Z.GetDirList(const pakfilename: string): string;
@@ -338,6 +354,7 @@ constructor TCat7Z.Create(const classid: TGUID);
 begin
   inherited Create;
   fClassID := classid;
+  fPassword := emptystr;
 end;
 
 function TCat7Z.SetClassByExt(const ext:string):boolean;
@@ -375,3 +392,4 @@ begin
 end;
 
 end.
+
