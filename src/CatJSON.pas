@@ -252,7 +252,7 @@ end;
 
 constructor TCatJSON.Create(const JSON: string = '');
 begin
-{$IFDEF DXE2_OR_UP}
+{$IFDEF UNICODE}
   fUseUnicode := true;
 {$ELSE}
   fUseUnicode := false;
@@ -362,8 +362,10 @@ begin
       stInt:
         Result := fObject.i[Name];
       stString:
+        {$IFDEF UNICODE}
         if fUseUnicode = true then
         Result := UnicodeString(fObject.S[Name]) else
+        {$ENDIF}
         Result := fObject.S[Name];
       stObject, stArray, stMethod:
         Result := DefaultValue;
