@@ -1,6 +1,8 @@
 # Catalunya Lua Library
 
-This is a multi-purpose set of Lua extensions developed to be used in the [Sandcat Browser](https://github.com/syhunt/sandcat) but that can also be used separately with any Lua-based application. Currently, this library extends Lua with [over 60 functions](https://github.com/exlunaproject/catarinka/blob/master/lualib/docs/functions.md) and some useful classes. The project's goal is to make the development of Lua applications easier and to push the boundaries of the Lua language to do innovative things. This will always be a work in progress with new additions and regular updates.
+This is a multi-purpose set of Lua extensions. Currently, this library extends Lua with [over 60 functions](https://github.com/exlunaproject/catarinka/blob/master/lualib/docs/functions.md) and some useful classes. The project's goal is to make the development of Lua applications easier and to push the boundaries of the Lua language to do innovative things. This will always be a work in progress with new additions and regular updates.
+
+This library was originally developed to be used in the [Sandcat Browser](https://github.com/syhunt/sandcat) but that can also be used separately with any Lua-based application
 
 ## Directories
 
