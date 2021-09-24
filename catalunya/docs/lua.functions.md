@@ -54,7 +54,7 @@
 * **ishex** ( s ): Checks if a string is a hexadecimal representation.
 * **isint** ( s ): Checks if a string is integer.
 * **match** ( s, pattern ): Wildcard matching (* and ?).
-* **matchx** ( s, pattern ): Extended Wildcard matching, Catarinka's way (*, ?, # for number and ¿ to match a letter).
+* **matchx** ( s, pattern ): Extended Wildcard matching, Catalunya's way (*, ?, # for number and ¿ to match a letter).
 * **matchver** ( version1, version2 ): Version string matching. Returns true if versions compared are equal.
 * **matchverpat** ( version, pattern ): Version string matching using a pattern (see test.lua for examples).
 

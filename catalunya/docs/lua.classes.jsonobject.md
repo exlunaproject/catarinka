@@ -17,7 +17,7 @@ Stores and manipulates a JSON object.
 ### Usage Example
 
 ```lua
-local s = require "Catarinka"
+local s = require "Catalunya"
 local j = s.json.object:new()
 j['name.first'] = 'Carla'
 j['name.last'] = 'Coe'

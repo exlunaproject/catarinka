@@ -1,12 +1,10 @@
 # Catarinka
 
-Catarinka is a set of libraries for Lua/LuaJIT and Pascal/Delphi, developed as part of the [Sandcat Browser](https://github.com/felipedaragon/sandcat) project.
+Catarinka is a set of libraries for Pascal/Delphi, developed as part of the [Sandcat Browser](https://github.com/felipedaragon/sandcat) project.
 
 ## Directories
 
-* `/docs_lua` - Documentation about the library's functions and classes for Lua usage
-* `/docs_pascal` - Documentation about the library's functions and classes for Pascal/Delphi usage
-* `/src` - Catarinka Lua Library source. `CtkCore.pas` is the main source code file that performs the Lua library registration during runtime
+* `/docs` - Documentation about the library's functions and classes for Pascal/Delphi usage
  
 ## Pascal Components
 
@@ -36,7 +34,7 @@ Catarinka includes a set of visual and non-visual components, and methods for Pa
 
 ## Compatibility
 
-All components here work with the latest Delphi releases (for both 32-bit and 64-bit compilation) and the older D7. Most of them may work with FPC and Lazarus.
+All components here work with the latest Delphi releases (for both 32-bit and 64-bit compilation) and the older D7. Most of them may work with FPC and Lazarus with minor modifications.
 
 Most components can be cross-compiled with Delphi XE10 Tokyo and CrossVCL.
 
@@ -46,7 +44,7 @@ CatPrefs: Rename the `src\CatCryptKey.pas` file, edit it and add your own encryp
 
 ## Dependencies
 
-* All included in the `src` directory, except the following which you need to download separately:
+* All included here, except the following which you need to download separately:
 * [DCEF](https://github.com/hgourvest/dcef3) or [WACEF](https://bitbucket.org/WaspAce/wacef), needed by CatChromium. See [dcef-mod](https://github.com/felipedaragon/dcef-mod) for a copy of the latest CEF components, with or without minor modifications
 * [DCPcrypt 2](https://bitbucket.org/wpostma/dcpcrypt2010) - needed by CatDCP.
 * [SynWeb 1.5](https://code.google.com/p/synweb/) and [SynEdit](http://sourceforge.net/projects/synedit/) - needed by CatSynEdit.
@@ -54,19 +52,3 @@ CatPrefs: Rename the `src\CatCryptKey.pas` file, edit it and add your own encryp
 * [Structured Storage](https://github.com/gabr42/GpDelphiUnits) - need by CatStorage.
 * [Abbrevia 5.0](http://sourceforge.net/projects/tpabbrevia/) - needed by CatZIP.
 * [Cromis](http://www.cromis.net/blog/downloads/cromis-ipc/) - needed by CatMsgCromis.
-
-## License & Credits
-
-Catarinka was developed by Felipe Daragon, [Syhunt](http://www.syhunt.com/).
-
-This project is licensed under a 3-clause BSD license - see the LICENSE file for details.
-
-Some libraries and third-party code included with Catarinka use different licenses, such as MIT and MPL. You can find them in the comments of the source code files.
-
-## Contact
-
-Twitter: [@felipedaragon](https://twitter.com/felipedaragon), [@syhunt](https://twitter.com/syhunt)
-
-Email: felipe _at_ syhunt.com
-
-If you want to report a security bug, please see the `SECURITY.md` file.

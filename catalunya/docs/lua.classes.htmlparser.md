@@ -25,7 +25,7 @@ name | return type | description
 ### Example - Using html.parser
 
 ```lua
-local s = require "Catarinka"
+local s = require "Catalunya"
 local html = [[
 <html>
 <a href="http://www.lua.org">Lua</a>

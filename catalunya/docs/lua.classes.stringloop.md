@@ -30,7 +30,7 @@ name | return type | description
 ### Usage Example
 
 ```lua
-local s = require "Catarinka"
+local s = require "Catalunya"
 local list = [[
 Turkey
 Russia

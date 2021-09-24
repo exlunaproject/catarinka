@@ -3,7 +3,7 @@
 package.path = package.path..";R:/Win64/Lib/lua/?.lua"
 package.cpath = package.cpath..";R:/Win64/Lib/clibs/?.dll"
 
-local ctk = require "Catarinka"
+local ctk = require "Catalunya"
 
 local res = {
   passed = 0,
