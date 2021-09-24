@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/exlunaproject/catarinka/master/catalunya/docs/Catalunya-icon.png" width="128" align="right" />
+
 # Catalunya Lua Library
 
 This is a multi-purpose set of Lua extensions. Currently, this library extends Lua with [over 60 functions](https://github.com/exlunaproject/catarinka/blob/master/catalunya/docs/lua.functions.md) and some useful classes. The project's goal is to make the development of Lua applications easier and to push the boundaries of the Lua language to do innovative things. This will always be a work in progress with new additions and regular updates.

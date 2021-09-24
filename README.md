@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/exlunaproject/catarinka/master/catalunya/docs/Catalunya-icon.png" width="128" align="right" />
+
 # The Catarinka Libraries
 
 This repository contains the source code and documentation for two related projects:
