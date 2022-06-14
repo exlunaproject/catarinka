@@ -6,6 +6,8 @@ unit CatJSON;
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  02.10.2021:
+  - Use int64 in TCatJSON_Int class and IncValue method
   11.09.2021:
   - Add AddToValue method
   16.08.2021:
@@ -61,7 +63,7 @@ type
   public
     function GetValue(const Name: string; DefaultValue: Variant): Variant;
     function HasPath(const Name: string): Boolean;
-    function IncValue(const Name: string; Int: integer = 1) : Integer;
+    function IncValue(const Name: string; Int: int64 = 1) : Int64;
     procedure RemovePath(const Name: string);
     procedure LoadFromFile(const Filename: string);
     procedure SaveToFile(const Filename: string);
@@ -105,21 +107,21 @@ type
 type
   TCatJSON_Int = class
   private
-    fDefaultValue: integer;
+    fDefaultValue: int64;
     fJSON: TCatJSON;
-    function GetValue_(const Name: string): integer;
+    function GetValue_(const Name: string): int64;
   public
-    function GetValue(const Name: string; const DefaultValue: integer): integer;
-    function IncValue(const Name: string; Int: integer = 1): integer;
+    function GetValue(const Name: string; const DefaultValue: int64): int64;
+    function IncValue(const Name: string; Int: int64 = 1): int64;
     procedure Clear;
-    procedure SetValue(const Name: string; const DefaultValue: integer);
+    procedure SetValue(const Name: string; const DefaultValue: int64);
     constructor Create(JSON: string = ''); overload;
-    constructor Create(const DefaultValue: integer;
+    constructor Create(const DefaultValue: int64;
       const JSON: string = ''); overload;
     destructor Destroy; override;
     // properties
     property JSON: TCatJSON read fJSON;
-    property Values[const Name: string]: integer read GetValue_
+    property Values[const Name: string]: int64 read GetValue_
       write SetValue; default;
   end;
 
@@ -274,7 +276,7 @@ begin
   inherited;
 end;
 
-function TCatJSON.IncValue(const Name: string; Int: integer = 1):integer;
+function TCatJSON.IncValue(const Name: string; Int: int64 = 1):int64;
 begin
   result := GetValue(Name,0) + Int;
   fObject.I[name] := result;
@@ -431,23 +433,23 @@ begin
 end;
 
 procedure TCatJSON_Int.SetValue(const Name: string;
-  const DefaultValue: integer);
+  const DefaultValue: int64);
 begin
   fJSON.SetValue(Name, DefaultValue);
 end;
 
 function TCatJSON_Int.GetValue(const Name: string;
-  const DefaultValue: integer): integer;
+  const DefaultValue: int64): int64;
 begin
   result := fJSON.GetValue(Name, DefaultValue)
 end;
 
-function TCatJSON_Int.GetValue_(const Name: string): integer;
+function TCatJSON_Int.GetValue_(const Name: string): int64;
 begin
   result := fJSON.GetValue(Name, fDefaultValue);
 end;
 
-function TCatJSON_Int.IncValue(const Name: string; Int: integer = 1): integer;
+function TCatJSON_Int.IncValue(const Name: string; Int: int64 = 1): int64;
 begin
   result := fJSON.IncValue(Name, Int)
 end;
@@ -459,7 +461,7 @@ begin
   fDefaultValue := 0;
 end;
 
-constructor TCatJSON_Int.Create(const DefaultValue: integer;
+constructor TCatJSON_Int.Create(const DefaultValue: int64;
   const JSON: string = '');
 begin
   Create(JSON);

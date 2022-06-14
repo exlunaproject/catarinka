@@ -10,6 +10,7 @@
 * **exechide** ( filename [,params, dir] ): Executes a file in hidden state.
 * **exists** ( filename ): Returns true if a file exists, and false otherwise.
 * **getcontents** ( filename ): Returns the contents of a local file.
+* **getfromtar** ( tarfilename, infilename): Returns the contents of a file within a tar file.
 * **getdir** ( filename ): Gets the directory part of a filename.
 * **getext** ( filename ): Gets the extension part of a filename.
 * **getname** ( filename ): Gets the name and extension part of a filename.

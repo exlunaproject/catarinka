@@ -2,7 +2,7 @@ unit CatInet;
 {
   Catarinka - Internet related functions
 
-  Copyright (c) 2003-2019 Felipe Daragon
+  Copyright (c) 2003-2021 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -26,6 +26,8 @@ function ExtractIPAddresses(const s: string;const exceptions: array of string): 
 function GetAbsoluteURL(const baseURL, relURL: string): string;
 function GetTinyUrl(const URL: string): string;
 function IPAddrToName(const IP: string): string;
+function IsIPLoopback(const ip:string):boolean;
+function IsIPPrivate(const ip:string; includeloopback:boolean=true):boolean;
 function IsValidIP(const IP: string): Boolean;
 function NameToIPAddr(const name: string): string;
 procedure DisableProxy(const agent: string);
@@ -34,7 +36,7 @@ procedure IESettingsChanged(const agent: string);
 
 implementation
 
-uses CatStrings, RegExpr;
+uses CatStrings, RegExpr, CatMatch;
 
 procedure DisableProxy(const agent: string);
 var
@@ -146,6 +148,26 @@ begin
   Result := ((IP <> emptystr) and
     (inet_addr(PAnsiChar(ansistring(IP))) <>
     integer(INADDR_NONE)));
+end;
+
+function IsIPLoopback(const ip:string):boolean;
+begin
+  result := MatchVersionRange(ip, '>=127.0.0.0 <=127.255.255.255');
+end;
+
+function IsIPPrivate(const ip:string; includeloopback:boolean=true):boolean;
+begin
+  result := false;
+  if MatchVersionRange(ip, '>=10.0.0.0 <=10.255.255.255') then
+    result := true else // single class A network
+  if MatchVersionRange(ip, '>=172.16.0.0 <=172.31.255.255') then
+    result := true else // 16 contiguous class B network
+  if MatchVersionRange(ip, '>=192.168.0.0 <=192.168.255.255') then
+    result := true else // 256 contiguous class C network
+  if MatchVersionRange(ip, '>=169.254.0.0 <=169.254.255.255') then
+    result := true; // Link-local
+  if (includeloopback = true) and (IsIPLoopback(ip) = true) then
+    result := true; // loopback
 end;
 
 function ExtractIPAddresses(const s: string;const exceptions: array of string): string;

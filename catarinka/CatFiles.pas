@@ -40,6 +40,7 @@ function GetFileSize(const filename: string): Int64;
 function GetFileToStr(const filename: string): string;
 function GetFileVersion(const filename: string;
   const ResFormat: string = '%d.%d.%d.%d'): string;
+function GetFileVersionValue(fileName: string; PropertyName: string): string;
 function GetSizeDescription(const bytes: int64): string;
 function GetSizeDescriptionBytes(const desc: string): int64;
 function GetTextFileLinesCount(const filename: string): integer;
@@ -365,7 +366,7 @@ begin
   SL.Free;
 end;
 
-// Returns the version of a binary file (DLL, EXE, etc)
+// Returns the file version of a binary file (DLL, EXE, etc)
 function GetFileVersion(const filename: string;
   const ResFormat: string = '%d.%d.%d.%d'): string;
 var
@@ -391,6 +392,33 @@ begin
   end;
 
 {$ENDIF}
+end;
+
+// Gets the value of a version property information of a binary file
+// Ex: GetFileVersionValue(filename, 'ProductVersion') will return the product version
+function GetFileVersionValue(fileName: string; PropertyName: string): string;
+var
+  infosz, plen: DWORD;
+  len: UINT;
+  buf, value: {$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF};
+  transno: PLongInt;
+  sfinfo: string;
+begin
+  Result := emptystr;
+  infosz := GetFileVersionInfoSize({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(FileName), plen);
+  if infosz > 0 then begin
+    Buf := AllocMem(infosz);
+    try
+      GetFileVersionInfo({$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(FileName), 0, infosz, Buf);
+      VerQueryValue(Buf, {$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}('VarFileInfo\Translation'), Pointer(TransNo), Len);
+      SFInfo := Format('%s%.4x%.4x%s%s%', ['StringFileInfo\', LoWord(TransNo^), HiWord(Transno^), '\', PropertyName]);
+      if VerQueryValue(Buf, {$IFDEF UNICODE}PWideChar{$ELSE}PChar{$ENDIF}(SFInfo), Pointer(Value), Len) then
+        Result := Value;
+    finally
+      if Assigned(Buf) then
+        FreeMem(Buf, infosz);
+    end;
+  end;
 end;
 
 function GetSizeDescription(const bytes: int64): string;

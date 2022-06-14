@@ -21,6 +21,8 @@ type
     function ExtractFileToStr(const pakfilename, filename: string):string;
     procedure ExtractFileToStream(const pakfilename, filename: string;
       ms: TMemoryStream);
+    procedure UnpackToDir(const pakfilename, outdirname: string);
+    function FileExists(const pakfilename, filename: string):boolean;
     function GetDirList(const pakfilename: string): string;
     function GetFileList(const pakfilename: string;
       includedirs: boolean = false): string;
@@ -42,9 +44,11 @@ procedure Z7_PackDir(const dirname, outfilename: string;
 procedure Z7_PackDirEx(const format:string;const dirname, outfilename: string;
   mask:string='*.*'; password:string='');
 procedure Z7_UnpackToDir(const pakfilename, outdirname: string; password:string='');
-procedure Z7_UnpackToDirEx(const format:string;const pakfilename, outdirname: string;
+procedure Z7_UnpackToDirEx(const classid: TGUID;const pakfilename, outdirname: string;
   password:string='');
 
+function Z7_FileExists(const classid: TGUID;
+  const pakfilename, filename: string; password:string=''):boolean;
 procedure Z7_ExtractFileToStream(ms: TMemoryStream; const classid: TGUID;
   const pakfilename, filename: string; password:string='');
 function Z7_ExtractFileToStr(const classid: TGUID;
@@ -109,15 +113,13 @@ begin
   end;
 end;
 
-procedure Z7_UnpackToDirEx(const format:string;const pakfilename, outdirname: string;
+procedure Z7_UnpackToDirEx(const classid: TGUID;const pakfilename, outdirname: string;
   password:string='');
 var
   Arch: I7zInArchive;
-  guid:TGUID;
   i:integer;
 begin
-  guid := Z7_FileExtToClassID(format);
-  Arch := CreateInArchive(guid);
+  Arch := CreateInArchive(classid);
   if password <> emptystr then begin
     Arch.SetPassword(password);
   end;
@@ -125,6 +127,7 @@ begin
   begin
     OpenFile(pakfilename);
     ExtractTo(outdirname);
+    Close;
   end;
 end;
 
@@ -161,7 +164,8 @@ end;
 
 procedure Z7_UnpackToDir(const pakfilename, outdirname: string; password:string='');
 begin
-  Z7_UnpackToDirEx(extractfileext(pakfilename), pakfilename, outdirname);
+  Z7_UnpackToDirEx(Z7_FileExtToClassID(extractfileext(pakfilename)), pakfilename,
+    outdirname);
 end;
 
 function FixPackPath(const path: string): string;
@@ -224,6 +228,7 @@ begin
       begin
         sl.Add(ItemPath[i]);
       end;
+    Close;
   end;
   result := sl.text;
   sl.Free;
@@ -241,9 +246,34 @@ begin
     for i := 0 to NumberOfItems - 1 do
       if ItemIsFolder[i] = true then
         sl.Add(ItemPath[i]);
+    Close;
   end;
   result := sl.text;
   sl.Free;
+end;
+
+function Z7_FileExists(const classid: TGUID;
+  const pakfilename, filename: string; password:string=''):boolean;
+var
+  i: integer;
+  afilename: string;
+begin
+  result := false;
+  afilename := FixPackPath(filename);
+
+  with CreateInArchive(classid) do
+  begin
+    if password <> emptystr then
+      SetPassword(password);
+    OpenFile(pakfilename);
+    for i := 0 to NumberOfItems - 1 do
+      if (ItemIsFolder[i] = false) and (ItemPath[i] = filename) then
+      begin
+        Result := true;
+        break;
+      end;
+    Close;
+  end;
 end;
 
 procedure Z7_ExtractFileToStream(ms: TMemoryStream; const classid: TGUID;
@@ -266,6 +296,7 @@ begin
         ms.Position := 0;
         break;
       end;
+    Close;
   end;
 end;
 
@@ -291,6 +322,7 @@ begin
     for i := 0 to NumberOfItems - 1 do
       if (ItemIsFolder[i] = false) then
       Inc(result);
+    Close;
   end;
 end;
 
@@ -323,9 +355,19 @@ begin
   Z7_ExtractFileToStream(ms, fClassID, pakfilename, filename, fPassword);
 end;
 
+procedure TCat7Z.UnpackToDir(const pakfilename, outdirname: string);
+begin
+  Z7_UnpackToDirEx(fClassID,pakfilename,outdirname,fPassword);
+end;
+
 function TCat7Z.ExtractFileToStr(const pakfilename, filename: string):string;
 begin
   result := Z7_ExtractFileToStr(fClassID, pakfilename, filename, fPassword);
+end;
+
+function TCat7Z.FileExists(const pakfilename, filename: string):boolean;
+begin
+  result := Z7_FileExists(fClassID, pakfilename, filename, fPassword);
 end;
 
 function TCat7Z.GetDirList(const pakfilename: string): string;

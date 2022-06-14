@@ -104,6 +104,7 @@ function IsAlphaNumeric(const s: string): Boolean;
 function IsAlphaOrNumeric(const c: Char): Boolean;
 function IsHexStr(const s: string): Boolean;
 function IsInteger(const s: string): Boolean;
+function IsIntBetween(const i, i1, i2:int64):boolean;
 function IsLowercase(const s: string): Boolean;
 function IsUppercase(const s: string): Boolean;
 function IsRoman(const s: string): Boolean;
@@ -737,6 +738,11 @@ begin
   begin // avoid compiler warning
   end;
   result := c = 0;
+end;
+
+function IsIntBetween(const i, i1, i2:int64):boolean;
+begin
+  Result := (i >= i1) and (i <= i2);
 end;
 
 // Returns true if the string contains valid hexadecimal digits

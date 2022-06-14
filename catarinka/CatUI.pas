@@ -19,11 +19,11 @@ interface
 uses
 {$IFDEF DXE2_OR_UP}
   Winapi.Windows, Vcl.Forms, Vcl.Menus, System.SysUtils,
-  System.Classes, Vcl.ComCtrls, Vcl.Clipbrd,
+  System.Classes, Vcl.ComCtrls, Vcl.Clipbrd, Vcl.StdCtrls, Vcl.Controls,
   Winapi.CommCtrl, Winapi.Messages, Winapi.ShlObj, System.TypInfo,
 {$ELSE}
   Windows, Forms, Menus, SysUtils, Classes, ComCtrls,
-  CommCtrl, Messages, ShlObj, TypInfo, Clipbrd,
+  CommCtrl, Messages, ShlObj, TypInfo, Clipbrd, StdCtrls, Controls,
 {$ENDIF}
   CatStrings;
 
@@ -43,6 +43,8 @@ procedure FlashUI(const times: integer = 2; const delay: integer = 500);
 procedure NilComponentMethods(Component: TComponent);
 procedure SaveMemStreamToStrings(Stream: TMemoryStream; List: TStrings);
 procedure ShowPopupMenu(PopupMenu: TPopupMenu; const AppHandle: integer);
+function ShowEditMemoDialog(const PrevText:string;const TitleWin: string;
+  const TitleLabel: string; var S: String):boolean;
 
 // listview manipulation functions
 function GetLVCheckedItems(lvcomp: TListView): string;
@@ -673,6 +675,70 @@ begin
   for i := 0 to sl.count - 1 do
     TreeAddPath(tv, sl[i], ADelimiter);
   sl.free;
+end;
+
+function ShowEditMemoDialog(const PrevText:string;const TitleWin: string;
+  const TitleLabel: string; var S: String):boolean;
+var
+Form: TForm;
+Edt: TMemo;
+begin
+  Result := false;
+  Form := TForm.Create(Application);
+  try
+  Form.BorderStyle := bsDialog;
+  Form.Caption := TitleWin;
+  Form.Position := poScreenCenter;
+  Form.Width := 350;
+  Form.Height := 220;
+
+  with TLabel.Create(Form) do
+  begin
+    Parent := Form;
+    Caption := TitleLabel;
+    Left := 10;
+    Top := 10;
+  end;
+
+  Edt := TMemo.Create(Form);
+  with Edt do
+  begin
+    Parent := Form;
+    Lines.Text := PrevText;
+    ScrollBars := ssVertical;
+    Left := 10;
+    Top := 25;
+    height := 119;
+    Width := Form.ClientWidth -20;
+  end;
+
+  with TButton.Create(Form) do
+  begin
+    Parent := Form;
+    Caption := '&OK';
+    Left := trunc((Form.ClientWidth)/2)-100;
+    Top := 155;
+    default:=true;
+    modalresult:=mrOk;
+  end;
+
+  with TButton.Create(Form) do
+  begin
+    Parent := Form;
+    Caption := 'Cancel';
+    Left := trunc((Form.ClientWidth)/2)+30;
+    Top := 155;
+    modalresult:=mrCancel;
+  end;
+
+  if Form.ShowModal = mrOK then
+  begin
+    S := Edt.Lines.Text;
+    Result := true;
+  end;
+  finally
+  Form.Free;
+end;
 end;
 
 // CONTRIBUTED ------------------------------------------------------------//

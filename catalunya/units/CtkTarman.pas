@@ -16,6 +16,7 @@ procedure RegisterTarman(L: plua_State);
 function luaopen_Tarman(L: plua_State): integer; cdecl;
 function Lua_TARToDir(L: plua_State): integer; cdecl;
 function Lua_DirToTAR(L: plua_State): integer; cdecl;
+function file_readfromtar(L: plua_State): integer; cdecl;
 
 implementation
 
@@ -24,6 +25,22 @@ uses CatFiles, CatStrings, CatTarman, CatStringLoop;
 procedure RegisterTarman(L: plua_State);
 begin
   luaopen_Tarman(L);
+end;
+
+function file_readfromtar(L: plua_State): integer; cdecl;
+var
+  ms:TMemoryStream;
+  sl:TStringList;
+begin
+ if plua_validateargs(L, result, [LUA_TSTRING, LUA_TSTRING]).OK then begin
+   sl := TStringList.Create;
+   ms := TMemoryStream.Create;
+   ExtractTARFileToStream(lua_tostring(L, 1), lua_tostring(L, 2), ms);
+   sl.LoadFromStream(ms);
+   ms.Free;
+   lua_pushstring(L, sl.Text);
+   sl.Free;
+ end;
 end;
 
 function Lua_TARToDir(L: plua_State): integer; cdecl;

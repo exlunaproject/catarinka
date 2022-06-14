@@ -203,7 +203,7 @@ end;
 
 function get_filefields(L: plua_State): integer; cdecl;
 const
-   file_table : array [1..14] of luaL_Reg =
+   file_table : array [1..15] of luaL_Reg =
    (
    (name:'canopen';func:file_canopen),
    (name:'cleanname';func:file_cleanname),
@@ -214,6 +214,7 @@ const
    (name:'exists';func:file_exists),
    (name:'getcontents';func:file_gettostr),
    (name:'getdir';func:file_extractdir),
+   (name:'getfromtar';func:file_readfromtar),
    (name:'getname';func:file_extractname),
    (name:'getsize';func:file_getsize),
    (name:'getext';func:file_getext),

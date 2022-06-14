@@ -66,6 +66,7 @@ function IsWildCardString(const s:string):boolean;
 function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
 function MatchStrInSepStr(const s,tags:string;separator:string=','):boolean;
+function MatchStrInSepStrAlt(const s,tags:string;separator:string=','):boolean;
 function MatchStringLUT(const sub, s:string):boolean;
 function MatchVersion(curver, vercheck:string):boolean;
 function MatchVersionRange(curver, vercheck:string):boolean;
@@ -414,6 +415,29 @@ end;
 
 // Matches a string against a separated string (comma-based if separator is ommited)
 function MatchStrInSepStr(const s,tags:string;separator:string=','):boolean;
+var
+  i,c:integer;
+  tag:string;
+begin
+  c := occurs(separator, tags);
+  result := false;
+  if c = 0 then begin
+    if s = tags then
+      result := true;
+  end else begin
+    for i := 0 to c do begin
+      tag := gettoken(tags, separator, i+1);
+      if s = tag then begin
+        result := true;
+        break;
+      end;
+    end;
+  end;
+end;
+
+// Matches a string against a separated string (comma-based if separator is ommited)
+// this one has been implemented using TSepStringLoop
+function MatchStrInSepStrAlt(const s,tags:string;separator:string=','):boolean;
 var Tag: TSepStringLoop;
 begin
   result := false;

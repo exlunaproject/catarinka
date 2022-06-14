@@ -5,6 +5,8 @@
   See https://github.com/felipedaragon/catarinka/ for details
 
   This TStringList alternative includes support for:
+  * reading Values[] with a default value through functions ReadValue(),
+    ReadValueInt() and ReadValueBool()
   * loading UTF8 encoded files that contain invalid characters
   * flushing the list to a file if it reaches a desired count when adding a
   string (FlushAdd method)
@@ -41,6 +43,9 @@ type
     {$ENDIF}
     function CanFlushString(const s:string):boolean;
   public
+    function ReadValue(const key, defaultvalue:string):string;
+    function ReadValueInt(const key:string; const defaultvalue:int64):int64;
+    function ReadValueBool(const key:string; const defaultvalue:boolean):boolean;
     constructor Create;
     procedure FlushAdd(const s:string;const maxcount:int64);
     procedure FlushToFile;
@@ -115,17 +120,34 @@ begin
   Clear;
 end;
 
-// Add the string to the list, flushing the contents to a file if reaches 
+// Add the string to the list, flushing the contents to a file if reaches
 // the indicated max lines count
 procedure TCatStringList.FlushAdd(const s:string; const maxcount:int64);
 begin
   Add(s);
   if count > maxcount then
-    FlushToFile; 
+    FlushToFile;
+end;
+
+function TCatStringList.ReadValue(const key, defaultvalue:string):string;
+begin
+  if Values[key] <> emptystr then
+    result := Values[key] else
+    result := defaultvalue;
+end;
+
+function TCatStringList.ReadValueInt(const key:string; const defaultvalue:int64):int64;
+begin
+  result := StrToIntDef(Values[key], defaultvalue);
+end;
+
+function TCatStringList.ReadValueBool(const key:string; const defaultvalue:boolean):boolean;
+begin
+  result := StrToBool(Values[key]);
 end;
 
 {$IFDEF UNICODE}
-// Workaround for rare invalid character error with bad UTF8 Signature encoded 
+// Workaround for rare invalid character error with bad UTF8 Signature encoded
 // files
 procedure TCatStringList.LoadFromFileUTF8(const filename: string);
 var

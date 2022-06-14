@@ -45,6 +45,8 @@
       showmessage(s.current);
 
   ChangeLog:
+    02.10.2021:
+  - Added handling of separator omission in TSepStringLoop
     22.08.2020:
   - Added CurrentNameValue and NameValueSeparator properties for dealign with
     lines that are name value pair like: somename=somevalue
@@ -378,15 +380,21 @@ end;
 {TSepStringLoop}
 
 function TSepStringLoop.Found: boolean;
+var
+  sepcount:integer;
 begin
   result := false;
   if fTags = emptystr then
     exit;
-  fCount := occurs(fSeparator, fTags) + 1;
+  sepcount := occurs(fSeparator, fTags);
+  fCount := sepcount + 1;
   if fPos < fCount then
   begin
     fPos := fPos + 1;
-    SetCurrent(gettoken(fTags, fSeparator, fPos));
+    if sepcount = 0 then
+      SetCurrent(fTags)
+    else
+      SetCurrent(gettoken(fTags, fSeparator, fPos));
     result := true;
   end;
 end;
