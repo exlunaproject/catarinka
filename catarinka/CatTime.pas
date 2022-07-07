@@ -2,7 +2,7 @@ unit CatTime;
 {
   Catarinka - Useful time-related functions
 
-  Copyright (c) 2003-2017 Felipe Daragon
+  Copyright (c) 2003-2012 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -27,7 +27,7 @@ const
 type
   TCatDecodedDate = record
     AsString: string;
-    AsUnixtime: longint;
+    AsUnixtime: Int64;
     AsDateTime: TDateTime;
     Year: word;
     Month: word;
@@ -43,7 +43,7 @@ type
   end;
 
 function CalcAge(const StartDate, Date: TDate): integer;
-function DateTimeToUnix(const Date: TDateTime): Longint;
+function DateTimeToUnix(const Date: TDateTime): Int64;
 function DescribeDuration(const StartTime: TDateTime): string;
 function DescribePassedDays(const aNow, aThen: TDateTime): string;
 function DescribePassedDateTime(const starttime: TDateTime): string;
@@ -55,7 +55,7 @@ function GetDayOfWeekAsText: string;
 function GetDecodedDate(const d: TDateTime):TCatDecodedDate;
 function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';
   const sep: Char = '/'): boolean;
-function UnixToDateTime(const sec: Longint): TDateTime;
+function UnixToDateTime(const sec: Int64): TDateTime;
 
 implementation
 
@@ -92,7 +92,7 @@ begin
   end;
 end;
 
-function DateTimeToUnix(const Date: TDateTime): Longint;
+function DateTimeToUnix(const Date: TDateTime): Int64;
 begin
   Result := Round((Date - UnixStartDate) * 86400);
 end;
@@ -267,7 +267,7 @@ begin
     Result := false;
 end;
 
-function UnixToDateTime(const sec: Longint): TDateTime;
+function UnixToDateTime(const sec: Int64): TDateTime;
 begin
   Result := (sec / 86400) + UnixStartDate;
 end;
