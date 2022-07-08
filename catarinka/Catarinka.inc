@@ -16,6 +16,9 @@
  {$IF CompilerVersion >= 23} // Delphi XE2 or higher
   {$DEFINE DXE2_OR_UP}
  {$IFEND}
+ {$IF CompilerVersion >= 20} // Delphi 2009 or higher
+  {$DEFINE D2009_OR_UP}
+ {$IFEND}
  {$IF CompilerVersion >= 15} // Delphi 7 or higher
   {$DEFINE D7_OR_UP}
  {$IFEND}
