@@ -34,6 +34,7 @@ procedure KillTaskbyPID(const PID: Cardinal);
 procedure KillTaskList(ProcList: TStringList);
 procedure ResumeProcess(const ProcessID: DWORD);
 procedure SuspendProcess(const ProcessID: DWORD);
+function IsUserAnAdmin(): BOOL; external 'shell32.dll';
 
 implementation
 
@@ -42,6 +43,7 @@ uses CatStrings, CatMatch;
 const
   THREAD_SUSPEND_RESUME = $00000002;
   cProcSep = '|pid=';
+
 
 function OpenThread(dwDesiredAccess: DWORD; bInheritHandle: BOOL;
   dwThreadId: DWORD): DWORD; stdcall; external 'kernel32.dll';

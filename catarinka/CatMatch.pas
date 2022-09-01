@@ -67,6 +67,7 @@ function IsValidEmail(email: string): boolean;
 function ExtractVersionFromString(s:string):string;
 function MatchStrInSepStr(const s,tags:string;separator:string=','):boolean;
 function MatchStrInSepStrAlt(const s,tags:string;separator:string=','):boolean;
+function MatchStrEndInSepStr(const s,tags:string;separator:string=','):boolean;
 function MatchStringLUT(const sub, s:string):boolean;
 function MatchVersion(curver, vercheck:string):boolean;
 function MatchVersionRange(curver, vercheck:string):boolean;
@@ -410,6 +411,28 @@ begin
     // if the development stage is different, the result must be the stage comparison
     if (v1.stage <> v2.stage) then
       result := CompareVersionNumber(IntToStr(v1.stage), IntToStr(v2.stage));
+  end;
+end;
+
+// Matches the end of a string against a separated string (comma-based if separator is ommited)
+function MatchStrEndInSepStr(const s,tags:string;separator:string=','):boolean;
+var
+  i,c:integer;
+  tag:string;
+begin
+  c := occurs(separator, tags);
+  result := false;
+  if c = 0 then begin
+    if endswith(s, tags) = true then
+      result := true;
+  end else begin
+    for i := 0 to c do begin
+      tag := gettoken(tags, separator, i+1);
+      if endswith(s, tag) = true then begin
+        result := true;
+        break;
+      end;
+    end;
   end;
 end;
 

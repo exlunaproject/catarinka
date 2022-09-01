@@ -652,7 +652,7 @@ end;
 
 procedure TMultipartFormDataStream.DataEnd;
 begin
-  fStream.WriteString('--'#10);
+  fStream.WriteString('--'+crlf);
   fClosed := True;
 end;
 
