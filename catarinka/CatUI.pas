@@ -46,6 +46,9 @@ procedure ShowPopupMenu(PopupMenu: TPopupMenu; const AppHandle: integer);
 function ShowEditMemoDialog(const PrevText:string;const TitleWin: string;
   const TitleLabel: string; var S: String):boolean;
 
+// save/open dialog related functions
+function GetDialogFilterIndexByExt(const filter,ext:string):integer;
+
 // listview manipulation functions
 function GetLVCheckedItems(lvcomp: TListView): string;
 function GetLVCheckedItemsSingleLn(lvcomp: TListView): string;
@@ -145,7 +148,24 @@ const
 implementation
 
 uses
-  CatFiles, CatPointer;
+  CatFiles, CatPointer, CatStringLoop;
+
+// Loops through the filter of an open or save dialog and returns the filter
+// index of a extension provided
+function GetDialogFilterIndexByExt(const filter, ext:string):integer;
+var
+  slp:TSepStringLoop;
+begin
+  result := 1;
+  slp := TSepStringLoop.Create(filter,'|');
+  while slp.Found do begin
+    if slp.Current = '*.'+ext then begin
+      result := slp.Position-2;
+      slp.Stop;
+    end;
+  end;
+  slp.Free;
+end;
 
 procedure AddListViewItem(lv: TListView; const capt: string; const ii: integer;
   const mv: Boolean);

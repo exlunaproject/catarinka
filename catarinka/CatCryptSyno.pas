@@ -3,7 +3,7 @@ unit CatCryptSyno;
   Catarinka Crypto Utils library
   This library uses and enhances functions from Synopse's Syncrypt library
 
-  Copyright (c) 2020-2021 Felipe Daragon
+  Copyright (c) 2020-2023 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -23,6 +23,8 @@ Classes, SysUtils;
 {$ENDIF}
 function RandomPassword(const len: integer): string;
 function RandomKey: string;
+function SecureRandom(const positiveOnly:boolean=false):integer;
+function SecureRandom64(const positiveOnly:boolean=false):int64;
 function SHA256(const s: string): string;
 function SHA384(const s: string): string;
 function SHA512(const s: string): string;
@@ -30,7 +32,7 @@ function SHA512(const s: string): string;
 implementation
 
 uses
-  SynCrypto, CatStrings;
+  SynCrypto, SynCommons, CatStrings;
 
 function SHA512(const s: string): string;
 begin
@@ -90,6 +92,32 @@ begin
     result := StrToHex(string(p.RandomPassword(32)));
   until (ContainsAnyOfChars(result, ['0' .. '9']) = true);
   p.Free;
+end;
+
+// Generates a random integer securely
+function SecureRandom(const positiveOnly:boolean=false):integer;
+var
+  p: TAESPRNG;
+ block: THash128Rec;
+begin
+ p := TAESPRNG.Create;
+ p.Main.FillRandom(block.b);
+ result := block.i0 xor block.i1 xor block.i2 xor block.i3;
+ p.Free;
+ if positiveonly = true then
+   result := abs(result);
+end;
+
+// Generates a random int64 securely
+function SecureRandom64(const positiveOnly:boolean=false):int64;
+var
+  p: TAESPRNG;
+begin
+ p := TAESPRNG.Create;
+ result := p.Random64;
+ p.Free;
+ if positiveonly = true then
+   result := abs(result);
 end;
 
 // ------------------------------------------------------------------------//

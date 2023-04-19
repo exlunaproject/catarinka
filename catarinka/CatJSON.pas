@@ -2,16 +2,18 @@ unit CatJSON;
 
 {
   Catarinka TCatJSON - JSON Manipulation Object
-  Copyright (c) 2010-2021 Felipe Daragon
+  Copyright (c) 2010-2023 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  09.03.2022:
+  - Added GetKeyList method
   02.10.2021:
   - Use int64 in TCatJSON_Int class and IncValue method
   11.09.2021:
   - Add AddToValue method
   16.08.2021:
-  - Perform UTF8 decode when getting string
+  - Perform unicode decode when getting string
   14.08.2019:
   - Added compatibility with xsuperobject
   - Added RemovePath() method
@@ -61,7 +63,9 @@ type
     function GetValue_(const Name: string): Variant;
     procedure SetText(const Text: string);
   public
+    function GetKeyList: string;
     function GetValue(const Name: string; DefaultValue: Variant): Variant;
+    function GetValueStr(const Name: string; DefaultValue: string): string;
     function HasPath(const Name: string): Boolean;
     function IncValue(const Name: string; Int: int64 = 1) : Int64;
     procedure RemovePath(const Name: string);
@@ -207,6 +211,26 @@ begin
   Result := Result + '}';
 end;
 
+function TCatJSON.GetKeyList: string;
+var
+  ite: TSuperObjectIter;
+  sl:TStringList;
+begin
+  sl := TStringList.Create;
+{$IFDEF USEXSUPEROBJECT}
+ for ite in fObject do
+    sl.Add(ite.Name);
+{$ELSE}
+  if ObjectFindFirst(fObject, ite) then
+    repeat
+      sl.Add(ite.key);
+    until not ObjectFindNext(ite);
+  ObjectFindClose(ite);
+{$ENDIF}
+  result := sl.Text;
+  sl.Free;
+end;
+
 function TCatJSON.GetText: string;
 begin
   Result := fObject.AsJson(True);
@@ -343,6 +367,31 @@ begin
 {$ELSE}
   fObject.O[Name].Clear;
 {$ENDIF}
+end;
+
+function TCatJSON.GetValueStr(const Name: string;
+  DefaultValue: string): string;
+begin
+  Result := DefaultValue;
+  if HasPath(Name) then
+  begin
+    {$IFDEF USEXSUPEROBJECT}
+      result := fObject.V[name];
+    {$ELSE}
+    case fObject.O[name].DataType of
+      stNull:
+        Result := DefaultValue;
+      stString:
+        {$IFDEF UNICODE}
+        if fUseUnicode = true then
+        Result := UnicodeString(fObject.S[Name]) else
+        {$ENDIF}
+        Result := fObject.S[Name];
+      stObject, stArray, stMethod:
+        Result := DefaultValue;
+    end;
+    {$ENDIF}
+  end;
 end;
 
 function TCatJSON.GetValue(const Name: string;

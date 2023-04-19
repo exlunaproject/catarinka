@@ -28,6 +28,7 @@ type
     Port: integer;
     Protocol: string;
     ProtocolHTTP: boolean;
+    URL: string;
   end;
 
 type
@@ -172,11 +173,14 @@ end;
 
 function ChangeURLPath(const url, newpath: string): string;
 var
-  oldpath, reppath: string;
+  oldpath, reppath, aurl: string;
 begin
-  oldpath := '/' + ExtractUrlPath(url);
+  aurl := url;
+  if lastchar(aurl) <> '/' then
+  aurl := aurl+'/';
+  oldpath := '/' + ExtractUrlPath(aurl);
   reppath := newpath;
-  result := replacestr(url + ' ', oldpath + ' ', reppath);
+  result := replacestr(aurl + ' ', oldpath + ' ', reppath);
 end;
 
 // Expects Host[:Port] and will return its parts
@@ -202,13 +206,14 @@ end;
 
 function CrackURL(const url: string): TURLParts;
 begin
-  result.Fileext := ExtractUrlFileExt(url);
-  result.Filename := ExtractUrlFileName(url);
-  result.Host := ExtractUrlHost(url);
-  result.Path := ExtractUrlPath(url);
-  result.Port := ExtractUrlPort(url);
-  result.Protocol := before(url, ':');
-  result.ProtocolHTTP := BeginsWithHttpProto(url);
+  result.URL := trim(url);
+  result.Fileext := ExtractUrlFileExt(result.URL);
+  result.Filename := ExtractUrlFileName(result.URL);
+  result.Host := ExtractUrlHost(result.URL);
+  result.Path := ExtractUrlPath(result.URL);
+  result.Port := ExtractUrlPort(result.URL);
+  result.Protocol := before(result.URL, ':');
+  result.ProtocolHTTP := BeginsWithHttpProto(result.URL);
 end;
 
 // A special dequote for HTML attribute values
@@ -422,7 +427,7 @@ end;
 function GetField(const Field, ReqStr: string): string;
 var
   slp: TStringLoop;
-  afield: string;
+  afield, hdrline: string;
 begin
   result := emptystr;
   afield := lowercase(Field);
@@ -431,7 +436,11 @@ begin
   slp := TStringLoop.Create(ReqStr);
   while slp.Found do
   begin
-    if beginswith(trim(slp.CurrentLower), afield + ':') then
+    hdrline := trim(slp.CurrentLower);
+    // handles non-standard field with space after field name, like:
+    // Access-Control-Allow-Methods : OPTIONS
+    hdrline := stringreplace(hdrline, ' : ',': ', []);
+    if beginswith(hdrline, afield + ':') then
     begin // found
       result := trim(after(slp.current, ':'));
       slp.Stop;

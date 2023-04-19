@@ -70,7 +70,9 @@ function runtests()
   
   -- URL functions
   test('url.changepath', 'http://lua.org/demo/index.lp',ctk.url.changepath('http://lua.org/index.lp','/demo/index.lp'))
+  test('url.changepath', 'http://lua.org/index.lp',ctk.url.changepath('http://lua.org','/index.lp'))  
   test('url.combine', 'http://lua.org/demo/test.lp',ctk.url.combine('http://lua.org/demo/index.lp','test.lp'))
+  test('url.combine', 'http://lua.org/test.lp',ctk.url.combine('http://lua.org','test.lp'))  
   test('url.encode', 'download.html%3Ftest%3D1',ctk.url.encode('download.html?test=1'))
   test('url.decode', 'download.html',ctk.url.decode('download%2Ehtml'))
   test('url.encodefull', '%64%6F%77%6E%6C%6F%61%64%2E%68%74%6D%6C',ctk.url.encodefull('download.html'))

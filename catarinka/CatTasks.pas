@@ -18,6 +18,7 @@ uses
 {$ELSE}
   Windows, Forms, SysUtils, Classes, TlHelp32, PSAPI;
 {$ENDIF}
+function GetProcessWorkingSetSize:int64;
 function KillTask(const ExeFileName: string;FullName:boolean=false): Integer;
 function KillChildTasks: boolean;
 function MatchProcessFilename(pe:TProcessEntry32; const ExeFileName: string; FullName:boolean=false):boolean;
@@ -373,6 +374,21 @@ begin
   CloseHandle(ThreadsSnapshot);
 end;
 
+function GetProcessWorkingSetSize:int64; // bytes
+var
+  pmc: PPROCESS_MEMORY_COUNTERS;
+  cb: Int64;
+begin
+  cb := SizeOf(_PROCESS_MEMORY_COUNTERS);
+  GetMem(pmc, cb);
+  pmc^.cb := cb;
+  if GetProcessMemoryInfo(GetCurrentProcess(), pmc, cb) then
+    result := pmc^.WorkingSetSize
+    //Unable to get process info
+  else
+    result := -1;
+  FreeMem(pmc);
+end;
 
 // ------------------------------------------------------------------------//
 end.

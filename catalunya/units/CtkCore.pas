@@ -2,7 +2,7 @@ unit CtkCore;
 
 {
   Catarinka Core Registration Library
-  Copyright (c) 2013-2020 Felipe Daragon
+  Copyright (c) 2013-2023 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -169,9 +169,10 @@ end;
 
 function get_cryptofields(L: plua_State): integer; cdecl;
 const
-   crypto_table : array [1..8] of luaL_Reg =
+   crypto_table : array [1..9] of luaL_Reg =
    (
    (name:'md5';func:conv_strtomd5),
+   (name:'random';func:int_securerandom),
    (name:'randompwd';func:str_randompassword),
    (name:'randompwdadmin';func:str_randompasswordadmin),
    (name:'sha1';func:conv_strtosha1),

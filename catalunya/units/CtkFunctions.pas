@@ -127,6 +127,8 @@ function task_kill(L: plua_State): integer; cdecl;
 
 function hostporttourl(L: plua_State): integer; cdecl;
 
+function int_securerandom(L: plua_State): integer; cdecl;
+
 function utils_delay(L: plua_State): integer; cdecl;
 function utils_getarg(L: plua_State): integer; cdecl;
 function utils_hasarg(L: plua_State): integer; cdecl;
@@ -142,6 +144,17 @@ uses
   CtkStrList, CtkStrListParser, CtkHTMLParser, CtkJSON, CtkTarman,
   CatStrings, CatJSON, CatMatch, CatFiles, CatHTTP, CatUtils,
   CatInet, CatTasks, CatCLUtils, CatCSUtils, CatHashes;
+
+function int_securerandom(L: plua_State): integer; cdecl;
+begin
+ if plua_validateargs(L, result,
+   [LUA_TBOOLEAN], [vaOptional1]).OK then begin
+     if lua_isnone(L, 1) = true then
+     plua_pushintnumber(L, securerandom) else
+     plua_pushintnumber(L, securerandom(lua_toboolean(L,1)));
+   end;
+  result := 1;
+end;
 
 function console_readline(L: plua_State): integer; cdecl;
 begin

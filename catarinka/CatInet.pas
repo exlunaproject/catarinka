@@ -15,10 +15,10 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  Winapi.Windows, Winapi.WinSock, System.SysUtils, System.Win.Registry,
+  Winapi.Windows, System.Classes, Winapi.WinSock, System.SysUtils, System.Win.Registry,
   Winapi.WinInet;
 {$ELSE}
-  Windows, WinSock, SysUtils, Registry, WinInet;
+  Windows, Classes, WinSock, SysUtils, Registry, WinInet;
 {$ENDIF}
 
 function ExtractIPAddresses(const s: string): string; overload;
@@ -173,14 +173,21 @@ end;
 function ExtractIPAddresses(const s: string;const exceptions: array of string): string;
 var
   r: TRegExpr;
+  list: TStringList;
   function IsValid(const ip:string):boolean;
   begin
    result := IsValidIP(ip);
    if beginswith(ip, exceptions) = true then
      result := false;
+   // do not allow repeated IP address
+   if list.IndexOf(ip) <> -1 then
+     result := false;
+   if result = true then
+     list.Add(ip);
   end;
 begin
   result := emptystr;
+  list := TStringList.Create;
    r := TRegExpr.Create;
    try
      r.Expression := '\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b';
@@ -194,6 +201,7 @@ begin
          end
        until not r.ExecNext;
    finally
+     list.free;
      r.Free;
    end;
 end;

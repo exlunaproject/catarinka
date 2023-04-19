@@ -25,12 +25,37 @@ uses
 
 function Base64Encode(const s: string): string;
 function Base64Decode(const s: string): string;
+function FileToB64(const filename:string):string;
+function FileToDataURL(const filename:string):string;
 function MemStreamToB64(m: TMemoryStream): String;
 
 implementation
 
 uses
-  CatStrings;
+  CatStrings, CatFiles;
+
+function FileToDataURL(const filename:string):string;
+var
+  ms: TMemoryStream;
+begin
+  ms := TMemoryStream.Create;
+  ms.LoadFromFile(filename);
+  ms.Position := 0;
+  result := MemStreamToB64(ms);
+  ms.Free;
+  result := 'data:'+FilenameToMimeType(filename)+';base64,'+result;
+end;
+
+function FileToB64(const filename:string):string;
+var
+  ms: TMemoryStream;
+begin
+  ms := TMemoryStream.Create;
+  ms.LoadFromFile(filename);
+  ms.Position := 0;
+  result := MemStreamToB64(ms);
+  ms.Free;
+end;
 
 function MemStreamToB64(m: TMemoryStream): String;
 begin

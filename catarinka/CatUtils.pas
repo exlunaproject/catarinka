@@ -3,7 +3,7 @@ unit CatUtils;
 {
   Catarinka - Utils
 
-  Copyright (c) 2003-2020 Felipe Daragon
+  Copyright (c) 2003-2023 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -20,17 +20,23 @@ uses
 {$ENDIF}
 
 type
- TCatUninstallProgInfo = record
-   Available:boolean;
-   IsUptodate:boolean;
-   DisplayVersion:string;
-   InstallLocation:string;
- end;
+  TCatUninstallProgInfo = record
+    Available: boolean;
+    IsUptodate: boolean;
+    DisplayVersion: string;
+    InstallLocation: string;
+  end;
 
-function GetProgramUninstallInfo(const key: string;const version:string=''):TCatUninstallProgInfo;
-function GetInstallLanguage(const defaultLang:integer=409):integer;
-procedure CatDelay(const ms: Integer);
-procedure CatDelayAlt(const ms: Integer);
+function GetProgramUninstallInfo(const key: string; const version: string = '')
+  : TCatUninstallProgInfo;
+function GetInstallLanguage(const defaultLang: integer = 409): integer;
+function IsWindowsSeven: boolean;
+function IsWindowsEight: boolean;
+function IsSoftwareInstalled(const softwarekey:string): boolean;
+function IsSoftwareInstalled_WindowApp(const softwarekey:string): boolean;
+function RegistryKeyExists(RootKey: HKEY; key: string): boolean;
+procedure CatDelay(const ms: integer);
+procedure CatDelayAlt(const ms: integer);
 procedure OutDebug(const s: string);
 procedure SetShortDateFormat(const s: string);
 
@@ -41,17 +47,16 @@ uses
 
 type
   // Creates a sub-class in scope which we can use in a typecast
-  //  to gain access to protected members of the target superclass
+  // to gain access to protected members of the target superclass
 
   TApplicationHelper = class(TApplication);
 
-
-procedure CatDelay(const ms: Integer);
+procedure CatDelay(const ms: integer);
 var
   start: Int64;
-  elapsed: Integer;
+  elapsed: integer;
 begin
-  start   := Trunc(Now * 24 * 60 * 60 * 1000);
+  start := Trunc(Now * 24 * 60 * 60 * 1000);
   elapsed := 0;
   while elapsed < ms do
   begin
@@ -62,16 +67,16 @@ end;
 
 // Thanks Deltics
 // https://stackoverflow.com/questions/39484344/an-alternative-to-sleep-function-in-delphi7
-procedure CatDelayAlt(const ms: Integer);
+procedure CatDelayAlt(const ms: integer);
 var
   start: Int64;
-  elapsed: Integer;
-  wait: Boolean;
+  elapsed: integer;
+  wait: boolean;
 
-  function ProcessMessage: Boolean;
+  function ProcessMessage: boolean;
   var
     msg: TMsg;
-    handled: Boolean;
+    handled: boolean;
     app: TApplicationHelper;
   begin
     app := TApplicationHelper(Application);
@@ -86,11 +91,8 @@ var
         if Assigned(Application.OnMessage) then
           Application.OnMessage(msg, handled);
 
-        if   not app.IsHintMsg(msg)
-         and not handled
-         and not app.IsMDIMsg(msg)
-         and not app.IsKeyMsg(msg)
-         and not app.IsDlgMsg(msg) then
+        if not app.IsHintMsg(msg) and not handled and not app.IsMDIMsg(msg) and
+          not app.IsKeyMsg(msg) and not app.IsDlgMsg(msg) then
         begin
           TranslateMessage(msg);
           DispatchMessage(msg);
@@ -102,15 +104,17 @@ var
   end;
 
 begin
-  wait  := FALSE; // We will not wait for messages initially
+  wait := False; // We will not wait for messages initially
   start := Trunc(Now * 24 * 60 * 60 * 1000);
 
-  SetTimer(0, 0, ms, NIL); // Makes sure we get a message (WM_TIMER) at the end of the timeout period
+  SetTimer(0, 0, ms, NIL);
+  // Makes sure we get a message (WM_TIMER) at the end of the timeout period
   repeat
     if wait then
       WaitMessage;
 
-    wait := NOT ProcessMessage; // If there was no message then we will wait for one next time around
+    wait := NOT ProcessMessage;
+    // If there was no message then we will wait for one next time around
 
     elapsed := Trunc(Now * 24 * 60 * 60 * 1000) - start;
 
@@ -118,7 +122,7 @@ begin
 end;
 
 // Gets Windows install language code from the Registry
-function GetInstallLanguage(const defaultLang:integer=409):integer;
+function GetInstallLanguage(const defaultLang: integer = 409): integer;
 var
   Reg: TRegistry;
 begin
@@ -126,11 +130,10 @@ begin
   Reg := TRegistry.Create(KEY_READ);
   try
     Reg.RootKey := HKEY_LOCAL_MACHINE;
-    if Reg.OpenKey
-      ('\SYSTEM\CurrentControlSet\Control\Nls\Language\', false)
+    if Reg.OpenKey('\SYSTEM\CurrentControlSet\Control\Nls\Language\', False)
     then
     begin
-      result := StrToIntDef(Reg.ReadString('InstallLanguage'),defaultLang);
+      result := StrToIntDef(Reg.ReadString('InstallLanguage'), defaultLang);
       Reg.CloseKey;
     end;
   finally
@@ -141,29 +144,30 @@ end;
 // Gets some key uninstall info from the Program Uninstall key in Registry
 // If a version number is passed as the second parameter, the version is compared with
 // the installed version and if it is an older version, the IsUptodate key returns false
-function GetProgramUninstallInfo(const key: string;const version:string=''):TCatUninstallProgInfo;
+function GetProgramUninstallInfo(const key: string; const version: string = '')
+  : TCatUninstallProgInfo;
 var
   Reg: TRegistry;
 begin
-  result.Available := false;
-  result.IsUptodate := true;
+  result.Available := False;
+  result.IsUptodate := True;
   result.InstallLocation := emptystr;
   result.DisplayVersion := emptystr;
   Reg := TRegistry.Create(KEY_READ);
   try
     Reg.RootKey := HKEY_LOCAL_MACHINE;
-    if Reg.OpenKey
-      ('\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\'+key+'_is1\', false)
-    then
+    if Reg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\' + key
+      + '_is1\', False) then
     begin
-      result.Available := true;
+      result.Available := True;
       result.DisplayVersion := Reg.ReadString('DisplayVersion');
       result.InstallLocation := Reg.ReadString('InstallLocation');
-      if version <> emptystr then begin
+      if version <> emptystr then
+      begin
         // Compare the version. If installed version is older than passed version
         // IsUpdate is set to false
         if CompareVersionNumber(result.DisplayVersion, version) = -1 then
-        result.IsUptodate := false;
+          result.IsUptodate := False;
       end;
       Reg.CloseKey;
     end;
@@ -188,6 +192,74 @@ begin
 {$ELSE}
   SHORTDATEFORMAT := s;
 {$ENDIF}
+end;
+
+function RegistryKeyExists(RootKey: HKEY; key: string): boolean;
+var
+  Reg: TRegistry;
+begin
+  result := False;
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := RootKey;
+    if Reg.OpenKeyReadOnly(key) then
+    begin
+      result := True;
+      Reg.CloseKey;
+    end;
+  finally
+    Reg.Free;
+  end;
+end;
+
+function IsWindowsSeven: boolean;
+begin
+  result := (Win32MajorVersion = 6) and (Win32MinorVersion = 1) and
+    (Win32Platform = VER_PLATFORM_WIN32_NT);
+end;
+
+function IsWindowsEight: boolean;
+begin
+  result := (Win32MajorVersion = 6) and (Win32MinorVersion = 2) and
+    (Win32Platform = VER_PLATFORM_WIN32_NT);
+end;
+
+// Examles:
+// IsSoftwareInstalled('Python\PythonCore');
+// IsSoftwareInstalled('Google\Chrome');
+function IsSoftwareInstalled(const softwarekey:string): boolean;
+begin
+  result := false;
+  if RegistryKeyExists(HKEY_LOCAL_MACHINE, '\SOFTWARE\'+softwarekey) then
+    result := true else
+  if RegistryKeyExists(HKEY_LOCAL_MACHINE, '\SOFTWARE\Microsoft\AppModel\Lookaside\user\Software\'+softwarekey) then
+    result := true else
+  if RegistryKeyExists(HKEY_CURRENT_USER, '\SOFTWARE\'+softwarekey) then
+    result := true else
+  if RegistryKeyExists(HKEY_CURRENT_USER, '\Wow6432Node\SOFTWARE\'+softwarekey) then
+    result := true;
+  // on windows 10, when an app is installed from the windows store, the key used is:
+  //HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\AppModel\Lookaside\user\Software\
+end;
+
+function IsSoftwareInstalled_WindowApp(const softwarekey:string): boolean;
+begin
+  result := RegistryKeyExists(HKEY_LOCAL_MACHINE, '\SOFTWARE\Microsoft\AppModel\Lookaside\user\Software\'+softwarekey);
+end;
+
+function IsPythonCoreInstalled: boolean;
+begin
+  result := false;
+  if RegistryKeyExists(HKEY_LOCAL_MACHINE, '\SOFTWARE\Python\PythonCore') then
+    result := true else
+  if RegistryKeyExists(HKEY_LOCAL_MACHINE, '\SOFTWARE\Microsoft\AppModel\Lookaside\user\Software\Python\PythonCore') then
+    result := true else
+  if RegistryKeyExists(HKEY_CURRENT_USER, '\SOFTWARE\Python\PythonCore') then
+    result := true else
+  if RegistryKeyExists(HKEY_CURRENT_USER, '\Wow6432Node\SOFTWARE\Python\PythonCore') then
+    result := true;
+  // on windows 10, when python is installed from the windows store, the key used is:
+  //HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\AppModel\Lookaside\user\Software\Python\PythonCore\X.X\InstallPath
 end;
 
 // ------------------------------------------------------------------------//

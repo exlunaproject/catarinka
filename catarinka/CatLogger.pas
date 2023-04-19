@@ -88,6 +88,8 @@ uses CatStrings;
 function ElapsedTimeToFriendlyTime(el:TTimeSpan;includems:boolean=true):string;
 begin
   result := emptystr;
+  if el.Days <>0 then
+    result := result + IntToStr(el.days)+'d';
   if el.Hours <> 0 then
     result := result + IntToStr(el.Hours)+'h';
   if el.Minutes<>0 then
