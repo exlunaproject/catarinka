@@ -115,6 +115,7 @@ function ExtractHTTPRequestPostData(const r: string): string;
 function ExtractHTTPResponseHeader(const r: string): string;
 function ExtractHTTPResponseStatusCode(const r: string): integer;
 function GetField(const Field, ReqStr: string): string;
+function GetStatusCodeDescription(const sc:integer):string;
 function PostDataToJSON(const s: string): string;
 function RemoveHeaderFromResponse(const r: string): string;
 
@@ -350,6 +351,53 @@ begin
   if (Port <> 80) and (Port <> 443) then
     sport := ':' + inttostr(Port);
   result := proto + Host + sport;
+end;
+
+function GetStatusCodeDescription(const sc:integer):string;
+var
+  s:string;
+begin
+  s := emptystr;
+  case sc of 
+  100: s:='Continue';
+  101: s:='Switching Protocols';
+  200: s:='OK';
+  201: s:='Created';
+  202: s:='Accepted';
+  203: s:='Non-Authoritative Information';
+  204: s:='No Content';
+  205: s:='Reset Content';
+  206: s:='Partial Content';
+  300: s:='Multiple Choices';
+  301: s:='Moved Permanently';
+  302: s:='Moved Temporarily';
+  303: s:='See Other';
+  304: s:='Not Modified';
+  305: s:='Use Proxy';
+  400: s:='Bad Request';
+  401: s:='Unauthorized';
+  402: s:='Payment Required';
+  403: s:='Forbidden';
+  404: s:='Not Found';
+  405: s:='Method Not Allowed';
+  406: s:='Not Acceptable';
+  407: s:='Proxy Authentication Required';
+  408: s:='Request Time-out';
+  409: s:='Conflict';
+  410: s:='Gone';
+  411: s:='Length Required';
+  412: s:='Precondition Failed';
+  413: s:='Request Entity Too Large';
+  414: s:='Request-URI Too Large';
+  415: s:='Unsupported Media Type';
+  500: s:='Internal Server Error';
+  501: s:='Not Implemented';
+  502: s:='Bad Gateway';
+  503: s:='Service Unavailable';
+  504: s:='Gateway Time-out';
+  505: s:='HTTP Version not supported';
+  end;
+  result := s;
 end;
 
 function StripHTML(const s: string): string;

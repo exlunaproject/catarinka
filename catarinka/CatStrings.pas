@@ -148,6 +148,7 @@ function StrArrayToText(aArray: array of string):string;
 function StrToBool(const s: string): Boolean;
 function StrToCharSet(const s: string): TSysCharSet;
 function StrToCommaText(const s: string): string;
+function StrDef(const S, Default: string): string;
 function StrToHex(const s: string): string;
 function StrToHex16(const s: string): string;
 function StrToNameValue(const s: string; const aSeparator:string='='): TCatNameValue;
@@ -1168,6 +1169,14 @@ begin
     result := true
   else
     result := false;
+end;
+
+function StrDef(const S, Default: string): string;
+begin
+  if S <> emptystr then
+    Result := S
+  else
+    Result := Default;
 end;
 
 function StrToCharSet(const s: string): TSysCharSet;
