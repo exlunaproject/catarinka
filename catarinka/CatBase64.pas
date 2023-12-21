@@ -18,32 +18,36 @@ uses
   {$IFDEF USECROSSVCL}
   WinAPI.Windows,
   {$ENDIF}
-  System.Classes, System.SysUtils;
+  System.Classes, System.SysUtils, System.NetEncoding;
 {$ELSE}
-  Classes, SysUtils;
+  Classes, SysUtils, NetEncoding;
 {$ENDIF}
 
 function Base64Encode(const s: string): string;
 function Base64Decode(const s: string): string;
 function FileToB64(const filename:string):string;
-function FileToDataURL(const filename:string):string;
-function MemStreamToB64(m: TMemoryStream): String;
+function FileToDataURL(const filename:string; mimetype:string=''):string;
+procedure MemoryStreamToBase64(const Stream: TMemoryStream; var Base64: string);
+procedure Base64ToMemoryStream(const Base64: string; var Stream: TMemoryStream);
 
 implementation
 
 uses
   CatStrings, CatFiles;
 
-function FileToDataURL(const filename:string):string;
+function FileToDataURL(const filename:string; mimetype:string=''):string;
 var
   ms: TMemoryStream;
 begin
   ms := TMemoryStream.Create;
   ms.LoadFromFile(filename);
   ms.Position := 0;
-  result := MemStreamToB64(ms);
+  MemoryStreamToBase64(ms, result);
   ms.Free;
-  result := 'data:'+FilenameToMimeType(filename)+';base64,'+result;
+  if mimetype = '' then
+  mimetype := FilenameToMimeType(filename);
+  result := 'data:'+mimetype+';base64,'+result;
+  result := replacestr(result, crlf, emptystr);
 end;
 
 function FileToB64(const filename:string):string;
@@ -53,14 +57,36 @@ begin
   ms := TMemoryStream.Create;
   ms.LoadFromFile(filename);
   ms.Position := 0;
-  result := MemStreamToB64(ms);
+  MemoryStreamToBase64(ms, result);
   ms.Free;
 end;
 
-function MemStreamToB64(m: TMemoryStream): String;
+procedure MemoryStreamToBase64(const Stream: TMemoryStream; var Base64: string);
+var
+  Encoder: TBase64Encoding;
+begin
+  Encoder := TBase64Encoding.Create;
+  try
+    Base64 := Encoder.EncodeBytesToString(Stream.Memory, Stream.Size);
+  finally
+    Encoder.Free;
+  end;
+end;
+
+procedure Base64ToMemoryStream(const Base64: string; var Stream: TMemoryStream);
+var
+  Bytes: TBytes;
+begin
+  Bytes := TNetEncoding.Base64.DecodeStringToBytes(Base64);
+  Stream.Clear;
+  Stream.WriteBuffer(Bytes[0], Length(Bytes));
+  Stream.Position := 0;
+end;
+
+{function MemStreamToB64(m: TMemoryStream): String;
 begin
   Result := Base64Encode(MemStreamToStr(m));
-end;
+end; }
 
 // CONTRIBUTED ------------------------------------------------------------//
 // Base64 encoder and decoder taken from Ararat Synapse's synacode.pas

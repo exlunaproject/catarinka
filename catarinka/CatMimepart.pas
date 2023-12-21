@@ -55,7 +55,7 @@ type
     fStream: TStringStream;
   public
     function GetFileMIMEType(const aFile: string): string;
-    procedure AddFieldString(aFieldName: string; aValue: string);
+    procedure AddFieldString(aFieldName: string; aValue: string;includeCT:boolean=true);
     procedure AddFieldInteger(aFieldName: string; aValue: Integer);
     procedure AddFieldFloat(aFieldName: string; aValue: Extended);
     procedure AddFieldBool(aFieldName: string; aValue: Boolean); overload;
@@ -597,32 +597,33 @@ begin
 {$IFDEF DXE2_OR_UP}UIntToStr(aValue){$ELSE}IntToStr(aValue){$ENDIF});
 end;
 
-procedure TMultipartFormDataStream.AddFieldString(aFieldName, aValue: string);
+procedure TMultipartFormDataStream.AddFieldString(aFieldName, aValue: string;includeCT:boolean=true);
 begin
-  fStream.WriteString(#13+'content-disposition: form-data; name="' + aFieldName + '"'+crlf);
+  fStream.WriteString(crlf+'content-disposition: form-data; name="' + aFieldName + '"'+crlf);
+  if includeCT = true then
   fStream.WriteString('Content-Type: text/plain'+crlf);
   fStream.WriteString(crlf);
-  fStream.WriteString(aValue + #10);
+  fStream.WriteString(aValue + crlf);
   fStream.WriteString(fBoundStr);
 end;
 
 procedure TMultipartFormDataStream.AddFile(aFieldName, aFileName: string; aFileContent: TStream);
 begin
-  fStream.WriteString(#10'content-disposition: form-data; name="' + aFieldName +
+  fStream.WriteString(crlf+'content-disposition: form-data; name="' + aFieldName +
     '"; Filename="' + aFileName + '"'+ crlf);
   fStream.WriteString('Content-Type: ' + GetFileMIMEType(aFileName) + crlf + crlf);
   fStream.CopyFrom(aFileContent, 0);
-  fStream.WriteString(#10 + fBoundStr);
+  fStream.WriteString(crlf + fBoundStr);
 end;
 
 procedure TMultipartFormDataStream.AddFile(aFieldName, aFileName: string);
 var
   MS: TMemoryStream;
 begin
-  fStream.WriteString(#10'content-disposition: form-data; name="' + aFieldName +
-    '"; filename="' + ExtractFileName(aFileName) + '"'#10);
+  fStream.WriteString(crlf+'content-disposition: form-data; name="' + aFieldName +
+    '"; filename="' + ExtractFileName(aFileName) + '"'+crlf);
   fStream.WriteString('Content-Type: ' + GetFileMIMEType(aFileName) + crlf + crlf);
-  fStream.WriteString(#13);
+  //fStream.WriteString(crlf);
   MS := TMemoryStream.Create;
   try
     MS.LoadFromFile(aFileName);
@@ -630,7 +631,7 @@ begin
   finally
     FreeAndNil(MS);
   end;
-  fStream.WriteString(#10 + fBoundStr);
+  fStream.WriteString(crlf + fBoundStr);
 end;
 
 constructor TMultipartFormDataStream.Create;

@@ -55,16 +55,58 @@ procedure CopyAfterFirstLine(const sourcefile, targetfile: string;
   appendln: boolean = false; lnstr: string = '');
 procedure GetDirs(const dir: string; const Result: TStrings;
   SortResult: boolean = true);
+function GetDirectorySize(const APath: string): Int64;
 procedure GetFiles(const dir: string; const Result: TStrings;
   const IncludeDir: boolean = false; const IncludeExt: boolean = true);
 procedure GetFilesRecursive(const Result: TStrings; Dir, Mask: string);
 procedure WipeFile(const filename: string);
+function GetFreeSpaceOnDrive(const Drive: string): Int64;
 procedure GetDiskDrives(var ADriveList: TStrings; IncludeRemovables:boolean=true);
 
 implementation
 
 uses
   CatStrings;
+
+function GetFreeSpaceOnDrive(const Drive: string): Int64;
+var
+  FreeBytesAvailable, TotalBytes, TotalFreeBytes: Int64;
+begin
+  // Call the GetDiskFreeSpaceEx function
+  if GetDiskFreeSpaceEx(PChar(Drive), FreeBytesAvailable, TotalBytes, @TotalFreeBytes) then
+  begin
+    Result := FreeBytesAvailable;
+  end
+  else
+  begin
+    // Return -1 in case of an error
+    Result := -1;
+  end;
+end;
+
+function GetDirectorySize(const APath: string): Int64;
+var
+  SearchRec: TSearchRec;
+begin
+  Result := 0;
+
+  if FindFirst(APath + '\*.*', faAnyFile, SearchRec) = 0 then
+  begin
+    try
+      repeat
+        if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+        begin
+          if (SearchRec.Attr and faDirectory) = faDirectory then
+            Result := Result + GetDirectorySize(APath + '\' + SearchRec.Name)
+          else
+            Result := Result + SearchRec.Size;
+        end;
+      until FindNext(SearchRec) <> 0;
+    finally
+      FindClose(SearchRec);
+    end;
+  end;
+end;
 
 procedure CatReadLn(const f: Text; var s: string);
 var

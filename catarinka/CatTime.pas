@@ -53,9 +53,13 @@ function ExtractDateFromTokenStr(const d,m,y:integer;s:string;sep:string=' '):TC
 function GetDayOfWeekAsNumber: integer;
 function GetDayOfWeekAsText: string;
 function GetDecodedDate(const d: TDateTime):TCatDecodedDate;
+function IntToShortMonth(const i:integer):string;
 function IsValidDate(const S: string; const format: string = 'mm/dd/yyyy';
   const sep: Char = '/'): boolean;
 function UnixToDateTime(const sec: Int64): TDateTime;
+
+function DateToUnix(const ADateTime: TDateTime): Int64;
+function UnixToDate(const DateCount: Int64): TDateTime;
 
 implementation
 
@@ -63,6 +67,34 @@ uses CatStrings;
 
 const
   UnixStartDate: TDateTime = 25569.0; // 01/01/1970
+
+function DateToUnix(const ADateTime: TDateTime): Int64;
+begin
+  Result := Trunc(ADateTime) - Trunc(UnixStartDate);
+end;
+
+function UnixToDate(const DateCount: Int64): TDateTime;
+begin
+  Result := UnixStartDate + DateCount;
+end;
+
+function IntToShortMonth(const i:integer):string;
+begin
+  case i of
+   1: result := 'Jan';
+   2: result := 'Feb';
+   3: result := 'Mar';
+   4: result := 'Apr';
+   5: result := 'May';
+   6: result := 'Jun';
+   7: result := 'Jul';
+   8: result := 'Aug';
+   9: result := 'Sep';
+   10: result := 'Oct';
+   11: result := 'Nov';
+   12: result := 'Dec';
+  end;
+end;
 
 function CalcAge(const StartDate, Date: TDate): integer;
 var

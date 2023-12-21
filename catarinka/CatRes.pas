@@ -4,7 +4,7 @@ unit CatRes;
   Catarinka - Catarinka Resources Library
   Useful functions for reading or saving resources
 
-  Copyright (c) 2003-2019 Felipe Daragon
+  Copyright (c) 2003-2023 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -17,14 +17,17 @@ interface
 
 uses
 {$IFDEF DXE2_OR_UP}
-  System.SysUtils, Winapi.Windows, vcl.imaging.Jpeg, System.Classes;
+  Winapi.Windows, System.SysUtils, System.Classes, Vcl.Graphics, Vcl.Controls,
+  vcl.imaging.Jpeg, Vcl.Imaging.pngimage;
 {$ELSE}
-  SysUtils, Windows, Jpeg, Classes;
+  SysUtils, Windows, Classes, Graphics, Controls, Jpeg, pngimage;
 {$ENDIF}
+procedure LoadPngIconToImageList(ImageList: TImageList; ResourceName: string);
 function GetResourceAsJpeg(const ResName: string): TJPEGImage;
 function GetResourceAsPointer(const ResName: string;
   out Size: longword): pointer;
 function GetResourceAsString(const ResName: string): string;
+procedure GetResourceToMemoryStream(const ResName: string;var stream:TMemoryStream);
 function SaveResourceAsTempFile(const ResName: string): string;
 procedure SaveResourceAsFile(const ResName, FileName: string);
 
@@ -54,6 +57,37 @@ begin
 end;
 {$ENDIF}
 
+procedure LoadPngIconToImageList(ImageList: TImageList; ResourceName: string);
+var
+  ResStream: TResourceStream;
+  PngImage: TPngImage;
+  Bitmap: TBitmap;
+begin
+  // Load the PNG icon from the resource
+  ResStream := TResourceStream.Create(HInstance, ResourceName, RT_RCDATA);
+  try
+    PngImage := TPngImage.Create;
+    try
+      PngImage.LoadFromStream(ResStream);
+
+      // Convert the PNG image to a TBitmap
+      Bitmap := TBitmap.Create;
+      try
+        Bitmap.Assign(PngImage);
+
+        // Add the TBitmap to the TImageList
+        ImageList.Add(Bitmap, nil);
+      finally
+        Bitmap.Free;
+      end;
+    finally
+      PngImage.Free;
+    end;
+  finally
+    ResStream.Free;
+  end;
+end;
+
 // Usage Example:
 // Jpg := GetResourceAsJpeg('sample_jpg');
 // Image1.Picture.Bitmap.Assign(Jpg);
@@ -65,6 +99,19 @@ begin
   try
     result := TJPEGImage.Create;
     result.LoadFromStream(rs);
+  finally
+    rs.Free;
+  end;
+end;
+
+procedure GetResourceToMemoryStream(const ResName: string;var stream:TMemoryStream);
+var
+  rs: TResourceStream;
+begin
+  rs := TResourceStream.Create(hInstance, ResName, RT_RCDATA);
+  try
+    rs.SaveToStream(stream);
+    stream.Position := 0;
   finally
     rs.Free;
   end;

@@ -6,6 +6,11 @@ unit CatJSON;
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
+  31.08.2023:
+  - Added GetValueDataType method
+  05.06.2023:
+  - Added support for Currency
+  - Fix GetTextUnquoted method returning comma before closing JSON
   09.03.2022:
   - Added GetKeyList method
   02.10.2021:
@@ -66,6 +71,7 @@ type
     function GetKeyList: string;
     function GetValue(const Name: string; DefaultValue: Variant): Variant;
     function GetValueStr(const Name: string; DefaultValue: string): string;
+    function GetValueDataType(const Name:string):TSuperType;
     function HasPath(const Name: string): Boolean;
     function IncValue(const Name: string; Int: int64 = 1) : Int64;
     procedure RemovePath(const Name: string);
@@ -208,6 +214,8 @@ begin
     until not ObjectFindNext(ite);
   ObjectFindClose(ite);
 {$ENDIF}
+  if LastChar(result) = ',' then
+  Result := RemoveLastChar(Result);
   Result := Result + '}';
 end;
 
@@ -334,12 +342,19 @@ begin
     varInteger, varByte, varSmallInt, varShortInt, varWord, varLongWord,
     {$IFDEF UNICODE}varUInt64, {$ENDIF} varInt64:
       fObject.i[name] := Value;
-    varDouble:
-     {$IFDEF USEXSUPEROBJECT}
-      fObject.f[name] := Value;
+    varCurrency:
+      {$IFDEF USEXSUPEROBJECT}
+      fObject.d[name] := CurrencyToDouble(VarAsType(Value, varCurrency));
      {$ELSE}
-      fObject.d[name] := Value;
+      fObject.c[name] := VarAsType(Value, varCurrency);
      {$ENDIF}
+    varDouble: begin
+     {$IFDEF USEXSUPEROBJECT}
+      fObject.f[name] := VarAsType(Value, varDouble);
+     {$ELSE}
+      fObject.d[name] := VarAsType(Value, varDouble);
+     {$ENDIF}
+    end;
   end;
 end;
 
@@ -394,6 +409,13 @@ begin
   end;
 end;
 
+function TCatJSON.GetValueDataType(const Name:string):TSuperType;
+begin
+ if HasPath(Name) then
+   result := fObject.O[name].DataType else
+   result := stNull;
+end;
+
 function TCatJSON.GetValue(const Name: string;
   DefaultValue: Variant): Variant;
 begin
@@ -410,6 +432,8 @@ begin
         Result := fObject.b[Name];
       stDouble:
         Result := fObject.d[Name];
+      stCurrency:
+        Result := fObject.c[Name];
       stInt:
         Result := fObject.i[Name];
       stString:

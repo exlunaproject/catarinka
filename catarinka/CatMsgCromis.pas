@@ -2,7 +2,7 @@ unit CatMsgCromis;
 
 {
   Catarinka TCatMsgCromis - More reliable alternative to WM_COPYDATA messages
-  Copyright (c) 2016 Felipe Daragon
+  Copyright (c) 2016-2023 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -51,7 +51,7 @@ type
     property ServerName: string read GetServerName;
   end;
 
-function SendCromisMessage(desthandle, msgid: integer; l: string):integer;
+function SendCromisMessage(desthandle, msgid: integer; l: string):boolean;
 
 implementation
 
@@ -62,13 +62,13 @@ const
   WM_OnListBoxMessage = WM_USER + 1;
   WM_OnRequestFinished = WM_USER + 2;
 
-function SendCromisMessage(desthandle, msgid: integer; l: string):integer;
+function SendCromisMessageTry(desthandle, msgid: integer; l: string):boolean;
 var
   IPCResult: IIPCData;
   Request: IIPCData;
   IPCClient: TIPCClient;
 begin
-  result := 1;
+  result := false;
   IPCClient := TIPCClient.Create;
   try
     IPCClient.ComputerName := EmptyStr;
@@ -82,12 +82,27 @@ begin
         Request.Data.WriteInteger('CmdID', msgid);
         Request.Data.WriteUTF8String('Command', AnsiString(l));
         IPCResult := IPCClient.ExecuteConnectedRequest(Request);
+        result := IPCClient.AnswerValid;
       end;
     finally
       IPCClient.DisconnectClient;
     end;
   finally
     IPCClient.Free;
+  end;
+end;
+
+function SendCromisMessage(desthandle, msgid: integer; l: string):boolean;
+var
+  i: Integer;
+begin
+ for i := 1 to 10 do
+  begin
+    if SendCromisMessageTry(desthandle, msgid, l) = True then
+    begin
+      // The function returned True, so break out of the loop
+      Break;
+    end;
   end;
 end;
 

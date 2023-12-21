@@ -56,6 +56,7 @@ function CatCaseWildOf(const s: string; labels: array of string;
 function CatCaseWildXOf(const s: string; labels: array of string;
   const casesensitive: Boolean = true): integer;  
 function CatMatchSignature(const sigpattern, s: string): boolean;
+function CountMatchingWords(const str1, str2: string): Integer;
 function CompareVersionNumber(const version1, version2: string;
   const Silent:boolean=true): Integer;
 function CompareVersionString(const version1, version2: string;
@@ -128,6 +129,47 @@ begin
       result := StrToIntDef(before(labels[i],':'), -1);
     if result <> -1 then
       break;
+  end;
+end;
+
+// Compare each word from the first string with words from the second string and
+// returns the matching count
+function CountMatchingWords(const str1, str2: string): Integer;
+var
+  words1, words2: TStringList;
+  i, j: Integer;
+begin
+  // Split the first string into words
+  words1 := TStringList.Create;
+  try
+    words1.Delimiter := ' ';
+    words1.DelimitedText := str1;
+
+    // Split the second string into words
+    words2 := TStringList.Create;
+    try
+      words2.Delimiter := ' ';
+      words2.DelimitedText := str2;
+
+      Result := 0;
+
+      // Compare each word from the first string with words from the second string
+      for i := 0 to words1.Count - 1 do
+      begin
+        for j := 0 to words2.Count - 1 do
+        begin
+          if SameText(words1[i], words2[j]) then
+          begin
+            Inc(Result);
+            Break; // Move to the next word from the first string
+          end;
+        end;
+      end;
+    finally
+      words2.Free;
+    end;
+  finally
+    words1.Free;
   end;
 end;
 
@@ -697,6 +739,7 @@ end;
 // # (hash) to match a number
 // ¿ (inverted interrogation) to match a letter (A..Z, a..z)
 // ¡ (inverted exclamation) to match alpha or numeric character (A..Z, a..z, 0..9)
+// todo: implement cedilla (¸) and macron (¯) as well as ™ © ® ¤ × ÷ ° § ¶ † ‡ ‰ ƒ ª ¬ ½ ¼ « » ¦ ß ± ²
 // by Felipe Daragon
 function MatchWildcardX(s, Mask: string; IgnoreCase: Boolean = false): Boolean;
 const

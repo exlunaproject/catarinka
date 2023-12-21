@@ -2,7 +2,7 @@ unit CatStrings;
 {
   Catarinka - String Operation functions
 
-  Copyright (c) 2003-2021 Felipe Daragon
+  Copyright (c) 2003-2023 Felipe Daragon
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 
@@ -59,6 +59,7 @@ function ASCIIToInt(const s: string): integer;
 function Base64Encode(const s: string): string;
 function Base64Decode(const s: string): string;
 function Before(const s, substr: string): string;
+function BeforeChars(const s: string; const aSet: TSysCharSet): string;
 function BeginsWith(const s, prefix: string; IgnoreCase: Boolean = false)
   : Boolean; overload;
 function BeginsWith(const s: string; const prefixes: array of string;
@@ -74,6 +75,7 @@ function CharSetToStr(const c: TSysCharSet): string;
 function CombineIntArray(const p:array of integer):integer;
 function CommaTextToStr(const s: string): string;
 function ContainsAnyOfChars(const s: string; const aSet: TSysCharSet): Boolean;
+function ContainsAnyCharsOtherThan(const s: string; const aSet: TSysCharSet): Boolean;
 function ContainsAnyOfStrings(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 function ContainsAllOfStrings(s: string; aArray: array of string;
@@ -83,6 +85,7 @@ function EndsWith(const s, prefix: string; IgnoreCase: Boolean = false)
   : Boolean; overload;
 function EndsWith(const s: string; const prefixes: array of string;
   IgnoreCase: Boolean = false): Boolean; overload;
+function ExtractEnclosed(const s: string;const beginChar,endChar:char): string;
 function ExtractFromString(const s, startstr, endstr: string): string;
 function ExtractChars(const s:string;const aSet: TSysCharSet):string;
 function ExtractNumbers(const s: string): string;
@@ -90,6 +93,7 @@ function GetLineNumberByPos(const s: string; const Position: integer): integer;
 function GetStringLine(const s:string;const line:integer):TCatFuncResult;
 function GetToken(const aString, SepChar: string; const TokenNum: Integer): string;
 function GetTokenFromRight(const aString, SepChar: string; const TokenNum: Integer): string;
+function GetRandomStringFromList(sl:TStringList):string;
 function GetValidCompName(const s: string): string;
 function HexToInt(const Hex: string; const WarnError: Boolean = false): integer;
 function HexToStr(const s: string): string;
@@ -119,6 +123,7 @@ function MemStreamToStr(m: TMemoryStream): String;
 function NumToWords(dblValue : Double) : String;
 function NumToWordsShort(dblValue : Double) : string;
 function Occurs(substr, s: string): integer;
+function RandomizeTokenizedStr(const input: string;aseparator:char=','): string;
 function RandomCase(const s: string;
   const ToUpperSet: TSysCharSet = ['a' .. 'z'];
   const ToLowerSet: TSysCharSet = ['A' .. 'Z']): string;
@@ -289,6 +294,24 @@ begin
     result := s
   else
     result := Copy(s, 1, i - 1);
+end;
+
+function BeforeChars(const s: string; const aSet: TSysCharSet): string;
+var
+  i, P: integer;
+begin
+  P := 0;
+  SetLength(result, length(s));
+  for i := 1 to length(s) do
+  begin
+    if (CharInSet(s[i], aSet)) then
+    begin
+      inc(P);
+      result[P] := s[i];
+    end else
+    break;
+  end;
+  SetLength(result, P);
 end;
 
 function BeginsWith(const s, prefix: string;
@@ -498,6 +521,21 @@ begin
   end;
 end;
 
+function ContainsAnyCharsOtherThan(const s: string; const aSet: TSysCharSet): Boolean;
+var
+  i: integer;
+begin
+  result := false;
+  for i := 1 to length(s) do
+  begin
+    if not (CharInSet(s[i], aSet)) then
+    begin
+      result := true;
+      break;
+    end;
+  end;
+end;
+
 function ContainsAllOfStrings(s: string; aArray: array of string;
   IgnoreCase: Boolean = false): Boolean;
 var
@@ -647,6 +685,16 @@ begin
     end;
   end;
   sl.Free;
+end;
+
+function GetRandomStringFromList(sl:TStringList):string;
+var
+  RandomIndex: Integer;
+begin
+  Randomize;
+  RandomIndex := Random(sl.Count);
+  if sl.Count <> 0 then
+  result := sl[RandomIndex];
 end;
 
 // Returns a valid Pascal component name (stripping invalid chars)
@@ -1083,6 +1131,34 @@ begin
   SetLength(result, P);
 end;
 
+// Gets a token-separated string and changes its order randomly
+// Eg: 1,2,3 becomes 2,1,3 etc
+function RandomizeTokenizedStr(const input: string;aseparator:char=','): string;
+var
+  list: TStringList;
+  i: Integer;
+begin
+  // Create a TStringList to hold the individual values
+  list := TStringList.Create;
+  try
+    // Set the delimiter to comma
+    list.StrictDelimiter := true;
+    list.Delimiter := aseparator;
+    // Load the input string into the TStringList
+    list.DelimitedText := input;
+
+    // Randomize the order of the elements
+    for i := 0 to list.Count - 1 do
+      list.Exchange(i, Random(list.Count));
+
+    // Concatenate the elements back into a string with comma separation
+    result := list.DelimitedText;
+  finally
+    // Free the TStringList
+    list.Free;
+  end;
+end;
+
 function ReplaceChars(const s: string; const aSet: TSysCharSet;
   const repwith: Char = '_'): string;
 var
@@ -1405,6 +1481,39 @@ begin
         pScan := nil;
     end;
   until pScan = nil;
+end;
+
+// Extract a list of strings enclosed within specific characters
+//  Eg: ExtractEnclosed('user is: {user}','{','}') -> 'user'
+function ExtractEnclosed(const s: string;const beginChar,endChar:char): string;
+var
+  i: integer;
+  extract: boolean;
+  sl:TStringList;
+  exstr:string;
+begin
+  exstr := emptystr;
+  extract := false;
+  sl := TStringList.Create;
+  for i := 1 to length(s) do
+  begin
+    if s[i] = beginChar then
+      extract := true;
+    if extract then
+    begin
+      if s[i] = endChar then
+      begin
+        extract := false;
+        Delete(exstr, 1, 1);
+        sl.Add(exstr);
+        exstr := emptystr;
+        Continue;
+      end else
+      exstr := exstr + s[i];
+    end;
+  end;
+  result := sl.Text;
+  sl.Free;
 end;
 
 // Based on an example by Mike Orriss

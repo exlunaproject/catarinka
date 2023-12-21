@@ -2,7 +2,7 @@ unit CatConsole;
 
 {
   Catarinka Console Component
-  Copyright (c) 2012-2014 Syhunt Informatica
+  Copyright (c) 2012-2023 Syhunt Informatica
   License: 3-clause BSD
   See https://github.com/felipedaragon/catarinka/ for details
 }
@@ -35,6 +35,7 @@ type
     fPopupMenu: TPopupMenu;
     fProgDir: string;
     fPromptText: string;
+    fGreeting: string;
     function GetLastCommand: string;
     procedure PopupMenuitemClick(Sender: TObject);
     procedure SetCustomHandler(s: string);
@@ -64,6 +65,7 @@ type
     // properties
     property Console: TConsole read fConsole;
     property CustomHandler: string read fCustomHandler write SetCustomHandler;
+    property Greeting: string read fGreeting write fGreeting;
     property LastCommand: string read GetLastCommand;
     property PromptText: string read fPromptText write fPromptText;
     property OnScriptCommand: TCatConsoleOnScriptCommand read fOnScriptCommand
@@ -81,7 +83,7 @@ procedure ReadDiskCommands;
 
 implementation
 
-uses CatStrings, CatHTTP, CatFiles, CatJSON;
+uses CatStrings, CatHTML, CatFiles, CatJSON;
 
 procedure AddConsoleCommand(cmd, luacode, description: string);
 var
@@ -351,11 +353,18 @@ begin
 end;
 
 procedure TCatConsole.WriteVersion;
+var
+  slp: TStringLoop;
 begin
   if fConsole.prompt = true then
     fConsole.BeginExternalOutput;
-  fConsole.Writeln('Sandcat' + '/' + GetFileVersion(paramstr(0)));
-  fConsole.Writeln('Type help for a list of commands.');
+  slp := TStringLoop.Create(fGreeting);
+  while slp.Found do begin
+    if pos('{version}',slp.Current) <> 0 then
+    slp.Current := replacestr(slp.Current,'{version}',GetFileVersion(paramstr(0)));
+    fConsole.Writeln(slp.Current);
+  end;
+  slp.free;
   fConsole.Writeln;
 end;
 
@@ -372,6 +381,10 @@ begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls];
   fProgDir := extractfilepath(paramstr(0));
+
+  fGreeting := 'Sandcat' + '/{version}'+crlf+
+  'Type help for a list of commands.';
+
   fHelpParser := TStringLoop.Create;
   fConsole := TConsole.Create(self);
   fConsole.Parent := self;
@@ -406,7 +419,7 @@ destructor TCatConsole.Destroy;
 begin
   fPopupMenu.free;
   fHelpParser.free;
-  fConsole.free;
+  FreeAndNil(fConsole);
   inherited Destroy;
 end;
 

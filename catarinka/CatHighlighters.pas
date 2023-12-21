@@ -25,6 +25,7 @@ uses
   SynExportHTML,
   SynEditHighlighter,
   SynHighlighterCPP,
+  SynHighlighterINI,
   SynHighlighterCS,
   SynHighlighterJava,
   SynHighlighterRuby,
@@ -33,6 +34,7 @@ uses
   SynHighlighterPas,
   SynHighlighterVBScript,
   SynHighlighterSQL,
+  SynHighlighterYAML,
   SynHighlighterWeb,
   SynHighlighterWebData,
   SynHighlighterWebMisc;
@@ -48,6 +50,7 @@ type
     fWebPHP: TSynWebPHPPlainSyn;
     fCPP: TSynCPPSyn;
     fCS: TSynCSSyn;
+    fINISyn: TSynINISyn;
     fJava: TSynJavaSyn;
     fRuby: TSynRubySyn;
     fPascal: TSynPasSyn;
@@ -55,6 +58,7 @@ type
     fPython: TSynPythonSyn;
     fSQLSyn: TSynSQLSyn;
     fVBScript: TSynVBScriptSyn;
+    fYAML: TSynYAMLSyn;
     function GetSynExport(HL: TSynCustomHighlighter; Source: string): string;
   public
     function GetByFilename(const filename: string): TSynCustomHighlighter;
@@ -66,6 +70,7 @@ type
     constructor Create(AOwner: TObject);
     destructor Destroy; override;
     property WebHTML: TSynWebHtmlSyn read fWebHTML;
+    property SynYAML: TSynYAMLSyn read fYAML;
   end;
 
 implementation
@@ -100,8 +105,8 @@ end;
 
 type
   TWebExts = (
-    cs, css, dpr, htm, html, java, js, json, jsie, lua, lp, pas, pasrem, php,
-    pl, py, rb, sql, tis, vbs, xml);
+    cs, css, dpr, htm, html, java, js, json, jsie, lua, ini, lp, pas, pasrem, php,
+    pl, py, rb, sql, tis, vbs, xml, yml, yaml);
 
 type
   TCPPExts = (c, h, cpp, cc, cxx, hpp, hxx, hh, m, mm);
@@ -154,6 +159,10 @@ begin
       result := fVBScript;
     xml:
       result := fWebXML;
+    ini:
+      result := fINISyn;
+    yml, yaml:
+      result := fYAML;
   end;
 end;
 
@@ -274,6 +283,8 @@ begin
   fWebCSS.Options.CssVersion := scvCSS3;
   fWebXML := TSynWebXMLSyn.Create(nil);
   fWebXML.Engine := fSynWebEngine;
+  fINISyn := TSynINISyn.Create(nil);
+  fYAML := TSynYAMLSyn.Create(nil);
   SetCodeRayColors(fSynWebEngine);
 end;
 
@@ -284,6 +295,8 @@ begin
   fWebPHP.Free;
   fWebJS.Free;
   fWebCSS.Free;
+  fYAML.Free;
+  fINISyn.Free;
   fWebXML.Free;
   fSQLSyn.Free;
   fVBScript.Free;
